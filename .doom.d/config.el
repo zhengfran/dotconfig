@@ -263,8 +263,8 @@ List of keybindings (SPC h b b)")
 
 (autoload 'exwm-enable "exwm-config.el")
 
-(setq doom-font (font-spec :family "JetBrains Mono" :size 17)
-      doom-variable-pitch-font (font-spec :family "Ubuntu" :size 17)
+(setq doom-font (font-spec :family "JetBrains Mono" :size 24)
+      doom-variable-pitch-font (font-spec :family "Ubuntu" :size 24)
       doom-big-font (font-spec :family "JetBrains Mono" :size 26))
 (after! doom-themes
   (setq doom-themes-enable-bold t
@@ -370,7 +370,8 @@ List of keybindings (SPC h b b)")
       :desc "Org babel tangle" "m B" #'org-babel-tangle)
 (after! org
   (setq org-directory "~/Documents/org/"
-        org-agenda-files '("~/Documents/org/agenda.org")
+        org-agenda-files '(("~/Documents/org/tasks.org")
+                           ("~/Documents/org/important-date.org"))
         org-default-notes-file (expand-file-name "notes.org" org-directory)
         org-ellipsis " ⤵ "
         org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆")
@@ -567,6 +568,17 @@ List of keybindings (SPC h b b)")
         (ledger . t)
         (C . t)
         (sh . t))))
+
+(after! org
+(setq org-agenda-start-day "+0d")
+;; Change task state to STARTED when clocking in
+(setq org-clock-in-switch-to-state "STARTED")
+;; Save clock data and notes in the LOGBOOK drawer
+(setq org-clock-into-drawer t)
+;; Removes clocked tasks with 0:00 duration
+(setq org-clock-out-remove-zero-time-clocks t) ;; Show the clocked-in task - if any - in the header line
+
+(setq org-tags-match-list-sublevels nil))
 
 (use-package ox-man)
 (use-package ox-gemini)
