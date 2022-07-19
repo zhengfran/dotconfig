@@ -370,8 +370,17 @@ List of keybindings (SPC h b b)")
       :desc "Org babel tangle" "m B" #'org-babel-tangle)
 (after! org
   (setq org-directory "~/Documents/org/"
-        org-agenda-files '(("~/Documents/org/tasks.org")
-                           ("~/Documents/org/important-date.org"))
+        org-agenda-dir "~/Documents/org/"
+        ;; define the refile targets
+        org-agenda-file-note (expand-file-name "notes.org" org-agenda-dir)
+        org-agenda-file-gtd (expand-file-name "gtd.org" org-agenda-dir)
+        org-agenda-file-work (expand-file-name "work.org" org-agenda-dir)
+        org-agenda-file-journal (expand-file-name "journal.org" org-agenda-dir)
+        org-agenda-file-code-snippet (expand-file-name "snippet.org" org-agenda-dir)
+        org-default-notes-file (expand-file-name "gtd.org" org-agenda-dir)
+        org-agenda-file-blogposts (expand-file-name "all-posts.org" org-agenda-dir)
+        org-agenda-files (list org-agenda-file-gtd org-agenda-file-journal org-agenda-file-blogposts org-agenda-file-work org-agenda-file-note))
+
         org-default-notes-file (expand-file-name "notes.org" org-directory)
         org-ellipsis " ⤵ "
         org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆")
