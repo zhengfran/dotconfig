@@ -1,4 +1,10 @@
 (map! :leader
+      (:prefix ("z" . "chinese-input")
+        :desc "Activate Chinese Input" "a" #'pyim-activate
+        :desc "Deactivate Chinese Input" "d" #'pyim-deactivate
+        :desc "Toggle between chinese and ascii" "t" #'pyim-toggle-input-ascii))
+
+(map! :leader
       (:prefix ("d" . "dired")
        :desc "Open dired" "d" #'dired
        :desc "Dired jump to current" "j" #'dired-jump)
@@ -74,6 +80,15 @@
         :desc "Insert todays date" "t" #'dt/insert-todays-date))
 
 (map! :leader
+      (:prefix ("=" . "open file")
+       :desc "Edit archive" "a" #'(lambda () (interactive) (find-file "~/Documents/org/archive.org"))
+       :desc "Edit bills" "b" #'(lambda () (interactive) (find-file "~/Documents/org/finance/bills.ledge"))
+       :desc "Edit habits" "h" #'(lambda () (interactive) (find-file "~/Documents/org/habits.org"))
+       :desc "Edit doom config.org" "c" #'(lambda () (interactive) (find-file "~/.doom.d/config.org"))
+       :desc "Edit doom init.el" "i" #'(lambda () (interactive) (find-file "~/.doom.d/init.el"))
+       :desc "Edit doom packages.el" "p" #'(lambda () (interactive) (find-file "~/.doom.d/packages.el"))))
+
+(map! :leader
       :desc "Org babel tangle" "m B" #'org-babel-tangle)
 (after! org
   (setq org-directory "~/Documents/org/"
@@ -100,26 +115,78 @@
         org-agenda-file-gtd (expand-file-name "gtd.org" org-agenda-dir)
         ;; org-agenda-file-work (list "~/Documents/org/work")
         org-agenda-file-habit (expand-file-name "habits.org" org-agenda-dir)
+        org-agenda-file-archive (expand-file-name "archive.org" org-agenda-dir)
         org-agenda-file-code-snippet (expand-file-name "snippet.org" org-agenda-dir)
         ;; org-agenda-file-blogposts (expand-file-name "all-posts.org" org-agenda-dir)
-        org-agenda-files (list org-agenda-file-date org-agenda-file-gtd)
-        org-todo-keywords        ; This overwrites the default Doom org-todo-keywords
-          '((sequence
-             "TODO(t)"           ; A task that is ready to be tackled
-             "BLOG(b)"           ; Blog writing assignments
-             "GYM(g)"            ; Things to accomplish at the gym
-             "PROJ(p)"           ; A project that contains other tasks
-             "SUBTASK(s)"        ; A subtask of a a project
-             "WAIT(w)"           ; Something is holding up this task
-             "|"                 ; The pipe necessary to separate "active" states and "inactive" states
-             "DONE(d)"           ; Task has been completed
-             "CANCELLED(c)" )))) ; Task has been cancelled
+        org-agenda-files (list org-agenda-file-date org-agenda-file-gtd org-agenda-file-habit))
+
+  (setq org-todo-keywords
+    '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+
+;; Configure custom agenda views
+  (setq org-agenda-custom-commands
+   '(("d" "Dashboard"
+     ((agenda "" ((org-deadline-warning-days 7)))
+      (todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))
+      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+
+    ("n" "Next Tasks"
+     ((todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))))
+
+    ("W" "Work Tasks" tags-todo "+work-email")
+
+    ;; Low-effort next actions
+    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+     ((org-agenda-overriding-header "Low Effort Tasks")
+      (org-agenda-max-todos 20)
+      (org-agenda-files org-agenda-files)))
+
+    ("w" "Workflow Status"
+     ((todo "WAIT"
+            ((org-agenda-overriding-header "Waiting on External")
+             (org-agenda-files org-agenda-files)))
+      (todo "REVIEW"
+            ((org-agenda-overriding-header "In Review")
+             (org-agenda-files org-agenda-files)))
+      (todo "PLAN"
+            ((org-agenda-overriding-header "In Planning")
+             (org-agenda-todo-list-sublevels nil)
+             (org-agenda-files org-agenda-files)))
+      (todo "BACKLOG"
+            ((org-agenda-overriding-header "Project Backlog")
+             (org-agenda-todo-list-sublevels nil)
+             (org-agenda-files org-agenda-files)))
+      (todo "READY"
+            ((org-agenda-overriding-header "Ready for Work")
+             (org-agenda-files org-agenda-files)))
+      (todo "ACTIVE"
+            ((org-agenda-overriding-header "Active Projects")
+             (org-agenda-files org-agenda-files)))
+      (todo "COMPLETED"
+            ((org-agenda-overriding-header "Completed Projects")
+             (org-agenda-files org-agenda-files)))
+      (todo "CANC"
+            ((org-agenda-overriding-header "Cancelled Projects")
+             (org-agenda-files org-agenda-files))))))))
 
 (use-package! org-auto-tangle
   :defer t
   :hook (org-mode . org-auto-tangle-mode)
   :config
   (setq org-auto-tangle-default t))
+
+
+
+(setq org-habit-graph-column 60)
+
+(setq org-refile-targets
+    '(("~/Documents/org/archive.org" :maxlevel . 2)))
+
+  ;; Save Org buffers after refiling!
+  (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
 (setq org-journal-dir "~/Documents/org/journal/"
       org-journal-file-format "%Y-%m-%d.org")
