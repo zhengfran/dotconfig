@@ -12,7 +12,9 @@
   - [[#keybindings-within-dired][Keybindings Within Dired]]
   - [[#keybindings-within-dired-with-peep-dired-mode-enabled][Keybindings Within Dired With Peep-Dired-Mode Enabled]]
   - [[#making-deleted-files-go-to-trash-can][Making deleted files go to trash can]]
-- [[#doom-theme][Doom theme]]
+- [[#ui][UI]]
+  - [[#doom-theme][Doom theme]]
+  - [[#doom-font][Doom font]]
 - [[#emojis][EMOJIS]]
 - [[#insert-date][Insert date]]
 - [[#open-specific-file][Open Specific file]]
@@ -24,7 +26,10 @@
   - [[#org-refile][Org-refile]]
   - [[#org-journal][Org-journal]]
 - [[#line-settings][LINE SETTINGS]]
+- [[#lsp][LSP]]
 - [[#shells][SHELLS]]
+- [[#os-specific][OS-Specific]]
+  - [[#wsl2][WSL2]]
 
 * BEACON
 Never lose your cursor.  When you scroll, your cursor will shine!  This is a global minor-mode. Turn it on everywhere with:
@@ -194,7 +199,8 @@ If peep-dired is enabled, you will get image previews as you go up/down with 'j'
 
 #+end_src
 
-* Doom theme
+* UI
+** Doom theme
 Setting the theme to doom-one.  To try out new themes, I set a keybinding for counsel-load-theme with 'SPC h t'.
 
 #+BEGIN_SRC emacs-lisp
@@ -204,6 +210,7 @@ Setting the theme to doom-one.  To try out new themes, I set a keybinding for co
       :desc "Load new theme" "h t" #'counsel-load-theme)
 
 #+END_SRC
+** Doom font
 
 * EMOJIS
 Emojify is an Emacs extension to display emojis. It can display github style emojis like :smile: or plain ascii ones like :).
@@ -440,6 +447,8 @@ I set comment-line to 'SPC TAB TAB' which is a rather comfortable keybinding for
 
 #+END_SRC
 
+* LSP
+
 * SHELLS
 Settings for the various shells and terminal emulators within Emacs.
 + 'shell-file-name' -- sets the shell to be used in M-x shell, M-x term, M-x ansi-term and M-x vterm.
@@ -452,3 +461,42 @@ Settings for the various shells and terminal emulators within Emacs.
       :desc "Vterm popup toggle" "v t" #'+vterm/toggle)
 
 #+END_SRC
+
+* OS-Specific
+This part includes functions specific to a particular platform
+** WSL2
+*** paste image into org mode
+#+begin_src emacs-lisp
+(defun my-yank-image-from-win-clipboard-through-powershell()
+  "to simplify the logic, use c:/Users/Public as temporary directoy, then move it into current directoy
+
+Anyway, if need to modify the file name, please DONT delete or modify file extension \".png\",
+otherwise this function don't work and don't know the reason
+"
+  (interactive)
+  (let* ((powershell "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe")
+         (file-name (format "%s" (read-from-minibuffer "Img Name:" (format-time-string "screenshot_%Y%m%d_%H%M%S.png"))))
+         ;; (file-path-powershell (concat "c:/Users/\$env:USERNAME/" file-name))
+         (file-path-wsl (concat "./images/" file-name)))
+    (if (file-exists-p "./images")
+        (ignore)
+      (make-directory "./images"))
+    ;; (shell-command (concat powershell " -command \"(Get-Clipboard -Format Image).Save(\\\"C:/Users/\\$env:USERNAME/" file-name "\\\")\""))
+    (shell-command (concat powershell " -command \"(Get-Clipboard -Format Image).Save(\\\"C:/Users/Public/" file-name "\\\")\""))
+    (rename-file (concat "/mnt/c/Users/Public/" file-name) file-path-wsl)
+    (format "%s" file-path-wsl)
+    ))
+
+(defun my-yank-image-link-into-org-from-wsl ()
+  "call `my-yank-image-from-win-clipboard-through-powershell' and insert image file link with org-mode format"
+  (interactive)
+  (let* ((file-path (my-yank-image-from-win-clipboard-through-powershell))
+         (file-link (format "[[file:%s][%s]]" file-path (file-name-sans-extension (file-name-nondirectory file-path))))
+         )
+    (insert file-link)
+    ))
+
+(map! :leader
+      (:prefix ("l" . "wsl")
+       :desc "wsl paste image" "p" #'my-yank-image-link-into-org-from-wsl))
+#+end_src
