@@ -16,6 +16,8 @@
   - [[#doom-theme][Doom theme]]
   - [[#doom-font][Doom font]]
 - [[#emojis][EMOJIS]]
+- [[#graphs-related][Graphs related]]
+  - [[#plantuml][Plantuml]]
 - [[#insert-date][Insert date]]
 - [[#open-specific-file][Open Specific file]]
 - [[#org-mode][Org Mode]]
@@ -23,6 +25,7 @@
   - [[#org-auto-tangle][Org-auto-tangle]]
   - [[#org-capture][Org-capture]]
   - [[#org-habit][Org-habit]]
+  - [[#org-tags][Org-tags]]
   - [[#org-refile][Org-refile]]
   - [[#org-journal][Org-journal]]
 - [[#line-settings][LINE SETTINGS]]
@@ -73,6 +76,9 @@ Never lose your cursor.  When you scroll, your cursor will shine!  This is a glo
 
 * Chinese Input -- pyim
 #+begin_src emacs-lisp
+;; (require 'pyim-greatdict)
+;; (pyim-greatdict-enable)
+;; (quelpa '(pyim-greatdict :fetcher github :repo "tumashu/pyim-greatdict"))
 (map! :leader
       (:prefix ("z" . "chinese-input")
         :desc "Activate Chinese Input" "a" #'pyim-activate
@@ -176,8 +182,8 @@ Dired is the file manager within Emacs.  Below, I setup keybindings for image pr
 ** Keybindings Within Dired With Peep-Dired-Mode Enabled
 If peep-dired is enabled, you will get image previews as you go up/down with 'j' and 'k'
 
-| COMMAND              | DESCRIPTION                                | KEYBINDING |
-|----------------------+--------------------------------------------+------------|
+| COMMAND              | DESCRIPTION                              | KEYBINDING |
+|----------------------+------------------------------------------+------------|
 | peep-dired           | /Toggle previews within dired/             | SPC d p    |
 | peep-dired-next-file | /Move to next file in peep-dired-mode/     | j          |
 | peep-dired-prev-file | /Move to previous file in peep-dired-mode/ | k          |
@@ -211,6 +217,28 @@ Setting the theme to doom-one.  To try out new themes, I set a keybinding for co
 
 #+END_SRC
 ** Doom font
+#+begin_src emacs-lisp
+(defun my/better-font()
+  (interactive)
+  ;; english font
+  (if (display-graphic-p)
+      (progn
+        (set-face-attribute 'default nil :font (format "%s:pixelsize=%d" "Fira Code" 15)) ;; 11 13 17 19 23
+        ;; chinese font
+        (dolist (charset '(kana han symbol cjk-misc bopomofo))
+          (set-fontset-font (frame-parameter nil 'font)
+                            charset
+                            (font-spec :family "Sarasa Mono SC")))) ;; 14 16 20 22 28
+    ))
+(defun my|init-font(frame)
+  (with-selected-frame frame
+    (if (display-graphic-p)
+        (my/better-font))))
+
+(if (and (fboundp 'daemonp) (daemonp))
+    (add-hook 'after-make-frame-functions #'my|init-font)
+  (my/better-font))
+#+end_src
 
 * EMOJIS
 Emojify is an Emacs extension to display emojis. It can display github style emojis like :smile: or plain ascii ones like :).
@@ -222,6 +250,11 @@ Emojify is an Emacs extension to display emojis. It can display github style emo
 
 #+end_src
 
+* Graphs related
+** Plantuml
+#+begin_src emacs-lisp
+(setq plantuml-default-exec-mode 'jar)
+#+end_src
 * Insert date
 Some custom functions to insert the date.  The function 'insert-todays-date' can be used one of three different ways: (1) just the keybinding without the universal argument prefix, (2) with one universal argument prefix, or (3) with two universal argument prefixes.  The universal argument prefix is 'SPC-u' in Doom Emacs (C-u in standard GNU Emacs).  The function 'insert-any-date' only outputs to one format, which is the same format as 'insert-todays-date' without a prefix.
 
@@ -272,8 +305,10 @@ Keybindings to open files that I work with all the time using the find-file comm
        :desc "Edit archive" "a" #'(lambda () (interactive) (find-file "~/Documents/org/archive.org"))
        :desc "Edit bills" "b" #'(lambda () (interactive) (find-file "~/Documents/org/finance/bills.ledge"))
        :desc "Edit habits" "h" #'(lambda () (interactive) (find-file "~/Documents/org/habits.org"))
+       :desc "Edit archive" "g" #'(lambda () (interactive) (find-file "~/Documents/org/gtd.org"))
        :desc "Edit doom config.org" "c" #'(lambda () (interactive) (find-file "~/.doom.d/config.org"))
        :desc "Edit doom init.el" "i" #'(lambda () (interactive) (find-file "~/.doom.d/init.el"))
+       :desc "Edit archive" "m" #'(lambda () (interactive) (find-file "~/Documents/org/metrics.org"))
        :desc "Edit doom packages.el" "p" #'(lambda () (interactive) (find-file "~/.doom.d/packages.el"))))
 
 #+END_SRC
@@ -387,18 +422,62 @@ I wrapped most of this block in (after! org).  Without this, my settings might b
 #+end_src
 ** Org-capture
 #+begin_src emacs-lisp
+(setq org-capture-templates
+    `(("t" "Tasks / Projects")
+      ("tt" "Task" entry (file+olp "~/Documents/org/gtd.org" "Inbox")
+           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+      ("tn" "Task Without Context" entry (file+olp "~/Documents/org/gtd.org" "Inbox")
+           "* TODO %?\n  %U\n  %i" :empty-lines 1)
 
+      ;; ("j" "Journal Entries")
+      ;; ("jj" "Journal" entry
+      ;;      (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+      ;;      "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+      ;;      ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
+      ;;      :clock-in :clock-resume
+      ;;      :empty-lines 1)
+      ;; ("jm" "Meeting" entry
+      ;;      (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+      ;;      "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+      ;;      :clock-in :clock-resume
+      ;;      :empty-lines 1)
+
+      ;; ("w" "Workflows")
+      ;; ("we" "Checking Email" entry (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+      ;;      "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
+
+      ("m" "Metrics Capture")
+      ("mw" "Weight" table-line (file+headline "~/Documents/org/metrics.org" "Weight")
+       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)
+      ("mp" "Pushup" table-line (file+headline "~/Documents/org/metrics.org" "Pushups")
+       "| %U | %^{Pushup} | %^{Notes} |" :kill-buffer t)
+      ("ms" "Squat" table-line (file+headline "~/Documents/org/metrics.org" "Squat")
+       "| %U | %^{Squat} | %^{Notes} |" :kill-buffer t)))
 
 #+end_src
 ** Org-habit
 #+begin_src emacs-lisp
    (setq org-habit-graph-column 60)
 #+end_src
-
+** Org-tags
+#+begin_src emacs-lisp
+(setq org-tag-alist
+    '((:startgroup)
+       ; Put mutually exclusive tags here
+       (:endgroup)
+       ("@errand" . ?E)
+       ("@home" . ?H)
+       ("@work" . ?W)
+       ("agenda" . ?a)
+       ("planning" . ?p)
+       ("note" . ?n)
+       ("idea" . ?i)))
+#+end_src
 ** Org-refile
 #+begin_src emacs-lisp
 (setq org-refile-targets
-    '(("~/Documents/org/archive.org" :maxlevel . 2)))
+    '(("~/Documents/org/archive.org" :maxlevel . 2)
+      ("~/Documents/org/gtd.org" :maxlevel . 1)))
 
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
