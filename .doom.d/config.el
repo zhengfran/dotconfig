@@ -1,3 +1,6 @@
+;; (require 'pyim-greatdict)
+;; (pyim-greatdict-enable)
+;; (quelpa '(pyim-greatdict :fetcher github :repo "tumashu/pyim-greatdict"))
 (map! :leader
       (:prefix ("z" . "chinese-input")
         :desc "Activate Chinese Input" "a" #'pyim-activate
@@ -57,8 +60,31 @@
 (map! :leader
       :desc "Load new theme" "h t" #'counsel-load-theme)
 
+(defun my/better-font()
+  (interactive)
+  ;; english font
+  (if (display-graphic-p)
+      (progn
+        (set-face-attribute 'default nil :font (format "%s:pixelsize=%d" "Fira Code" 15)) ;; 11 13 17 19 23
+        ;; chinese font
+        (dolist (charset '(kana han symbol cjk-misc bopomofo))
+          (set-fontset-font (frame-parameter nil 'font)
+                            charset
+                            (font-spec :family "Sarasa Mono SC")))) ;; 14 16 20 22 28
+    ))
+(defun my|init-font(frame)
+  (with-selected-frame frame
+    (if (display-graphic-p)
+        (my/better-font))))
+
+(if (and (fboundp 'daemonp) (daemonp))
+    (add-hook 'after-make-frame-functions #'my|init-font)
+  (my/better-font))
+
 (use-package emojify
   :hook (after-init . global-emojify-mode))
+
+(setq plantuml-default-exec-mode 'jar)
 
 (defun dt/insert-todays-date (prefix)
   (interactive "P")
@@ -84,8 +110,10 @@
        :desc "Edit archive" "a" #'(lambda () (interactive) (find-file "~/Documents/org/archive.org"))
        :desc "Edit bills" "b" #'(lambda () (interactive) (find-file "~/Documents/org/finance/bills.ledge"))
        :desc "Edit habits" "h" #'(lambda () (interactive) (find-file "~/Documents/org/habits.org"))
+       :desc "Edit archive" "g" #'(lambda () (interactive) (find-file "~/Documents/org/gtd.org"))
        :desc "Edit doom config.org" "c" #'(lambda () (interactive) (find-file "~/.doom.d/config.org"))
        :desc "Edit doom init.el" "i" #'(lambda () (interactive) (find-file "~/.doom.d/init.el"))
+       :desc "Edit archive" "m" #'(lambda () (interactive) (find-file "~/Documents/org/metrics.org"))
        :desc "Edit doom packages.el" "p" #'(lambda () (interactive) (find-file "~/.doom.d/packages.el"))))
 
 (map! :leader
@@ -178,12 +206,55 @@
   :config
   (setq org-auto-tangle-default t))
 
+(setq org-capture-templates
+    `(("t" "Tasks / Projects")
+      ("tt" "Task" entry (file+olp "~/Documents/org/gtd.org" "Inbox")
+           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+      ("tn" "Task Without Context" entry (file+olp "~/Documents/org/gtd.org" "Inbox")
+           "* TODO %?\n  %U\n  %i" :empty-lines 1)
 
+      ;; ("j" "Journal Entries")
+      ;; ("jj" "Journal" entry
+      ;;      (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+      ;;      "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+      ;;      ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
+      ;;      :clock-in :clock-resume
+      ;;      :empty-lines 1)
+      ;; ("jm" "Meeting" entry
+      ;;      (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+      ;;      "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+      ;;      :clock-in :clock-resume
+      ;;      :empty-lines 1)
+
+      ;; ("w" "Workflows")
+      ;; ("we" "Checking Email" entry (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+      ;;      "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
+
+      ("m" "Metrics Capture")
+      ("mw" "Weight" table-line (file+headline "~/Documents/org/metrics.org" "Weight")
+       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)
+      ("mp" "Pushup" table-line (file+headline "~/Documents/org/metrics.org" "Pushups")
+       "| %U | %^{Pushup} | %^{Notes} |" :kill-buffer t)
+      ("ms" "Squat" table-line (file+headline "~/Documents/org/metrics.org" "Squat")
+       "| %U | %^{Squat} | %^{Notes} |" :kill-buffer t)))
 
 (setq org-habit-graph-column 60)
 
+(setq org-tag-alist
+    '((:startgroup)
+       ; Put mutually exclusive tags here
+       (:endgroup)
+       ("@errand" . ?E)
+       ("@home" . ?H)
+       ("@work" . ?W)
+       ("agenda" . ?a)
+       ("planning" . ?p)
+       ("note" . ?n)
+       ("idea" . ?i)))
+
 (setq org-refile-targets
-    '(("~/Documents/org/archive.org" :maxlevel . 2)))
+    '(("~/Documents/org/archive.org" :maxlevel . 2)
+      ("~/Documents/org/gtd.org" :maxlevel . 1)))
 
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)

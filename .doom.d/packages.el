@@ -59,3 +59,4 @@
 (package! emojify)
 ;;org
 (package! org-auto-tangle)
+;; chinese input
