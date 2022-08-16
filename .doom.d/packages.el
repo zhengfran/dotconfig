@@ -60,3 +60,12 @@
 ;;org
 (package! org-auto-tangle)
 ;; chinese input
+;;rss
+(package! elfeed-goodies)
+
+;;lsp-bridge
+;;dependency first
+(package! posframe)
+;; (package! yasnippet)
+;; (package! lsp-bridge
+;;   :recipe (:host github :repo "manateelazycat/lsp-bridge"))

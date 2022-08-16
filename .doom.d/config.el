@@ -2,10 +2,12 @@
 ;; (pyim-greatdict-enable)
 ;; (quelpa '(pyim-greatdict :fetcher github :repo "tumashu/pyim-greatdict"))
 (map! :leader
-      (:prefix ("z" . "chinese-input")
+      (:prefix ("z" . "Customize")
         :desc "Activate Chinese Input" "a" #'pyim-activate
         :desc "Deactivate Chinese Input" "d" #'pyim-deactivate
         :desc "Toggle between chinese and ascii" "t" #'pyim-toggle-input-ascii))
+
+(setq flyspell-mode nil)
 
 (map! :leader
       (:prefix ("d" . "dired")
@@ -56,7 +58,7 @@
 (setq delete-by-moving-to-trash t
       trash-directory "~/.local/share/Trash/files/")
 
-(setq doom-theme 'doom-solarized-light)
+(setq doom-theme 'doom-acario-light)
 (map! :leader
       :desc "Load new theme" "h t" #'counsel-load-theme)
 
@@ -81,8 +83,16 @@
     (add-hook 'after-make-frame-functions #'my|init-font)
   (my/better-font))
 
-(use-package emojify
-  :hook (after-init . global-emojify-mode))
+;; (use-package emojify
+;;   :hook (after-init . global-emojify-mode))
+
+;; (setq elfeed-feeds (quote
+;;                     (("https://www.reddit.com/r/linux.rss" reddit linux)
+;;                      ("https://www.reddit.com/r/commandeadlines.rss" linux)
+;;                      ("https://distrowatch.com/news/dwd.xml" distrowatch linux))))
+;; (require 'elfeed-goodies)
+;; (elfeed-goodies/setup)
+;; (setq elfeed-goodies/entry-pane-size 0.5)
 
 (setq plantuml-default-exec-mode 'jar)
 
@@ -126,31 +136,16 @@
         org-superstar-itembullet-alist '((?+ . ?➤) (?- . ?✦)) ; changes +/- symbols in item lists
         org-log-done 'time
         org-hide-emphasis-markers t
-        ;; ex. of org-link-abbrev-alist in action
-        ;; [[arch-wiki:Name_of_Page][Description]]
-        org-link-abbrev-alist    ; This overwrites the default Doom org-link-abbrev-list
-          '(("google" . "http://www.google.com/search?q=")
-            ("arch-wiki" . "https://wiki.archlinux.org/index.php/")
-            ("ddg" . "https://duckduckgo.com/?q=")
-            ("wiki" . "https://en.wikipedia.org/wiki/"))
         org-table-convert-region-max-lines 20000))
 
 (after! org
   (setq org-agenda-dir "~/Documents/org/"
         ;; define the refile targets
-        org-agenda-file-date (expand-file-name "keydates.org" org-agenda-dir)
-        org-agenda-file-note (expand-file-name "notes.org" org-agenda-dir)
-        org-agenda-file-gtd (expand-file-name "gtd.org" org-agenda-dir)
-        ;; org-agenda-file-work (list "~/Documents/org/work")
-        org-agenda-file-habit (expand-file-name "habits.org" org-agenda-dir)
-        org-agenda-file-archive (expand-file-name "archive.org" org-agenda-dir)
-        org-agenda-file-code-snippet (expand-file-name "snippet.org" org-agenda-dir)
-        ;; org-agenda-file-blogposts (expand-file-name "all-posts.org" org-agenda-dir)
-        org-agenda-files (list org-agenda-file-date org-agenda-file-gtd org-agenda-file-habit))
+        org-agenda-files nil)
 
   (setq org-todo-keywords
     '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c!)" "CANC(k@)")))
 
 ;; Configure custom agenda views
   (setq org-agenda-custom-commands
@@ -164,7 +159,7 @@
      ((todo "NEXT"
         ((org-agenda-overriding-header "Next Tasks")))))
 
-    ("W" "Work Tasks" tags-todo "+work-email")
+    ("w" "Work Tasks" tags-todo "+work")
 
     ;; Low-effort next actions
     ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
@@ -172,7 +167,7 @@
       (org-agenda-max-todos 20)
       (org-agenda-files org-agenda-files)))
 
-    ("w" "Workflow Status"
+    ("W" "Workflow Status"
      ((todo "WAIT"
             ((org-agenda-overriding-header "Waiting on External")
              (org-agenda-files org-agenda-files)))
@@ -206,37 +201,38 @@
   :config
   (setq org-auto-tangle-default t))
 
-(setq org-capture-templates
-    `(("t" "Tasks / Projects")
-      ("tt" "Task" entry (file+olp "~/Documents/org/gtd.org" "Inbox")
-           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
-      ("tn" "Task Without Context" entry (file+olp "~/Documents/org/gtd.org" "Inbox")
-           "* TODO %?\n  %U\n  %i" :empty-lines 1)
+(after! org
+    (setq org-capture-templates
+        `(("t" "Tasks / Projects")
+        ("tt" "Task" entry (file+olp "~/Documents/org/gtd.org" "Inbox")
+            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+        ("tn" "Task Without Context" entry (file+olp "~/Documents/org/gtd.org" "Inbox")
+            "* TODO %?\n  %U\n  %i" :empty-lines 1)
 
-      ;; ("j" "Journal Entries")
-      ;; ("jj" "Journal" entry
-      ;;      (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
-      ;;      "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
-      ;;      ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
-      ;;      :clock-in :clock-resume
-      ;;      :empty-lines 1)
-      ;; ("jm" "Meeting" entry
-      ;;      (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
-      ;;      "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-      ;;      :clock-in :clock-resume
-      ;;      :empty-lines 1)
+        ;; ("j" "Journal Entries")
+        ;; ("jj" "Journal" entry
+        ;;      (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+        ;;      "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+        ;;      ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
+        ;;      :clock-in :clock-resume
+        ;;      :empty-lines 1)
+        ;; ("jm" "Meeting" entry
+        ;;      (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+        ;;      "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+        ;;      :clock-in :clock-resume
+        ;;      :empty-lines 1)
 
-      ;; ("w" "Workflows")
-      ;; ("we" "Checking Email" entry (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
-      ;;      "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
+        ;; ("w" "Workflows")
+        ;; ("we" "Checking Email" entry (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+        ;;      "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
-      ("m" "Metrics Capture")
-      ("mw" "Weight" table-line (file+headline "~/Documents/org/metrics.org" "Weight")
-       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)
-      ("mp" "Pushup" table-line (file+headline "~/Documents/org/metrics.org" "Pushups")
-       "| %U | %^{Pushup} | %^{Notes} |" :kill-buffer t)
-      ("ms" "Squat" table-line (file+headline "~/Documents/org/metrics.org" "Squat")
-       "| %U | %^{Squat} | %^{Notes} |" :kill-buffer t)))
+        ("m" "Metrics Capture")
+        ("mw" "Weight" table-line (file+headline "~/Documents/org/metrics.org" "Weight")
+        "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)
+        ("mp" "Pushup" table-line (file+headline "~/Documents/org/metrics.org" "Pushups")
+        "| %U | %^{Pushup} | %^{Notes} |" :kill-buffer t)
+        ("ms" "Squat" table-line (file+headline "~/Documents/org/metrics.org" "Squat")
+        "| %U | %^{Squat} | %^{Notes} |" :kill-buffer t))))
 
 (setq org-habit-graph-column 60)
 
@@ -244,9 +240,8 @@
     '((:startgroup)
        ; Put mutually exclusive tags here
        (:endgroup)
-       ("@errand" . ?E)
-       ("@home" . ?H)
-       ("@work" . ?W)
+       ("home" . ?h)
+       ("work" . ?w)
        ("agenda" . ?a)
        ("planning" . ?p)
        ("note" . ?n)
@@ -258,6 +253,114 @@
 
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
+
+(defun org-roam-node-insert-immediate (arg &rest args)
+  (interactive "P")
+  (let ((args (cons arg args))
+        (org-roam-capture-templates (list (append (car org-roam-capture-templates)
+                                                  '(:immediate-finish t)))))
+    (apply #'org-roam-node-insert args)))
+
+;; (defun vulpea-project-p ()
+;;   "Return non-nil if current buffer has any todo entry.
+;;     TODO entries marked as done are ignored, meaning the this
+;;     function returns nil if current buffer contains only completed
+;;     tasks."
+;;   (seq-find                                 ; (3)
+;;    (lambda (type)
+;;      (eq type 'todo))
+;;    (org-element-map                         ; (2)
+;;        (org-element-parse-buffer 'headline) ; (1)
+;;        'headline
+;;      (lambda (h)
+;;        (org-element-property :todo-type h)))))
+
+;; (defun vulpea-project-update-tag ()
+;;     "Update PROJECT tag in the current buffer."
+;;     (when (and (not (active-minibuffer-window))
+;;                (vulpea-buffer-p))
+;;       (save-excursion
+;;         (goto-char (point-min))
+;;         (let* ((tags (vulpea-buffer-tags-get))
+;;                (original-tags tags))
+;;           (if (vulpea-project-p)
+;;               (setq tags (cons "project" tags))
+;;             (setq tags (remove "project" tags)))
+
+;;           ;; cleanup duplicates
+;;           (setq tags (seq-uniq tags))
+
+;;           ;; update tags if changed
+;;           (when (or (seq-difference tags original-tags)
+;;                     (seq-difference original-tags tags))
+;;             (apply #'vulpea-buffer-tags-set tags))))))
+
+;; (defun vulpea-buffer-p ()
+;;   "Return non-nil if the currently visited buffer is a note."
+;;   (and buffer-file-name
+;;        (string-prefix-p
+;;         (expand-file-name (file-name-as-directory org-roam-directory))
+;;         (file-name-directory buffer-file-name))))
+
+(defun vulpea-project-files ()
+    "Return a list of note files containing 'project' tag." ;
+    (seq-uniq
+     (seq-map
+      #'car
+      (org-roam-db-query
+       [:select [nodes:file]
+        :from tags
+        :left-join nodes
+        :on (= tags:node-id nodes:id)
+        :where (like tag (quote "%\"project\"%"))]))))
+
+(defun vulpea-agenda-files-update (&rest _)
+  "Update the value of `org-agenda-files'."
+  (setq org-agenda-files (vulpea-project-files)))
+
+;; (add-hook 'find-file-hook #'vulpea-project-update-tag)
+;; (add-hook 'before-save-hook #'vulpea-project-update-tag)
+
+(advice-add 'org-agenda :before #'vulpea-agenda-files-update)
+(advice-add 'org-todo-list :before #'vulpea-agenda-files-update)
+
+(use-package! org-roam
+  :ensure t
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory "~/Documents/org/notes")
+  (org-roam-dailies-directory "journal/")
+  (org-roam-completion-everywhere t)
+  (org-roam-capture-templates
+   '(("d" "default" plain
+      "%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+      :unnarrowed t)
+     ("l" "programming language" plain
+      "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+      :unnarrowed t)
+     ("b" "book notes" plain
+      "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+      :unnarrowed t)
+     ("w" "work-project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Docs\n\n"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
+      :unnarrowed t)
+     ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
+      :unnarrowed t)))
+  :bind (:map org-mode-map
+         ("C-M-i" . completion-at-point))
+  :config
+  (org-roam-setup)
+  (require 'org-roam-dailies) ;; Ensure the keymap is available
+  (org-roam-db-autosync-mode)
+
+(map! :leader
+      (:prefix ("n" . "notes")
+       :desc "Insert-Node-Immediate" "r I" #'org-roam-node-insert-immediate)))
 
 (setq org-journal-dir "~/Documents/org/journal/"
       org-journal-file-format "%Y-%m-%d.org")
@@ -283,10 +386,48 @@
        :desc "Toggle line highlight globally" "H" #'global-hl-line-mode
        :desc "Toggle truncate lines" "t" #'toggle-truncate-lines))
 
+
+
+
+
+(defun my-projectile-project-find-function (dir)
+  (let ((root (projectile-project-root dir)))
+    (and root (cons 'transient root))))
+
+(projectile-mode t)
+
+(with-eval-after-load 'project
+  (add-to-list 'project-find-functions 'my-projectile-project-find-function))
+
+;; (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+(add-hook 'c-mode-hook 'eglot-ensure)
+(add-hook 'c++-mode-hook 'eglot-ensure)
+
+;;(setq lsp-bridge-path (concat straight-base-dir "straight/repos/lsp-bridge"))
+;;(add-to-list 'load-path lsp-bridge-path)
+;; (add-to-list 'load-path "/home/zhicheng/.emacs.d/.local/straight/repos/lsp-bridge")
+;; (require 'posframe)
+;; (require 'yasnippet)
+;; (yas-global-mode 1)
+
+;; (require 'lsp-bridge)
+;; (global-lsp-bridge-mode)
+;; (setq lsp-bridge-c-lsp-server "ccls"
+;;       acm-enable-english-helper nil)
+
 (setq shell-file-name "/bin/zsh"
       vterm-max-scrollback 5000)
 (map! :leader
       :desc "Vterm popup toggle" "v t" #'+vterm/toggle)
+
+;; (setq tramp-shell-prompt-pattern  "[-a-z0-9]+{[a-z0-9]+}[0-9]+: *")
+(setq tramp-shell-prompt-pattern       "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
+(setq tramp-terminal-type       "xterm")
+(eval-after-load 'tramp '(setenv "SHELL" "/usr/bin/bash"))
+(setq tramp-encoding-shell "/usr/bin/bash")
+(setq tramp-verbose 10)
+;; (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+;; (add-to-list 'tramp-remote-path "/usr/bin")
 
 (defun my-yank-image-from-win-clipboard-through-powershell()
   "to simplify the logic, use c:/Users/Public as temporary directoy, then move it into current directoy
