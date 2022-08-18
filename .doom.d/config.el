@@ -377,6 +377,8 @@
 
   (add-hook 'org-journal-after-entry-create-hook #'pc/insert-journal-template)
 
+(setq max-specpdl-size 13000)
+
 (setq display-line-numbers-type t)
 (map! :leader
       :desc "Comment or uncomment lines" "TAB TAB" #'comment-line
