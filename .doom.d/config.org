@@ -33,6 +33,7 @@
   - [[#org-refile][Org-refile]]
   - [[#org-roam][Org roam]]
   - [[#org-journal][Org-journal]]
+- [[#performace][Performace]]
 - [[#line-settings][LINE SETTINGS]]
 - [[#lsp][LSP]]
   - [[#lsp-mode][lsp-mode]]
@@ -622,11 +623,14 @@ I wrapped most of this block in (after! org).  Without this, my settings might b
 
 #+end_src
 
+* Performace
+#+begin_src emacs-lisp
+(setq max-specpdl-size 13000)
+#+end_src
 * LINE SETTINGS
-I set comment-line to 'SPC TAB TAB' which is a rather comfortable keybinding for me on my ZSA Moonlander keyboard.  The standard Emacs keybinding for comment-line is 'C-x C-;'.  The other keybindings are for commands that toggle on/off various line-related settings.  Doom Emacs uses 'SPC t' for "toggle" commands, so I choose 'SPC t' plus 'key' for those bindings.
 
-| COMMAND                  | DESCRIPTION                                 | KEYBINDING  |
-|--------------------------+---------------------------------------------+-------------|
+| COMMAND                  | DESCRIPTION                               | KEYBINDING  |
+|--------------------------+-------------------------------------------+-------------|
 | comment-line             | /Comment or uncomment lines/                | SPC TAB TAB |
 | hl-line-mode             | /Toggle line highlighting in current frame/ | SPC t h     |
 | global-hl-line-mode      | /Toggle line highlighting globally/         | SPC t H     |
