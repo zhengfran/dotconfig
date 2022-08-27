@@ -7,9 +7,12 @@
 - [[#package][Package]]
 - [[#beacon][BEACON]]
 - [[#centaur-tabs][Centaur-tabs]]
-- [[#chinese-input----pyim][Chinese Input -- pyim]]
+- [[#chinese-input][Chinese Input]]
+  - [[#pyim][pyim]]
+  - [[#rime][rime]]
 - [[#completion][Completion]]
   - [[#flyspell][FLyspell]]
+- [[#ctags][CTAGS]]
 - [[#dired][DIRED]]
   - [[#keybindings-to-open-dired][Keybindings To Open Dired]]
   - [[#keybindings-within-dired][Keybindings Within Dired]]
@@ -34,6 +37,9 @@
   - [[#org-roam][Org roam]]
   - [[#org-journal][Org-journal]]
 - [[#performace][Performace]]
+- [[#languages][Languages]]
+  - [[#ledger][Ledger]]
+- [[#format][Format]]
 - [[#line-settings][LINE SETTINGS]]
 - [[#lsp][LSP]]
   - [[#lsp-mode][lsp-mode]]
@@ -48,18 +54,14 @@
 * Package
 * BEACON
 Never lose your cursor.  When you scroll, your cursor will shine!  This is a global minor-mode. Turn it on everywhere with:
-
 #+begin_src emacs-lisp
-
-(beacon-mode 1)
-
+(setq beacon-mode 1)
 #+end_sr
-
 * Centaur-tabs
 *To use tabs in Doom Emacs, be sure to uncomment "tabs" in Doom's init.el.  Displays tabs at the top of the window similar to tabbed web browsers such as Firefox.  I don't actually use tabs in Emacs.  I placed this in my config to help others who may want tabs.  In the default configuration of Doom Emacs, 'SPC t' is used for "toggle" keybindings, so I choose 'SPC t c' to toggle centaur-tabs.  The "g" prefix for keybindings is used for a bunch of evil keybindings in Doom, but "g" plus the arrow keys were not used, so I thought I would bind those for tab navigation.  But I did leave the default "g t" and "g T" intact if you prefer to use those for centaur-tabs-forward/backward.
 
-| COMMAND                     | DESCRIPTION                 | KEYBINDING       |
-|-----------------------------+-----------------------------+------------------|
+| COMMAND                     | DESCRIPTION               | KEYBINDING       |
+|-----------------------------+---------------------------+------------------|
 | centaur-tabs-mode           | /Toggle tabs globally/      | SPC t c          |
 | centaur-tabs-local-mode     | /Toggle tabs local display/ | SPC t C          |
 | centaur-tabs-forward        | /Next tab/                  | g <right> or g t |
@@ -86,22 +88,67 @@ Never lose your cursor.  When you scroll, your cursor will shine!  This is a glo
 
 #+END_SRC Tab
 
-* Chinese Input -- pyim
+* Chinese Input
+** pyim
 #+begin_src emacs-lisp
 ;; (require 'pyim-greatdict)
 ;; (pyim-greatdict-enable)
 ;; (quelpa '(pyim-greatdict :fetcher github :repo "tumashu/pyim-greatdict"))
-(map! :leader
-      (:prefix ("z" . "Customize")
-        :desc "Activate Chinese Input" "a" #'pyim-activate
-        :desc "Deactivate Chinese Input" "d" #'pyim-deactivate
-        :desc "Toggle between chinese and ascii" "t" #'pyim-toggle-input-ascii))
+
+;; (require 'pyim-tsinghua-dict)
+;; (pyim-tsinghua-dict-enable)
+;; (map! :leader
+;;       (:prefix ("z" . "Customize")
+;;         :desc "Activate Chinese Input" "a" #'pyim-activate
+;;         :desc "Deactivate Chinese Input" "d" #'pyim-deactivate
+;;         :desc "Toggle between chinese and ascii" "t" #'pyim-toggle-input-ascii))
+#+end_src
+
+** rime
+#+begin_src emacs-lisp
+(require 'rime)
+
+;;; Code:
+(setq rime-user-data-dir "~/.config/ibus/rime")
+
+(setq rime-posframe-properties
+      (list :background-color "#333333"
+            :foreground-color "#dcdccc"
+            ;; :font "WenQuanYi Zen Hei"
+            :internal-border-width 10))
+
+(setq default-input-method "rime"
+      rime-show-candidate 'posframe)
 #+end_src
 
 * Completion
 ** FLyspell
 #+begin_src emacs-lisp
 (setq flyspell-mode nil)
+#+end_src
+* CTAGS
+#+begin_src emacs-lisp
+(require 'citre)
+(require 'citre-config)
+
+(use-package! company-ctags :config (company-ctags-auto-setup))
+(setq company-ctags-extra-tags-files '("/usr/include/TAGS"))
+
+(require 'counsel)
+(defun my-counsel-company ()
+  "Input code from company backend using fuzzy matching."
+  (interactive)
+  (company-abort)
+  (let* ((company-backends '(company-ctags))
+         (company-ctags-fuzzy-match-p t))
+    (counsel-company)))
+
+;; In insert mode, press "rr" in 0.2 second to trigger my-counsel-company
+;; (require 'general)
+;; (general-imap "r"
+;;   (general-key-dispatch 'self-insert-command
+;;     :timeout 0.2
+;;     "r" 'my-counsel-company))
 #+end_src
 * DIRED
 Dired is the file manager within Emacs.  Below, I setup keybindings for image previews (peep-dired).  Doom Emacs does not use 'SPC d' for any of its keybindings, so I've chosen the format of 'SPC d' plus 'key'.
@@ -269,13 +316,20 @@ Emojify is an Emacs extension to display emojis. It can display github style emo
 
 * Elfeed RSS Reader
 #+begin_src emacs-lisp
-;; (setq elfeed-feeds (quote
-;;                     (("https://www.reddit.com/r/linux.rss" reddit linux)
+(after! elfeed
+;; (setq elfeed-feeds '(("https://www.reddit.com/r/linux.rss" reddit linux)
 ;;                      ("https://www.reddit.com/r/commandeadlines.rss" linux)
-;;                      ("https://distrowatch.com/news/dwd.xml" distrowatch linux))))
-;; (require 'elfeed-goodies)
-;; (elfeed-goodies/setup)
-;; (setq elfeed-goodies/entry-pane-size 0.5)
+;;                      ("https://distrowatch.com/news/dwd.xml" distrowatch linux)))
+(setq-default elfeed-search-filter "@1-week-ago +unread ")
+(add-hook! 'elfeed-search-mode-hook #'elfeed-update)
+;; Load elfeed-org
+(require 'elfeed-org)
+(elfeed-org)
+(setq rmh-elfeed-org-files (list "~/Documents/org/elfeed.org"))
+
+(require 'elfeed-goodies)
+(elfeed-goodies/setup)
+(setq elfeed-goodies/entry-pane-size 0.5))
 #+end_src
 * Graphs related
 ** Plantuml
@@ -348,14 +402,19 @@ I wrapped most of this block in (after! org).  Without this, my settings might b
       :desc "Org babel tangle" "m B" #'org-babel-tangle)
 (after! org
   (setq org-directory "~/Documents/org/"
-
         org-ellipsis " ⤵ "
         org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆")
         org-superstar-itembullet-alist '((?+ . ?➤) (?- . ?✦)) ; changes +/- symbols in item lists
         org-log-done 'time
         org-hide-emphasis-markers t
         org-table-convert-region-max-lines 20000))
-
+(with-eval-after-load 'org
+        (require 'org-tempo)
+        (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+        (add-to-list 'org-structure-template-alist '("cc" . "src c"))
+        (add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
+        (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+        (add-to-list 'org-structure-template-alist '("py" . "src python")))
 #+END_SRC
 ** Org Agenda
 
@@ -391,6 +450,7 @@ I wrapped most of this block in (after! org).  Without this, my settings might b
       (org-agenda-files org-agenda-files)))
 
     ("W" "Workflow Status"
+
      ((todo "WAIT"
             ((org-agenda-overriding-header "Waiting on External")
              (org-agenda-files org-agenda-files)))
@@ -502,47 +562,6 @@ I wrapped most of this block in (after! org).  Without this, my settings might b
                                                   '(:immediate-finish t)))))
     (apply #'org-roam-node-insert args)))
 
-;; (defun vulpea-project-p ()
-;;   "Return non-nil if current buffer has any todo entry.
-;;     TODO entries marked as done are ignored, meaning the this
-;;     function returns nil if current buffer contains only completed
-;;     tasks."
-;;   (seq-find                                 ; (3)
-;;    (lambda (type)
-;;      (eq type 'todo))
-;;    (org-element-map                         ; (2)
-;;        (org-element-parse-buffer 'headline) ; (1)
-;;        'headline
-;;      (lambda (h)
-;;        (org-element-property :todo-type h)))))
-
-;; (defun vulpea-project-update-tag ()
-;;     "Update PROJECT tag in the current buffer."
-;;     (when (and (not (active-minibuffer-window))
-;;                (vulpea-buffer-p))
-;;       (save-excursion
-;;         (goto-char (point-min))
-;;         (let* ((tags (vulpea-buffer-tags-get))
-;;                (original-tags tags))
-;;           (if (vulpea-project-p)
-;;               (setq tags (cons "project" tags))
-;;             (setq tags (remove "project" tags)))
-
-;;           ;; cleanup duplicates
-;;           (setq tags (seq-uniq tags))
-
-;;           ;; update tags if changed
-;;           (when (or (seq-difference tags original-tags)
-;;                     (seq-difference original-tags tags))
-;;             (apply #'vulpea-buffer-tags-set tags))))))
-
-;; (defun vulpea-buffer-p ()
-;;   "Return non-nil if the currently visited buffer is a note."
-;;   (and buffer-file-name
-;;        (string-prefix-p
-;;         (expand-file-name (file-name-as-directory org-roam-directory))
-;;         (file-name-directory buffer-file-name))))
-
 (defun vulpea-project-files ()
     "Return a list of note files containing 'project' tag." ;
     (seq-uniq
@@ -587,9 +606,9 @@ I wrapped most of this block in (after! org).  Without this, my settings might b
       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
       :unnarrowed t)
      ("w" "work-project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Docs\n\n"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project work")
       :unnarrowed t)
-     ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+     ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Conclusion\n\n"
       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
       :unnarrowed t)))
   :bind (:map org-mode-map
@@ -627,6 +646,15 @@ I wrapped most of this block in (after! org).  Without this, my settings might b
 #+begin_src emacs-lisp
 (setq max-specpdl-size 13000)
 #+end_src
+* Languages
+** Ledger
+#+begin_src emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.ledge\\'" . ledger-mode))
+#+end_src
+* Format
+#+begin_src emacs-lisp
+(setq +format-with-lsp nil)
+#+end_src
 * LINE SETTINGS
 
 | COMMAND                  | DESCRIPTION                               | KEYBINDING  |
@@ -652,27 +680,20 @@ I wrapped most of this block in (after! org).  Without this, my settings might b
 
 * LSP
 ** lsp-mode
-*** C/C++
-#+begin_src emacs-lisp
-
-#+end_src
-*** Python
-#+begin_src emacs-lisp
-#+end_src
 ** eglot
 #+begin_src emacs-lisp
-(defun my-projectile-project-find-function (dir)
-  (let ((root (projectile-project-root dir)))
-    (and root (cons 'transient root))))
+;; (defun my-projectile-project-find-function (dir)
+;;   (let ((root (projectile-project-root dir)))
+;;     (and root (cons 'transient root))))
 
-(projectile-mode t)
+;; (projectile-mode t)
 
-(with-eval-after-load 'project
-  (add-to-list 'project-find-functions 'my-projectile-project-find-function))
+;; (with-eval-after-load 'project
+;;   (add-to-list 'project-find-functions 'my-projectile-project-find-function))
 
-;; (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
-(add-hook 'c-mode-hook 'eglot-ensure)
-(add-hook 'c++-mode-hook 'eglot-ensure)
+;; ;; (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+;; (add-hook 'c-mode-hook 'eglot-ensure)
+;; (add-hook 'c++-mode-hook 'eglot-ensure)
 #+end_src
 ** lsp-bridge
 #+begin_src emacs-lisp
