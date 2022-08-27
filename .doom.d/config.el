@@ -1,13 +1,52 @@
 ;; (require 'pyim-greatdict)
 ;; (pyim-greatdict-enable)
 ;; (quelpa '(pyim-greatdict :fetcher github :repo "tumashu/pyim-greatdict"))
-(map! :leader
-      (:prefix ("z" . "Customize")
-        :desc "Activate Chinese Input" "a" #'pyim-activate
-        :desc "Deactivate Chinese Input" "d" #'pyim-deactivate
-        :desc "Toggle between chinese and ascii" "t" #'pyim-toggle-input-ascii))
+
+;; (require 'pyim-tsinghua-dict)
+;; (pyim-tsinghua-dict-enable)
+;; (map! :leader
+;;       (:prefix ("z" . "Customize")
+;;         :desc "Activate Chinese Input" "a" #'pyim-activate
+;;         :desc "Deactivate Chinese Input" "d" #'pyim-deactivate
+;;         :desc "Toggle between chinese and ascii" "t" #'pyim-toggle-input-ascii))
+
+(require 'rime)
+
+;;; Code:
+(setq rime-user-data-dir "~/.config/ibus/rime")
+
+(setq rime-posframe-properties
+      (list :background-color "#333333"
+            :foreground-color "#dcdccc"
+            ;; :font "WenQuanYi Zen Hei"
+            :internal-border-width 10))
+
+(setq default-input-method "rime"
+      rime-show-candidate 'posframe)
 
 (setq flyspell-mode nil)
+
+(require 'citre)
+(require 'citre-config)
+
+(use-package! company-ctags :config (company-ctags-auto-setup))
+(setq company-ctags-extra-tags-files '("/usr/include/TAGS"))
+
+(require 'counsel)
+(defun my-counsel-company ()
+  "Input code from company backend using fuzzy matching."
+  (interactive)
+  (company-abort)
+  (let* ((company-backends '(company-ctags))
+         (company-ctags-fuzzy-match-p t))
+    (counsel-company)))
+
+;; In insert mode, press "rr" in 0.2 second to trigger my-counsel-company
+;; (require 'general)
+;; (general-imap "r"
+;;   (general-key-dispatch 'self-insert-command
+;;     :timeout 0.2
+;;     "r" 'my-counsel-company))
 
 (map! :leader
       (:prefix ("d" . "dired")
@@ -86,13 +125,20 @@
 ;; (use-package emojify
 ;;   :hook (after-init . global-emojify-mode))
 
-;; (setq elfeed-feeds (quote
-;;                     (("https://www.reddit.com/r/linux.rss" reddit linux)
+(after! elfeed
+;; (setq elfeed-feeds '(("https://www.reddit.com/r/linux.rss" reddit linux)
 ;;                      ("https://www.reddit.com/r/commandeadlines.rss" linux)
-;;                      ("https://distrowatch.com/news/dwd.xml" distrowatch linux))))
-;; (require 'elfeed-goodies)
-;; (elfeed-goodies/setup)
-;; (setq elfeed-goodies/entry-pane-size 0.5)
+;;                      ("https://distrowatch.com/news/dwd.xml" distrowatch linux)))
+(setq-default elfeed-search-filter "@1-week-ago +unread ")
+(add-hook! 'elfeed-search-mode-hook #'elfeed-update)
+;; Load elfeed-org
+(require 'elfeed-org)
+(elfeed-org)
+(setq rmh-elfeed-org-files (list "~/Documents/org/elfeed.org"))
+
+(require 'elfeed-goodies)
+(elfeed-goodies/setup)
+(setq elfeed-goodies/entry-pane-size 0.5))
 
 (setq plantuml-default-exec-mode 'jar)
 
@@ -130,13 +176,19 @@
       :desc "Org babel tangle" "m B" #'org-babel-tangle)
 (after! org
   (setq org-directory "~/Documents/org/"
-
         org-ellipsis " ⤵ "
         org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆")
         org-superstar-itembullet-alist '((?+ . ?➤) (?- . ?✦)) ; changes +/- symbols in item lists
         org-log-done 'time
         org-hide-emphasis-markers t
         org-table-convert-region-max-lines 20000))
+(with-eval-after-load 'org
+        (require 'org-tempo)
+        (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+        (add-to-list 'org-structure-template-alist '("cc" . "src c"))
+        (add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
+        (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+        (add-to-list 'org-structure-template-alist '("py" . "src python")))
 
 (after! org
   (setq org-agenda-dir "~/Documents/org/"
@@ -168,6 +220,7 @@
       (org-agenda-files org-agenda-files)))
 
     ("W" "Workflow Status"
+
      ((todo "WAIT"
             ((org-agenda-overriding-header "Waiting on External")
              (org-agenda-files org-agenda-files)))
@@ -261,47 +314,6 @@
                                                   '(:immediate-finish t)))))
     (apply #'org-roam-node-insert args)))
 
-;; (defun vulpea-project-p ()
-;;   "Return non-nil if current buffer has any todo entry.
-;;     TODO entries marked as done are ignored, meaning the this
-;;     function returns nil if current buffer contains only completed
-;;     tasks."
-;;   (seq-find                                 ; (3)
-;;    (lambda (type)
-;;      (eq type 'todo))
-;;    (org-element-map                         ; (2)
-;;        (org-element-parse-buffer 'headline) ; (1)
-;;        'headline
-;;      (lambda (h)
-;;        (org-element-property :todo-type h)))))
-
-;; (defun vulpea-project-update-tag ()
-;;     "Update PROJECT tag in the current buffer."
-;;     (when (and (not (active-minibuffer-window))
-;;                (vulpea-buffer-p))
-;;       (save-excursion
-;;         (goto-char (point-min))
-;;         (let* ((tags (vulpea-buffer-tags-get))
-;;                (original-tags tags))
-;;           (if (vulpea-project-p)
-;;               (setq tags (cons "project" tags))
-;;             (setq tags (remove "project" tags)))
-
-;;           ;; cleanup duplicates
-;;           (setq tags (seq-uniq tags))
-
-;;           ;; update tags if changed
-;;           (when (or (seq-difference tags original-tags)
-;;                     (seq-difference original-tags tags))
-;;             (apply #'vulpea-buffer-tags-set tags))))))
-
-;; (defun vulpea-buffer-p ()
-;;   "Return non-nil if the currently visited buffer is a note."
-;;   (and buffer-file-name
-;;        (string-prefix-p
-;;         (expand-file-name (file-name-as-directory org-roam-directory))
-;;         (file-name-directory buffer-file-name))))
-
 (defun vulpea-project-files ()
     "Return a list of note files containing 'project' tag." ;
     (seq-uniq
@@ -346,9 +358,9 @@
       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
       :unnarrowed t)
      ("w" "work-project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Docs\n\n"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project work")
       :unnarrowed t)
-     ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+     ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Conclusion\n\n"
       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
       :unnarrowed t)))
   :bind (:map org-mode-map
@@ -379,6 +391,10 @@
 
 (setq max-specpdl-size 13000)
 
+(add-to-list 'auto-mode-alist '("\\.ledge\\'" . ledger-mode))
+
+(setq +format-with-lsp nil)
+
 (setq display-line-numbers-type t)
 (map! :leader
       :desc "Comment or uncomment lines" "TAB TAB" #'comment-line
@@ -388,22 +404,18 @@
        :desc "Toggle line highlight globally" "H" #'global-hl-line-mode
        :desc "Toggle truncate lines" "t" #'toggle-truncate-lines))
 
+;; (defun my-projectile-project-find-function (dir)
+;;   (let ((root (projectile-project-root dir)))
+;;     (and root (cons 'transient root))))
 
+;; (projectile-mode t)
 
+;; (with-eval-after-load 'project
+;;   (add-to-list 'project-find-functions 'my-projectile-project-find-function))
 
-
-(defun my-projectile-project-find-function (dir)
-  (let ((root (projectile-project-root dir)))
-    (and root (cons 'transient root))))
-
-(projectile-mode t)
-
-(with-eval-after-load 'project
-  (add-to-list 'project-find-functions 'my-projectile-project-find-function))
-
-;; (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
-(add-hook 'c-mode-hook 'eglot-ensure)
-(add-hook 'c++-mode-hook 'eglot-ensure)
+;; ;; (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+;; (add-hook 'c-mode-hook 'eglot-ensure)
+;; (add-hook 'c++-mode-hook 'eglot-ensure)
 
 ;;(setq lsp-bridge-path (concat straight-base-dir "straight/repos/lsp-bridge"))
 ;;(add-to-list 'load-path lsp-bridge-path)
