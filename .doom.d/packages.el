@@ -52,6 +52,11 @@
 
 
 (package! beacon)
+;; ctags
+(package! citre)
+(package! general)
+(package! company-ctags
+   :recipe (:host github :repo "redguardtoo/company-ctags"))
 ;;dired
 (package! dired-open)
 (package! dired-subtree)
@@ -60,6 +65,11 @@
 ;;org
 (package! org-auto-tangle)
 ;; chinese input
+;; (package! pyim-tsinghua-dict
+;;   :recipe (:host github :repo "redguardtoo/pyim-tsinghua-dict"))
+(package! rime)
+(package! posframe)
+  :custom
 ;;rss
 (package! elfeed-goodies)
 
