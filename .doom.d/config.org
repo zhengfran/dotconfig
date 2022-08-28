@@ -388,10 +388,8 @@ Keybindings to open files that I work with all the time using the find-file comm
 
 (map! :leader
       (:prefix ("=" . "open file")
-       :desc "Edit archive" "a" #'(lambda () (interactive) (find-file "~/Documents/org/archive.org"))
-       :desc "Edit bills" "b" #'(lambda () (interactive) (find-file "~/Documents/org/finance/bills.ledge"))
-       :desc "Edit habits" "h" #'(lambda () (interactive) (find-file "~/Documents/org/habits.org"))
-       :desc "Edit archive" "g" #'(lambda () (interactive) (find-file "~/Documents/org/gtd.org"))
+       :desc "Edit archive" "a" #'(lambda () (interactive) (find-file "~/Nextcloud/org/archive.org"))
+       :desc "Edit bills" "b" #'(lambda () (interactive) (find-file "~/Nextcloud/org/finance/bills.ledge"))
        :desc "Edit doom config.org" "c" #'(lambda () (interactive) (find-file "~/.doom.d/config.org"))
        :desc "Edit doom init.el" "i" #'(lambda () (interactive) (find-file "~/.doom.d/init.el"))
        :desc "Edit archive" "m" #'(lambda () (interactive) (find-file "~/Documents/org/metrics.org"))
