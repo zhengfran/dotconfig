@@ -12,17 +12,19 @@
 
 (require 'rime)
 
-;;; Code:
-(setq rime-user-data-dir "~/.config/ibus/rime")
-
-(setq rime-posframe-properties
-      (list :background-color "#333333"
-            :foreground-color "#dcdccc"
-            ;; :font "WenQuanYi Zen Hei"
-            :internal-border-width 10))
-
-(setq default-input-method "rime"
-      rime-show-candidate 'posframe)
+(use-package! rime
+  :custom
+  (rime-show-candidate 'posframe)
+  (rime-user-data-dir "~/.config/Rime")
+  (default-input-method "rime")
+  (rime-posframe-properties
+   (list :background-color "#333333"
+         :foreground-color "#dcdccc"
+         ;; :font "WenQuanYi Zen Hei"
+         :internal-border-width 10))
+  (if (eq system-type 'darwin)
+      (rime-emacs-module-header-root "/Applications/Emacs.app/Contents/Resources/include/")
+      (rime-librime-root "~/.emacs.d/librime/dist")))
 
 (setq flyspell-mode nil)
 
@@ -175,7 +177,7 @@
 (map! :leader
       :desc "Org babel tangle" "m B" #'org-babel-tangle)
 (after! org
-  (setq org-directory "~/Documents/org/"
+  (setq org-directory "~/Nextcloud/org/"
         org-ellipsis " ⤵ "
         org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆")
         org-superstar-itembullet-alist '((?+ . ?➤) (?- . ?✦)) ; changes +/- symbols in item lists
@@ -341,7 +343,7 @@
   :init
   (setq org-roam-v2-ack t)
   :custom
-  (org-roam-directory "~/Documents/org/notes")
+  (org-roam-directory "~/Nextcloud/org/notes")
   (org-roam-dailies-directory "journal/")
   (org-roam-completion-everywhere t)
   (org-roam-capture-templates
