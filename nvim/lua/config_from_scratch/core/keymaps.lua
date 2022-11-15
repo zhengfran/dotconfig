@@ -20,6 +20,13 @@ keymap.set("n", "<leader>tq", ":tabclose<CR>") --close current tab
 keymap.set("n", "<leader>tn", ":tabnext<CR>") -- go to next tab
 keymap.set("n", "<leader>tp", ":tabprevious<CR>") --go to previous tab
 
+--same configuration to navigate splits as emacs
+keymap.set("n", "<leader>wh", "<C-w>h")
+keymap.set("n", "<leader>wj", "<C-w>i")
+keymap.set("n", "<leader>wk", "<C-w>k")
+keymap.set("n", "<leader>wl", "<C-w>l")
+keymap.set("n", "<leader>wc", "<C-w>q")
+
 -- plugin keymaps
 
 -- vim-maximizer
