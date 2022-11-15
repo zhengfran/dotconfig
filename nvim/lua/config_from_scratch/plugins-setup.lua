@@ -93,6 +93,9 @@ return packer.startup(function(use)
 	-- git signs
 	use("lewis6991/gitsigns.nvim")
 
+    -- toggleterm
+    use("akinsho/toggleterm.nvim")
+
 	-- Autosave
 	use("Pocco81/auto-save.nvim")
 
