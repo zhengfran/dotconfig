@@ -49,8 +49,6 @@ keymap.set("n", "<leader>fh", "<cmd>Telescope help_tags theme=dropdown<CR>") --f
 keymap.set("n", "<leader>fo", "<cmd>Telescope oldfiles theme=dropdown<CR>") --find recently open files
 
 --bufferline
--- just to tab to navigate instead
--- keymap.set("n", "<M-h>", ":BufferLineCyclePrev<CR>")
--- keymap.set("n", "<M-h>", ":BufferLineCyclePrev<CR>")
--- keymap.set("n", "<M-l>", ":BufferLineCycleNext<CR>")
--- keymap.set("n", "<M-l>", ":BufferLineCycleNext<CR>")
+keymap.set("n", "<M-h>", ":BufferLineCyclePrev<CR>")
+keymap.set("n", "<M-l>", ":BufferLineCycleNext<CR>")
+
