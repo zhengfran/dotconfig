@@ -23,7 +23,7 @@ keymap.set("n", "<leader>tp", ":tabprevious<CR>") --go to previous tab
 -- plugin keymaps
 
 -- vim-maximizer
-keymap.set("n", "<C-w>m", ":MaximizerToggle<CR>") --go to previous tab
+keymap.set("n", "<C-w>m", ":MaximizerToggle<CR>") -- Vim-maximizer
 
 --nvim -tree
 keymap.set("n", "<leader>op", ":NvimTreeToggle<CR>")
