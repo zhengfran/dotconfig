@@ -52,3 +52,9 @@ keymap.set("n", "<leader>fo", "<cmd>Telescope oldfiles theme=dropdown<CR>") --fi
 keymap.set("n", "<M-h>", ":BufferLineCyclePrev<CR>")
 keymap.set("n", "<M-l>", ":BufferLineCycleNext<CR>")
 
+--null-ls formatter
+keymap.set("n", "<leader>fr", "<cmd>lua vim.lsp.buf.format()<CR>") -- got to declaration
+
+--toggleterm
+keymap.set("n", "<leader>tt", "<cmd>exe v:count1 . 'ToggleTerm'<CR>") --open toggle term
+keymap.set("n", "<leader>tg", "<cmd>lua _LAZYGIT_TOGGLE()<CR>") --open lazy git
