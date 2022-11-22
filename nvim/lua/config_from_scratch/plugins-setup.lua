@@ -90,14 +90,13 @@ return packer.startup(function(use)
 		end,
 	})
 
-	-- git signs
-	use("lewis6991/gitsigns.nvim")
+	use("lewis6991/gitsigns.nvim") -- git signs
 
-    -- toggleterm
-    use("akinsho/toggleterm.nvim")
+    use("akinsho/toggleterm.nvim") -- toggleterm
 
-	-- Autosave
-	use("Pocco81/auto-save.nvim")
+	use("Pocco81/auto-save.nvim") -- Autosave
+
+    use("folke/which-key.nvim") -- which-key
 
 	if packer_bootstrap then
 		require("packer").sync()
