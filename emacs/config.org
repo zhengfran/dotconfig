@@ -4,7 +4,6 @@
 #+STARTUP: overview
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el
 
-
 * Startup
 #+begin_src emacs-lisp
 ;; -*- lexical-binding: t; -*-
@@ -19,21 +18,42 @@
 #+end_src
 
 * Package Management
+** Straight
 #+begin_src emacs-lisp
-  ;; Initialize package sources
-  (require 'package)
-  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                           ("org" . "https://orgmode.org/elpa/")
-                           ("elpa" . "https://elpa.gnu.org/packages/")))
-  (package-initialize)
-  (unless package-archive-contents
-   (package-refresh-contents))
-  ;; Initialize use-package on non-Linux platforms
-  (unless (package-installed-p 'use-package)
-     (package-install 'use-package))
-  (require 'use-package)
-  (setq use-package-always-ensure t)
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 6))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+  (straight-use-package 'use-package)
+  (setq straight-use-package-by-default t)
+#+end_src
 
+** Use Package
+#+begin_src emacs-lisp
+  ;;;; Initialize package sources
+  ;;(require 'package)
+  ;;(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+  ;;                         ("org" . "https://orgmode.org/elpa/")
+  ;;                         ("elpa" . "https://elpa.gnu.org/packages/")))
+  ;;(package-initialize)
+  ;;(unless package-archive-contents
+  ;; (package-refresh-contents))
+  ;;;; Initialize use-package on non-Linux platforms
+  ;;(unless (package-installed-p 'use-package)
+  ;;   (package-install 'use-package))
+  ;;(require 'use-package)
+  ;;(setq use-package-always-ensure t)
+#+end_src
+** Package path
+#+begin_src emacs-lisp
   ;; make sure shell PATH is same as emacs PATH 
   (use-package exec-path-from-shell)
   (when (memq window-system '(mac ns x))
@@ -81,10 +101,7 @@
   (global-undo-tree-mode 1))
 (use-package evil-escape
   :init (evil-escape-mode)
-  :after evil
-  :config
-  (setq-default evil-escape-key-sequence "jj"
-      evil-escape-delay 0.2))
+  :after evil)
 #+end_src
 
 #+RESULTS:
@@ -140,7 +157,7 @@
          ;; :font "WenQuanYi Zen Hei"
          :internal-border-width 10))
   (rime-emacs-module-header-root "/Applications/Emacs.app/Contents/Resources/include/")
-  (rime-librime-root "~/.emacs.d/librime/dist")
+  (rime-librime-root "~/dotconfig/emacs/librime/dist")
   (rime-disable-predicates
        '(rime-predicate-evil-mode-p
          rime-predicate-after-alphabet-char-p
@@ -206,7 +223,7 @@
     "scale text"
     ("j" text-scale-increase "in")
     ("k" text-scale-decrease "out")
-    ("f" nil "finished" :exit t))
+    ("q" nil "finished" :exit t))
   (zzc/leader-keys
     "ts" '(hydra-text-scale/body :which-key "scale text"))
 #+end_src
@@ -230,7 +247,6 @@
   (zzc/leader-keys
     "="  '(:ignore t :which-key "open")
     "=b" '((lambda () (interactive) (find-file "~/Documents/org/finance/bills.org")) :which-key "open bill")
-    "=c" '((lambda () (interactive) (find-file "~/Documents/org/config.org")) :which-key "open config file"))
 #+end_src
 
 #+RESULTS:
@@ -296,7 +312,7 @@
                  (_ (symbol-name next))))))
 
   (zzc/leader-keys
-    "tl" '(doom/toggle-line-numbers :which-key "toggle line numbers"))
+    "ll" '(doom/toggle-line-numbers :which-key "toggle line numbers"))
 #+end_src
 
 #+RESULTS:
@@ -333,6 +349,58 @@
     :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 
+** Tab
+#+begin_src emacs-lisp
+    (use-package awesome-tab
+      :config
+      (awesome-tab-mode t))
+  (defhydra awesome-fast-switch (:hint nil)
+    "
+   ^^^^Fast Move             ^^^^Tab                    ^^Search            ^^Misc
+  -^^^^--------------------+-^^^^---------------------+-^^----------------+-^^---------------------------
+     ^_k_^   prev group    | _C-a_^^     select first | _b_ search buffer | _C-k_   kill buffer
+   _h_   _l_  switch tab   | _C-e_^^     select last  | _g_ search group  | _C-S-k_ kill others in group
+     ^_j_^   next group    | _C-j_^^     ace jump     | ^^                | ^^
+   ^^0 ~ 9^^ select window | _C-h_/_C-l_ move current | ^^                | ^^
+  -^^^^--------------------+-^^^^---------------------+-^^----------------+-^^---------------------------
+  "
+    ("h" awesome-tab-backward-tab)
+    ("j" awesome-tab-forward-group)
+    ("k" awesome-tab-backward-group)
+    ("l" awesome-tab-forward-tab)
+    ("0" my-select-window)
+    ("1" my-select-window)
+    ("2" my-select-window)
+    ("3" my-select-window)
+    ("4" my-select-window)
+    ("5" my-select-window)
+    ("6" my-select-window)
+    ("7" my-select-window)
+    ("8" my-select-window)
+    ("9" my-select-window)
+    ("C-a" awesome-tab-select-beg-tab)
+    ("C-e" awesome-tab-select-end-tab)
+    ("C-j" awesome-tab-ace-jump)
+    ("C-h" awesome-tab-move-current-tab-to-left)
+    ("C-l" awesome-tab-move-current-tab-to-right)
+    ("b" ivy-switch-buffer)
+    ("g" awesome-tab-counsel-switch-group)
+    ("C-k" kill-current-buffer)
+    ("C-S-k" awesome-tab-kill-other-buffers-in-current-group)
+    ("q" nil "quit"))
+
+  (zzc/leader-keys
+    "tt" '(awesome-fast-switch/body :which-key "tab switch")
+    "tj" '(awesome-tab-forward-group :which-key "forward tab group")
+    "tk" '(awesome-tab-backward-group :which-key "backward tab group")
+    "tl" '(awesome-tab-forward-tab :which-key "backward tab group")
+    "th" '(awesome-tab-backward-tab :which-key "backward tab group")
+    "tg" '(awesome-tab-ace-jump :which-key "tab ace-jump")
+    "tc" '(:ignore t :which-key "close tabs")
+    "tco" '(awesome-tab-kill-other-buffers-in-current-group :which-key "close all other tabs in current group")
+    "tca" '(awesome-tab-kill-other-buffers-in-current-group :which-key "close all tabs in current group")
+    )
+#+end_src
 * ORG 
 ** General
 #+begin_src emacs-lisp

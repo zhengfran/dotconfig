@@ -29,7 +29,6 @@ TODO
 # create symbolic links
 ln -s ~/dotconfig/emacs/init.el ~/.emacs.d/init.el
 ln -s ~/dotconfig/emacs/lisp ~/.emacs.d/lisp
-ln -s ~/dotconfig/emacs/librime ~/.emacs.d/librime
 #+end_src
 Most emacs package I use will be automatically downloaded, but below packages needs mannual configuration:
 ** Emacs-rime
