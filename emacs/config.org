@@ -67,9 +67,6 @@
 	`((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 #+end_src
 
-#+RESULTS:
-| .* | /Users/zhichengzheng/.emacs.d/var/auto-save/ | t |
-
 * Key Binding
 ** EVIL
 #+begin_src emacs-lisp
@@ -104,9 +101,6 @@
   :after evil)
 #+end_src
 
-#+RESULTS:
-: t
-
 ** Which-key 
 #+begin_src emacs-lisp
 (use-package which-key
@@ -122,8 +116,9 @@
   (general-create-definer zzc/leader-keys
     :keymaps '(normal insert visual emacs)
     :prefix "SPC"
-    :global-prefix "C-SPC"))
+    :global-prefix " M-SPC"))
 #+end_src
+
 * Buffer 
 ** Key mapping
 #+begin_src emacs-lisp
@@ -164,8 +159,6 @@
          rime-predicate-prog-in-code-p))
 )
 #+end_src
-
-#+RESULTS:
 
 * Completion System
 ** ivy
@@ -231,7 +224,8 @@
 ** Helper
 #+begin_src emacs-lisp
   ;; comment line helper
-  (defun zzc/comment-or-uncomment-region-or-line ()
+  (
+   defun zzc/comment-or-uncomment-region-or-line ()
     "Comments or uncomments the region or the current line if there's no active region."
     (interactive)
     (let (beg end)
@@ -239,14 +233,16 @@
           (setq beg (region-beginning) end (region-end))
         (setq beg (line-beginning-position) end (line-end-position)))
       (comment-or-uncomment-region beg end)))
-  (zzc/leader-keys
-    "TAB TAB"  '(zzc/comment-or-uncomment-region-or-line :which-key "quick comment/uncomment"))
+  (
+   zzc/leader-keys
+    "zz"  '(zzc/comment-or-uncomment-region-or-line :which-key "quick comment/uncomment"))
 #+end_src
 ** Open specific file 
 #+begin_src emacs-lisp
   (zzc/leader-keys
     "="  '(:ignore t :which-key "open")
     "=b" '((lambda () (interactive) (find-file "~/Documents/org/finance/bills.org")) :which-key "open bill")
+    "=c" '((lambda () (interactive) (find-file "~/dotconfig/emacs/config.org")) :which-key "open config file"))
 #+end_src
 
 #+RESULTS:
@@ -401,59 +397,63 @@
     "tca" '(awesome-tab-kill-other-buffers-in-current-group :which-key "close all tabs in current group")
     )
 #+end_src
+
+#+RESULTS:
+
 * ORG 
 ** General
 #+begin_src emacs-lisp
-(defun zzc/org-mode-setup ()
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (visual-line-mode 1))
+  (defun zzc/org-mode-setup ()
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (visual-line-mode 1))
 
-(defun zzc/org-font-setup ()
-  ;; Replace list hyphen with dot
-  (font-lock-add-keywords 'org-mode
-                        '(("^ *\\([-]\\) "
-                          (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+  (defun zzc/org-font-setup ()
+    ;; Replace list hyphen with dot
+    (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([-]\\) "
+                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 
-  ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.1)
-                  (org-level-3 . 1.05)
-                  (org-level-4 . 1.0)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face))
+    ;; Set faces for heading levels
+    (dolist (face '((org-level-1 . 1.2)
+                    (org-level-2 . 1.1)
+                    (org-level-3 . 1.05)
+                    (org-level-4 . 1.0)
+                    (org-level-5 . 1.1)
+                    (org-level-6 . 1.1)
+                    (org-level-7 . 1.1)
+                    (org-level-8 . 1.1)))
+      (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face))
 
-  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
-  (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)))
+    ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+    (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)))
 
-(use-package org
-  :hook (org-mode . zzc/org-mode-setup)
-  :config
-  (setq org-ellipsis " ▾")
-  (zzc/org-font-setup))
+  (use-package org
+    :hook (org-mode . zzc/org-mode-setup)
+    :config
+    (setq org-ellipsis " ▾")
+    (setq org-directory "~/Documents/org")
+    (zzc/org-font-setup))
 
-(use-package org-bullets
-  :after org
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+  (use-package org-bullets
+    :after org
+    :hook (org-mode . org-bullets-mode)
+    :custom
+    (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
-(defun zzc/org-mode-visual-fill ()
-  (setq visual-fill-column-width 100
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
+  (defun zzc/org-mode-visual-fill ()
+    (setq visual-fill-column-width 100
+          visual-fill-column-center-text t)
+    (visual-fill-column-mode 1))
 
-(use-package visual-fill-column
-  :hook (org-mode . zzc/org-mode-visual-fill))
+  (use-package visual-fill-column
+    :hook (org-mode . zzc/org-mode-visual-fill))
 #+end_src
 ** Agenda 
 #+begin_src emacs-lisp
@@ -520,21 +520,22 @@
   "na" '(org-agenda :which-key "org agenda")
   "nt" '(org-todo :which-key "org todo"))
 #+end_src
-
-#+RESULTS:
-
 ** Org-babel 
 #+begin_src emacs-lisp
-  (use-package ob-ledger
-    :load-path "~/emacs-scratch/lisp/ob-ledger")
+(straight-use-package
+   '(ob-ledger :host github
+               :repo "overtone/emacs-live"
+               :files ("packs/stable/org-pack/lib/org-mode/lisp/ob-ledger.el")))
 
-  (org-babel-do-load-languages
-    'org-babel-load-languages
-    '((emacs-lisp . t)
-       (ledger . t)
-       (python . t)))
-  (setq org-confirm-babel-evaluate nil)
+(org-babel-do-load-languages
+  'org-babel-load-languages
+  '((emacs-lisp . t)
+     (ledger . t)
+     (python . t)))
+(setq org-confirm-babel-evaluate nil)
 #+end_src
+
+#+RESULTS:
 
 ** Org-roam
 *** Pure roam
@@ -607,6 +608,7 @@
     "nrs"  '(org-roam-db-sync :which-key "sync roam database")
     )
 #+end_src
+
 *** Org-roam-daily
 #+begin_src emacs-lisp
   (zzc/leader-keys
@@ -623,7 +625,6 @@
   )
 #+end_src
 
-#+RESULTS:
 *** Org-roam-ui 
 #+begin_src emacs-lisp
   (use-package websocket
@@ -643,6 +644,15 @@
     "nru"  '(org-roam-ui-open :which-key "open org roam ui"))
 #+end_src
 
+** Org-refile
+#+begin_src emacs-lisp
+    (setq org-roam-dailies-files (file-expand-wildcards(concat org-directory  "/notes/journal/*.org")))
+    ;; (setq org-roam-today-journal (file-expand-wildcards(concat org-directory  (format-time-string "/notes/journal/%Y%m%d.org"))))
+    (setq org-refile-targets '((org-roam-dailies-files :maxlevel . 2)))
+    ;; save org mode after refiling
+    (advice-add 'org-refile :after 'org-save-all-org-buffers)
+#+end_src
+
 ** Structure Templates
 #+begin_src emacs-lisp
 (require 'org-tempo)
@@ -658,14 +668,13 @@
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun zzc/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)
-                      (expand-file-name "~/emacs-scratch/config.org"))
+                      (expand-file-name "~/dotconfig/emacs/config.org"))
     ;; Dynamic scoping to the rescue
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'zzc/org-babel-tangle-config)))
 #+end_src
-
 * EAF
 Here is the link to [[https://github.com/emacs-eaf/emacs-application-framework][EAF]] .
 #+begin_src emacs-lisp
@@ -676,13 +685,34 @@ Here is the link to [[https://github.com/emacs-eaf/emacs-application-framework][
     (eaf-browser-continue-where-left-off t)
     (eaf-browser-enable-adblocker t)
     (browse-url-browser-function 'eaf-open-browser)
+    ;;enter insert mode in eaf
+    (eval-after-load "evil"
+      '(progn
+         (defvar last-focus-buffer nil
+           "Buffer currently in focus.")
+         (defun buffer-focus-handler ()
+           (interactive)
+           (when (not (buffer-live-p last-focus-buffer))
+             (setq last-focus-buffer nil))
+           (when (and (eq (window-buffer (selected-window))
+                          (current-buffer))
+                      (not (eq last-focus-buffer (current-buffer))))
+             (setq last-focus-buffer (current-buffer))
+             (when (derived-mode-p 'eaf-mode)
+               (evil-insert-state))))
+         (add-hook 'buffer-list-update-hook #'buffer-focus-handler)))
     :config
-    (defalias 'browse-web #'eaf-open-browser)
-    (eaf-bind-key nil "M-q" eaf-browser-keybinding)) ;; unbind, see more in the Wiki
+    (defalias 'browse-web #'eaf-open-browser))
   (require 'eaf)
   (require 'eaf-pdf-viewer)
   (require 'eaf-browser)
-  (require 'eaf-org-previewer)
+  (zzc/leader-keys
+    "e"  '(:ignore t :which-key "eaf")
+    "eb"  '(:ignore t :which-key "eaf browser")
+    "ebb"  '(eaf-open-browser :which-key "eaf open browser")
+    "ebh"  '(eaf-open-browser-with-history :which-key "eaf open browser with history")
+    "ebp"  '(eaf-open-pdf-from-history :which-key "eaf open pdf from history")
+ )
 #+end_src
 
 * Programming Languages
@@ -691,6 +721,4 @@ Here is the link to [[https://github.com/emacs-eaf/emacs-application-framework][
 (use-package ledger-mode)
 #+end_src
 
-#+RESULTS:
-
-
+ 
