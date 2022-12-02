@@ -46,6 +46,8 @@
 (setq auto-save-file-name-transforms
 	`((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
+;;misc
+(setq vc-follow-symlinks nil)
 (use-package evil
   :demand t
   :bind (("<escape>" . keyboard-escape-quit))
@@ -121,6 +123,14 @@
          rime-predicate-prog-in-code-p))
 )
 
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+         ("C-x b" . counsel-ibuffer)
+         ("C-x C-f" . counsel-find-file)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history)))
+
+
 (use-package ivy
   :bind (("C-s" . swiper)
          :map ivy-minibuffer-map
@@ -142,13 +152,6 @@
 (use-package ivy-rich
   :init
   (ivy-rich-mode 1))
-
-(use-package counsel
-  :bind (("M-x" . counsel-M-x)
-         ("C-x b" . counsel-ibuffer)
-         ("C-x C-f" . counsel-find-file)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history)))
 
 (use-package helpful
   :custom
@@ -186,7 +189,8 @@
 (zzc/leader-keys
   "="  '(:ignore t :which-key "open")
   "=b" '((lambda () (interactive) (find-file "~/Documents/org/finance/bills.org")) :which-key "open bill")
-  "=c" '((lambda () (interactive) (find-file "~/dotconfig/emacs/config.org")) :which-key "open config file"))
+  "=i" '((lambda () (interactive) (find-file "~/.emacs.d/init.el")) :which-key "open init.el")
+  "=c" '((lambda () (interactive) (find-file "~/dotconfig/emacs/config.org")) :which-key "open config file")) 
 
 (use-package format-all 
    :hook
@@ -353,13 +357,14 @@
   :config
   (setq org-ellipsis " ▾")
   (setq org-directory "~/Documents/org")
-  (zzc/org-font-setup))
+;;  (zzc/org-font-setup)
+ )
 
-(use-package org-bullets
-  :after org
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+;;(use-package org-bullets
+;; :after org
+;; :hook (org-mode . org-bullets-mode)
+;;  :custom
+;;  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 (defun zzc/org-mode-visual-fill ()
   (setq visual-fill-column-width 100
@@ -368,6 +373,9 @@
 
 (use-package visual-fill-column
   :hook (org-mode . zzc/org-mode-visual-fill))
+
+(use-package org-modern
+  :hook (org-mode . org-modern-mode))
 
 (setq org-agenda-dir "~/Documents/org/"
       ;; define the refile targets
@@ -398,7 +406,6 @@
     (org-agenda-files org-agenda-files)))
 
   ("W" "Workflow Status"
-
    ((todo "WAIT"
           ((org-agenda-overriding-header "Waiting on External")
            (org-agenda-files org-agenda-files)))
@@ -430,7 +437,18 @@
 (zzc/leader-keys
   "n"  '(:ignore t :which-key "notes")
   "na" '(org-agenda :which-key "org agenda")
-  "nt" '(org-todo :which-key "org todo"))
+  "mt" '(:ignore t :which-key "org todo")
+  "mtt" '(org-todo :which-key "change todo state")
+  "mts" '(org-schedule :which-key "todo schedule")
+  "mtd" '(org-deadline :which-key "todo deadline")
+  "mtb" '(org-toggle-checkbox :which-key "change checkbox state")
+  "ot"  '(:ignore t :which-key "org time")
+  "otb"  '(org-timer-start :which-key "org timer begin")
+  "ote"  '(org-timer-stop :which-key "org timer end")
+  "ots"  '(org-timer-set-timer :which-key "org timer begin")
+  "ott"  '(org-timer-pause-or-continue :which-key "org timer toggle")
+  "otr"  '(org-timer :which-key "org timer record")
+)
 
 (straight-use-package
    '(ob-ledger :host github
@@ -510,7 +528,7 @@
   "nrl"  '(org-roam-buffer-toggle :which-key "list roam backlinks")
   "nri"  '(org-roam-node-insert :which-key "insert roam node")
   "nrs"  '(org-roam-db-sync :which-key "sync roam database")
-  )
+)
 
 (zzc/leader-keys
     "nd"  '(:ignore t :which-key "daily")
@@ -565,7 +583,7 @@
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'zzc/org-babel-tangle-config)))
 
 (use-package eaf
-   :load-path "~/.emacs.d/site-lisp/emacs-application-framework"
+   :load-path "~/.emacs.d/straight/repos/eaf"
    :custom
    ; See https://github.com/emacs-eaf/emacs-application-framework/wiki/Customization
    (eaf-browser-continue-where-left-off t)
