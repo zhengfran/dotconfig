@@ -3,7 +3,7 @@ vim.g.mapleader = " "
 local keymap = vim.keymap --for conciseness
 
 --general keymaps
-keymap.set("i", "jj", "<ESC>")
+keymap.set("i", "fd", "<ESC>")
 
 --reload vim config without quitting
 keymap.set("n", "<leader>sv", ":source $MYVIMRC<CR>")
@@ -21,14 +21,7 @@ keymap.set("n", "<leader>tn", ":tabnext<CR>") -- go to next tab
 keymap.set("n", "<leader>tp", ":tabprevious<CR>") --go to previous tab
 
 --same configuration to navigate splits as emacs
-keymap.set("n", "<leader>wh", "<C-w>h") -- left
-keymap.set("n", "<leader>wj", "<C-w>j") -- down 
-keymap.set("n", "<leader>wk", "<C-w>k") -- up
-keymap.set("n", "<leader>wl", "<C-w>l") -- right
-keymap.set("n", "<leader>wc", "<C-w>q") -- quit
-keymap.set("n", "<leader>ws", "<C-w>s") -- horizontal split
-keymap.set("n", "<leader>wv", "<C-w>v") -- vertical split
-keymap.set("n", "<leader>w=", "<C-w>=") -- make split windows equal width & height
+keymap.set("n", "<C-w>c", "<C-w>q") -- quit
 
 -- plugin keymaps
 
