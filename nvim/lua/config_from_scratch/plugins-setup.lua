@@ -98,6 +98,8 @@ return packer.startup(function(use)
 
     use("folke/which-key.nvim") -- which-key
 
+    use("f-person/git-blame.nvim") -- git blame
+
 	if packer_bootstrap then
 		require("packer").sync()
 	end
