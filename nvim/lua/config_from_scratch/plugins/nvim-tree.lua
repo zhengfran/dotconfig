@@ -19,6 +19,7 @@ nvimtree.setup({
          hide_root_folder = false,
          -- auto_resize = true
          side = "left",
+         width = 30,
          relativenumber = false,
          preserve_window_proportions = false
     },
@@ -34,7 +35,7 @@ nvimtree.setup({
     git = {
          -- 是否启用 git 信息
          enable = true,
-         ignore = true,
+         ignore = false,
          timeout = 500
     },
   -- change folder arrow icons
@@ -53,6 +54,7 @@ nvimtree.setup({
   -- window splits
     actions = {
         open_file = {
+            resize_window = true,
             window_picker = {
                 enable = false,
             },

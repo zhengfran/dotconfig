@@ -44,6 +44,15 @@ keymap.set("n", "<leader>fo", "<cmd>Telescope oldfiles theme=dropdown<CR>") --fi
 --bufferline
 keymap.set("n", "<M-h>", ":BufferLineCyclePrev<CR>")
 keymap.set("n", "<M-l>", ":BufferLineCycleNext<CR>")
+keymap.set("n", "<M-1>", ":BufferLineGoToBuffer 1<CR>")
+keymap.set("n", "<M-2>", ":BufferLineGoToBuffer 2<CR>")
+keymap.set("n", "<M-3>", ":BufferLineGoToBuffer 3<CR>")
+keymap.set("n", "<M-4>", ":BufferLineGoToBuffer 4<CR>")
+keymap.set("n", "<M-5>", ":BufferLineGoToBuffer 5<CR>")
+keymap.set("n", "<M-6>", ":BufferLineGoToBuffer 6<CR>")
+keymap.set("n", "<M-7>", ":BufferLineGoToBuffer 7<CR>")
+keymap.set("n", "<M-8>", ":BufferLineGoToBuffer 8<CR>")
+keymap.set("n", "<M-9>", ":BufferLineGoToBuffer 9<CR>")
 
 --null-ls formatter
 keymap.set("n", "<leader>fr", "<cmd>lua vim.lsp.buf.format()<CR>") -- got to declaration
