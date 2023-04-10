@@ -44,7 +44,7 @@ return packer.startup(function(use)
 
 	use("nvim-tree/nvim-tree.lua") --file explorer
 
-	use("kyazdani42/nvim-web-devicons") --icons
+	use("nvim-tree/nvim-web-devicons") --icons
 
 	use("nvim-lualine/lualine.nvim") --statusline
 
