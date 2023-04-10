@@ -28,7 +28,7 @@ keymap.set("n", "<C-w>c", "<C-w>q") -- quit
 -- vim-maximizer
 keymap.set("n", "<C-w>m", ":MaximizerToggle<CR>") -- Vim-maximizer
 
---nvim -tree
+--nvim-tree
 keymap.set("n", "<leader>op", ":NvimTreeToggle<CR>")
 keymap.set("n", "<leader>oc", ":NvimTreeCollapse<CR>")
 keymap.set("n", "<leader>of", ":NvimTreeFindFile<CR>")
@@ -60,3 +60,8 @@ keymap.set("n", "<leader>fr", "<cmd>lua vim.lsp.buf.format()<CR>") -- got to dec
 --toggleterm
 keymap.set("n", "<leader>tt", "<cmd>exe v:count1 . 'ToggleTerm'<CR>") --open toggle term
 keymap.set("n", "<leader>tg", "<cmd>lua _LAZYGIT_TOGGLE()<CR>") --open lazy git
+
+--osc52
+keymap.set('n', '<leader>c', require('osc52').copy_operator, {expr = true})
+keymap.set('n', '<leader>cc', '<leader>c_', {remap = true})
+keymap.set('v', '<leader>c', require('osc52').copy_visual)

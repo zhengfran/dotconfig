@@ -100,6 +100,8 @@ return packer.startup(function(use)
 
     use("f-person/git-blame.nvim") -- git blame
 
+    use("ojroques/nvim-osc52") -- OSC52
+
 	if packer_bootstrap then
 		require("packer").sync()
 	end
