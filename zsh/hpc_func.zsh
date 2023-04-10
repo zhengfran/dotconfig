@@ -10,7 +10,7 @@ mebxw() {
     repo forall -c 'git lfs pull'
 }
 penv() {
-    find . -name "setenv.sh" -exec sed -i "s#e/Code/CDD_code/tresos_s32g#$(pwd)/tresos_s32g#" {} +
+    find . -name "setenv.sh" -exec sed -i "s#e/Code/CDD_code/tresos_s33g#$(pwd)/tresos_s32g#" {} +
     find . -name "setenv.sh" -exec sed -i "s#e:/Code/CDD_code/tresos_s32g#$(pwd)/tresos_s32g#" {} +
     find . -name "setenv.sh" -exec sed -i "s#export TOOLPATH_COMPILER=.*#export TOOLPATH_COMPILER=/home/uie41442/tooling/gcc92\nexport PATH=\$TOOLPATH_COMPILER\/bin\:\$PATH#" {} +
 }
@@ -30,4 +30,13 @@ rcaw() {
     git reset --hard HEAD; 
     (git pull --ff-only &); 
     cd ..; done
+}
+
+function hpc_start_corbos_studio()
+{
+    export LM_LICENSE_FILE=30124@ls_rb_eb_ww_1.conti.de
+    # find . -name EB_corbos_Studio
+    # script is to be called from the workspace-root folder
+    # usually located somewhere here: '.conan/data/eb_adg/0.24.0/swp/face_ez1_b2.0/package/45aef8be63955fea583a5341b6675843434dca71/eb/tools/studio/EB_corbos_Studio-2022_R03_07_00-Linux_x86_64/'
+    $(find . -name EB_corbos_Studio) &
 }
