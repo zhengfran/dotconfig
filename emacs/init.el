@@ -46,8 +46,6 @@
 (setq auto-save-file-name-transforms
 	`((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
-;;misc
-(setq vc-follow-symlinks nil)
 (use-package evil
   :demand t
   :bind (("<escape>" . keyboard-escape-quit))
@@ -76,7 +74,10 @@
   (global-undo-tree-mode 1))
 (use-package evil-escape
   :init (evil-escape-mode)
-  :after evil)
+  :after evil
+  :config
+  (setq evil-escape-key-sequence "fd")
+  (setq evil-escape-delay 0.2))
 
 (use-package which-key
   :init (which-key-mode)
@@ -100,36 +101,13 @@
   "bs"  '(save-buffer :which-key "save buffer")
   )
 
+(winner-mode 1)
+(global-set-key (kbd "C-c u") 'winner-undo)
+(global-set-key (kbd "C-c r") 'winner-redo)
+
 (zzc/leader-keys
   "."  '(find-file :which-key "find file")
   )
-
-(use-package posframe)
-(use-package rime
-  :custom
-  (rime-show-candidate 'posframe)
-  (rime-user-data-dir "~/.config/Rime")
-  (default-input-method "rime")
-  (rime-posframe-properties
-   (list :background-color "#333333"
-         :foreground-color "#dcdccc"
-         ;; :font "WenQuanYi Zen Hei"
-         :internal-border-width 10))
-  (rime-emacs-module-header-root "/Applications/Emacs.app/Contents/Resources/include/")
-  (rime-librime-root "~/dotconfig/emacs/librime/dist")
-  (rime-disable-predicates
-       '(rime-predicate-evil-mode-p
-         rime-predicate-after-alphabet-char-p
-         rime-predicate-prog-in-code-p))
-)
-
-(use-package counsel
-  :bind (("M-x" . counsel-M-x)
-         ("C-x b" . counsel-ibuffer)
-         ("C-x C-f" . counsel-find-file)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history)))
-
 
 (use-package ivy
   :bind (("C-s" . swiper)
@@ -150,8 +128,15 @@
   (ivy-mode 1))
 
 (use-package ivy-rich
-  :init
+  :config
   (ivy-rich-mode 1))
+
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+         ("C-x b" . counsel-ibuffer)
+         ("C-x C-f" . counsel-find-file)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history)))
 
 (use-package helpful
   :custom
@@ -172,6 +157,70 @@
 (zzc/leader-keys
   "ts" '(hydra-text-scale/body :which-key "scale text"))
 
+(use-package posframe)
+    ;; (use-package rime
+    ;;   :custom
+    ;;   (rime-show-candidate 'posframe)
+    ;;   (rime-user-data-dir "~/.config/Rime")
+    ;;   (default-input-method "rime")
+    ;;   (rime-posframe-properties
+    ;;    (list :background-color "#333333"
+    ;;          :foreground-color "#dcdccc"
+    ;;          ;; :font "WenQuanYi Zen Hei"
+    ;;          :internal-border-width 10))
+    ;;   (rime-emacs-module-header-root "/Applications/Emacs.app/Contents/Resources/include/")
+    ;;   (rime-librime-root "~/dotconfig/emacs/librime/dist")
+    ;;   (rime-disable-predicates
+    ;;        '(rime-predicate-evil-mode-p
+    ;;          rime-predicate-after-alphabet-char-p
+    ;;          rime-predicate-prog-in-code-p))
+    ;; )
+  (use-package pyim
+    :ensure nil
+    :config
+    ;; 激活 basedict 拼音词库
+    (use-package pyim-basedict
+      :ensure nil
+      :config (pyim-basedict-enable))
+
+    (setq default-input-method "pyim")
+
+    ;; 我使用全拼
+    (setq pyim-default-scheme 'quanpin)
+
+    ;; 设置 pyim 探针设置，这是 pyim 高级功能设置，可以实现 *无痛* 中英文切换 :-)
+    ;; 我自己使用的中英文动态切换规则是：
+    ;; 1. 光标只有在注释里面时，才可以输入中文。
+    ;; 2. 光标前是汉字字符时，才能输入中文。
+    ;; 3. 使用 M-j 快捷键，强制将光标前的拼音字符串转换为中文。
+    (setq-default pyim-english-input-switch-functions
+                  '(pyim-probe-dynamic-english
+                    pyim-probe-isearch-mode
+                    pyim-probe-program-mode
+                    pyim-probe-org-structure-template))
+
+    (setq-default pyim-punctuation-half-width-functions
+                  '(pyim-probe-punctuation-line-beginning
+                    pyim-probe-punctuation-after-punctuation))
+
+    ;; 开启拼音搜索功能
+    (pyim-isearch-mode 1)
+
+    ;; 使用 pupup-el 来绘制选词框
+    (setq pyim-page-tooltip 'popup)
+
+    ;; 选词框显示5个候选词
+    (setq pyim-page-length 5)
+
+    ;; 让 Emacs 启动时自动加载 pyim 词库
+    (add-hook 'emacs-startup-hook
+              #'(lambda () (pyim-restart-1 t)))
+    :bind
+    (("M-j" . pyim-convert-string-at-point) ;与 pyim-probe-dynamic-english 配合
+     ("C-;" . pyim-delete-word-from-personal-buffer)))
+(setq default-input-method "pyim")
+(global-set-key (kbd "C-\\") 'toggle-input-method)
+
 ;; comment line helper
 (
  defun zzc/comment-or-uncomment-region-or-line ()
@@ -189,8 +238,7 @@
 (zzc/leader-keys
   "="  '(:ignore t :which-key "open")
   "=b" '((lambda () (interactive) (find-file "~/Documents/org/finance/bills.org")) :which-key "open bill")
-  "=i" '((lambda () (interactive) (find-file "~/.emacs.d/init.el")) :which-key "open init.el")
-  "=c" '((lambda () (interactive) (find-file "~/dotconfig/emacs/config.org")) :which-key "open config file")) 
+  "=c" '((lambda () (interactive) (find-file "~/dotconfig/emacs/config.org")) :which-key "open config file"))
 
 (use-package format-all 
    :hook
@@ -250,11 +298,70 @@
 (zzc/leader-keys
   "ll" '(doom/toggle-line-numbers :which-key "toggle line numbers"))
 
-(set-face-attribute 'default nil :font "MesloLGS NF" :height 160)
-;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "MesloLGS NF" :height 160)
-;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height 200 :weight 'regular)
+;;(set-face-attribute 'default nil :font "MesloLGS NF" :height 160)
+    ;; Set the fixed pitch face
+    ;;(set-face-attribute 'fixed-pitch nil :font "MesloLGS NF" :height 160)
+    ;; Set the variable pitch face
+    ;;(set-face-attribute 'variable-pitch nil :font "Cantarell" :height 200 :weight 'regular)
+    (defvar meomacs-font-size 16
+      "Current font size.")
+
+  (defvar meomacs-fonts '((default . "MesloLGS NF")
+			  (cjk . "Unifont")
+			  (symbol . "Unifont")
+			  (fixed . "MesloLGS NF")
+			  (fixed-serif . "Dejavu Serif")
+			  (variable . "Cantarell")
+			  (wide . "MesloLGS NF")
+			  (tall . "MesloLGS NF"))
+    "Fonts to use.")
+(defun meomacs--get-font-family (key)
+  (let ((font (alist-get key meomacs-fonts)))
+    (if (string-empty-p font)
+	(alist-get 'default meomacs-fonts)
+      font)))
+
+(defun meomacs-load-default-font ()
+  "Load default font configuration."
+  (let ((default-font (format "%s-%s"
+			      (meomacs--get-font-family 'default)
+			      meomacs-font-size)))
+    (add-to-list 'default-frame-alist (cons 'font default-font))))
+
+(defun meomacs-load-face-font ()
+  "Load face font configuration."
+  (let ((variable-font (meomacs--get-font-family 'variable))
+	(fixed-font (meomacs--get-font-family 'fixed))
+	(fixed-serif-font (meomacs--get-font-family 'fixed-serif)))
+    (set-face-attribute 'variable-pitch nil :family variable-font)
+    (set-face-attribute 'fixed-pitch nil :family fixed-font)
+    (set-face-attribute 'fixed-pitch-serif nil :family fixed-serif-font)))
+
+(defun meomacs-load-charset-font (&optional font)
+  "Load charset font configuration."
+  (let ((default-font (or font (format "%s-%s"
+				       (meomacs--get-font-family 'default)
+				       meomacs-font-size)))
+	(cjk-font (meomacs--get-font-family 'cjk))
+	(symbol-font (meomacs--get-font-family 'symbol)))
+    (set-frame-font default-font)
+    (let ((fontset (create-fontset-from-ascii-font default-font)))
+      ;; Fonts for charsets
+      (dolist (charset '(kana han hangul cjk-misc bopomofo))
+	(set-fontset-font fontset charset cjk-font))
+      (set-fontset-font fontset 'symbol symbol-font)
+      ;; Apply fontset
+      (set-frame-parameter nil 'font fontset)
+      (add-to-list 'default-frame-alist (cons 'font fontset)))))
+
+(meomacs-load-default-font)
+(meomacs-load-face-font)
+
+;; Run after startup
+(add-hook 'after-init-hook
+	  (lambda ()
+	    (when window-system
+	      (meomacs-load-charset-font))))
 
 (use-package doom-themes
   :init (load-theme 'doom-nord t))
@@ -266,7 +373,7 @@
 
 (zzc/leader-keys
   "t"  '(:ignore t :which-key "toggles")
-  "tt" '(counsel-load-theme :which-key "choose theme"))
+  "te" '(counsel-load-theme :which-key "choose theme"))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -333,14 +440,14 @@
                           (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 
   ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.1)
-                  (org-level-3 . 1.05)
-                  (org-level-4 . 1.0)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
+  (dolist (face '((org-level-1 . 1.4)
+                  (org-level-2 . 1.3)
+                  (org-level-3 . 1.2)
+                  (org-level-4 . 1.1)
+                  (org-level-5 . 1.05)
+                  (org-level-6 . 1.05)
+                  (org-level-7 . 1.05)
+                  (org-level-8 . 1.05)))
     (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
@@ -357,14 +464,13 @@
   :config
   (setq org-ellipsis " ▾")
   (setq org-directory "~/Documents/org")
-;;  (zzc/org-font-setup)
- )
+  (zzc/org-font-setup))
 
-;;(use-package org-bullets
-;; :after org
-;; :hook (org-mode . org-bullets-mode)
-;;  :custom
-;;  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+(use-package org-bullets
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 (defun zzc/org-mode-visual-fill ()
   (setq visual-fill-column-width 100
@@ -374,12 +480,8 @@
 (use-package visual-fill-column
   :hook (org-mode . zzc/org-mode-visual-fill))
 
-(use-package org-modern
-  :hook (org-mode . org-modern-mode))
-
-(setq org-agenda-dir "~/Documents/org/"
-      ;; define the refile targets
-      org-agenda-files nil)
+(setq org-agenda-dir "~/Documents/org/journal"
+      org-agenda-files (list org-agenda-dir))
 
 (setq org-todo-keywords
   '((sequence "TODO(t)" "ONGOING(o)" "|" "DONE(d!)")
@@ -406,6 +508,7 @@
     (org-agenda-files org-agenda-files)))
 
   ("W" "Workflow Status"
+
    ((todo "WAIT"
           ((org-agenda-overriding-header "Waiting on External")
            (org-agenda-files org-agenda-files)))
@@ -437,18 +540,7 @@
 (zzc/leader-keys
   "n"  '(:ignore t :which-key "notes")
   "na" '(org-agenda :which-key "org agenda")
-  "mt" '(:ignore t :which-key "org todo")
-  "mtt" '(org-todo :which-key "change todo state")
-  "mts" '(org-schedule :which-key "todo schedule")
-  "mtd" '(org-deadline :which-key "todo deadline")
-  "mtb" '(org-toggle-checkbox :which-key "change checkbox state")
-  "ot"  '(:ignore t :which-key "org time")
-  "otb"  '(org-timer-start :which-key "org timer begin")
-  "ote"  '(org-timer-stop :which-key "org timer end")
-  "ots"  '(org-timer-set-timer :which-key "org timer begin")
-  "ott"  '(org-timer-pause-or-continue :which-key "org timer toggle")
-  "otr"  '(org-timer :which-key "org timer record")
-)
+  "nt" '(org-todo :which-key "org todo"))
 
 (straight-use-package
    '(ob-ledger :host github
@@ -462,73 +554,73 @@
      (python . t)))
 (setq org-confirm-babel-evaluate nil)
 
-(defun vulpea-project-files ()
-    "Return a list of note files containing 'project' tag." ;
-    (seq-uniq
-     (seq-map
-      #'car
-      (org-roam-db-query
-       [:select [nodes:file]
-        :from tags
-        :left-join nodes
-        :on (= tags:node-id nodes:id)
-        :where (like tag (quote "%\"project\"%"))]))))
+;; (defun vulpea-project-files ()
+;;     "Return a list of note files containing 'project' tag." ;
+;;     (seq-uniq
+;;      (seq-map
+;;       #'car
+;;       (org-roam-db-query
+;;        [:select [nodes:file]
+;;         :from tags
+;;         :left-join nodes
+;;         :on (= tags:node-id nodes:id)
+;;         :where (like tag (quote "%\"project\"%"))]))))
 
-(defun vulpea-agenda-files-update (&rest _)
-  "Update the value of `org-agenda-files'."
-  (setq org-agenda-files (vulpea-project-files)))
+;; (defun vulpea-agenda-files-update (&rest _)
+;;   "Update the value of `org-agenda-files'."
+;;   (setq org-agenda-files (vulpea-project-files)))
 
-;; (add-hook 'find-file-hook #'vulpea-project-update-tag)
-;; (add-hook 'before-save-hook #'vulpea-project-update-tag)
+;; ;; (add-hook 'find-file-hook #'vulpea-project-update-tag)
+;; ;; (add-hook 'before-save-hook #'vulpea-project-update-tag)
 
-(advice-add 'org-agenda :before #'vulpea-agenda-files-update)
-(advice-add 'org-todo-list :before #'vulpea-agenda-files-update)
+;; (advice-add 'org-agenda :before #'vulpea-agenda-files-update)
+;; (advice-add 'org-todo-list :before #'vulpea-agenda-files-update)
 
-(use-package org-roam
-  :init
-  (setq org-roam-v2-ack t)
-  :after org
-  :custom
-  (org-roam-directory "~/Nextcloud2/org/notes")
-  (org-roam-dailies-directory "journal/")
-  (org-roam-completion-everywhere t)
-  (org-roam-capture-templates
-   '(("d" "default" plain
-      "%?"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-      :unnarrowed t)
-     ("l" "programming language" plain
-      "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-      :unnarrowed t)
-     ("b" "book notes" plain
-      "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-      :unnarrowed t)
-     ("w" "work-project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Docs\n\n"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project work")
-      :unnarrowed t)
-     ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Conclusion\n\n"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
-      :unnarrowed t)))
-(org-roam-dailies-capture-templates
-   '(("d" "default" plain
-      "* Goals\n\n%?\n\n* Task Accomplished\n\n* Summary\n\n"
-      :if-new (file+head "%<%Y%m%d>.org" "#+title: %<%Y%m%d>\n"))))
-  :bind (:map org-mode-map
-         ("C-M-q" . completion-at-point))
-  :config
-  (org-roam-setup)
-  (require 'org-roam-dailies) ;; Ensure the keymap is available
-  (org-roam-db-autosync-mode))
+ (use-package org-roam
+   :init
+   (setq org-roam-v2-ack t)
+   :after org
+   :custom
+   (org-roam-directory "~/Documents/org")
+   (org-roam-dailies-directory "journal/")
+   (org-roam-completion-everywhere t)
+   (org-roam-capture-templates
+    '(("d" "default" plain
+       "%?"
+       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+       :unnarrowed t)
+      ("l" "programming language" plain
+       "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
+       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+       :unnarrowed t)
+      ("b" "book notes" plain
+       "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
+       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+       :unnarrowed t)
+      ("w" "work-project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Docs\n\n"
+       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project work")
+       :unnarrowed t)
+      ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Conclusion\n\n"
+       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
+       :unnarrowed t)))
+ (org-roam-dailies-capture-templates
+    '(("d" "default" plain
+       "* Goals\n\n%?\n\n* Task Accomplished\n\n* Summary\n\n"
+       :if-new (file+head "%<%Y%m%d>.org" "#+title: %<%Y%m%d>\n"))))
+   :bind (:map org-mode-map
+          ("C-M-q" . completion-at-point))
+   :config
+   (org-roam-setup)
+   (require 'org-roam-dailies) ;; Ensure the keymap is available
+   (org-roam-db-autosync-mode))
 
-(zzc/leader-keys
-  "nr"  '(:ignore t :which-key "roam")
-  "nrf"  '(org-roam-node-find :which-key "find roam node")
-  "nrl"  '(org-roam-buffer-toggle :which-key "list roam backlinks")
-  "nri"  '(org-roam-node-insert :which-key "insert roam node")
-  "nrs"  '(org-roam-db-sync :which-key "sync roam database")
-)
+ (zzc/leader-keys
+   "nr"  '(:ignore t :which-key "roam")
+   "nrf"  '(org-roam-node-find :which-key "find roam node")
+   "nrl"  '(org-roam-buffer-toggle :which-key "list roam backlinks")
+   "nri"  '(org-roam-node-insert :which-key "insert roam node")
+   "nrs"  '(org-roam-db-sync :which-key "sync roam database")
+   )
 
 (zzc/leader-keys
     "nd"  '(:ignore t :which-key "daily")
@@ -582,40 +674,40 @@
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'zzc/org-babel-tangle-config)))
 
-(use-package eaf
-   :load-path "~/.emacs.d/straight/repos/eaf"
-   :custom
-   ; See https://github.com/emacs-eaf/emacs-application-framework/wiki/Customization
-   (eaf-browser-continue-where-left-off t)
-   (eaf-browser-enable-adblocker t)
-   (browse-url-browser-function 'eaf-open-browser)
-   ;;enter insert mode in eaf
-   (eval-after-load "evil"
-     '(progn
-        (defvar last-focus-buffer nil
-          "Buffer currently in focus.")
-        (defun buffer-focus-handler ()
-          (interactive)
-          (when (not (buffer-live-p last-focus-buffer))
-            (setq last-focus-buffer nil))
-          (when (and (eq (window-buffer (selected-window))
-                         (current-buffer))
-                     (not (eq last-focus-buffer (current-buffer))))
-            (setq last-focus-buffer (current-buffer))
-            (when (derived-mode-p 'eaf-mode)
-              (evil-insert-state))))
-        (add-hook 'buffer-list-update-hook #'buffer-focus-handler)))
-   :config
-   (defalias 'browse-web #'eaf-open-browser))
- (require 'eaf)
- (require 'eaf-pdf-viewer)
- (require 'eaf-browser)
- (zzc/leader-keys
-   "e"  '(:ignore t :which-key "eaf")
-   "eb"  '(:ignore t :which-key "eaf browser")
-   "ebb"  '(eaf-open-browser :which-key "eaf open browser")
-   "ebh"  '(eaf-open-browser-with-history :which-key "eaf open browser with history")
-   "ebp"  '(eaf-open-pdf-from-history :which-key "eaf open pdf from history")
-)
+;; (use-package eaf
+;;    :load-path "~/.emacs.d/site-lisp/emacs-application-framework"
+;;    :custom
+;;    ; See https://github.com/emacs-eaf/emacs-application-framework/wiki/Customization
+;;    (eaf-browser-continue-where-left-off t)
+;;    (eaf-browser-enable-adblocker t)
+;;    (browse-url-browser-function 'eaf-open-browser)
+;;    ;;enter insert mode in eaf
+;;    (eval-after-load "evil"
+;;      '(progn
+;;         (defvar last-focus-buffer nil
+;;           "Buffer currently in focus.")
+;;         (defun buffer-focus-handler ()
+;;           (interactive)
+;;           (when (not (buffer-live-p last-focus-buffer))
+;;             (setq last-focus-buffer nil))
+;;           (when (and (eq (window-buffer (selected-window))
+;;                          (current-buffer))
+;;                      (not (eq last-focus-buffer (current-buffer))))
+;;             (setq last-focus-buffer (current-buffer))
+;;             (when (derived-mode-p 'eaf-mode)
+;;               (evil-insert-state))))
+;;         (add-hook 'buffer-list-update-hook #'buffer-focus-handler)))
+;;    :config
+;;    (defalias 'browse-web #'eaf-open-browser))
+;;  (require 'eaf)
+;;  (require 'eaf-pdf-viewer)
+;;  (require 'eaf-browser)
+;;  (zzc/leader-keys
+;;    "e"  '(:ignore t :which-key "eaf")
+;;    "eb"  '(:ignore t :which-key "eaf browser")
+;;    "ebb"  '(eaf-open-browser :which-key "eaf open browser")
+;;    "ebh"  '(eaf-open-browser-with-history :which-key "eaf open browser with history")
+;;    "ebp"  '(eaf-open-pdf-from-history :which-key "eaf open pdf from history")
+;; )
 
-(use-package ledger-mode)
+;;(use-package ledger-mode)
