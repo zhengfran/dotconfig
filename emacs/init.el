@@ -3,10 +3,11 @@
 (setq gc-cons-threshold (* 50 1000 1000))
 ;; Profile emacs startup
 (add-hook 'emacs-startup-hook
-          (lambda ()
-            (message "*** Emacs loaded in %s seconds with %d garbage collections."
-                     (emacs-init-time "%.2f")
-                     gcs-done)))
+    (lambda ()
+    (message "*** Emacs loaded in %s seconds with %d garbage collections."
+    (emacs-init-time "%.2f")
+        gcs-done)))
+(defvar native-comp-deferred-compilation-deny-list nil)
 
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -23,19 +24,19 @@
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
 
-;;;; Initialize package sources
-;;(require 'package)
-;;(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-;;                         ("org" . "https://orgmode.org/elpa/")
-;;                         ("elpa" . "https://elpa.gnu.org/packages/")))
-;;(package-initialize)
-;;(unless package-archive-contents
-;; (package-refresh-contents))
-;;;; Initialize use-package on non-Linux platforms
-;;(unless (package-installed-p 'use-package)
-;;   (package-install 'use-package))
-;;(require 'use-package)
-;;(setq use-package-always-ensure t)
+;; Initialize package sources
+(require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
+(package-initialize)
+(unless package-archive-contents
+(package-refresh-contents))
+;;Initialize use-package on non-Linux platforms
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+(require 'use-package)
+(setq use-package-always-ensure t)
 
 ;; make sure shell PATH is same as emacs PATH 
 (use-package exec-path-from-shell)
@@ -97,6 +98,7 @@
   "bp"  '(switch-to-prev-buffer :which-key "previous buffer")
   "bn"  '(switch-to-next-buffer :which-key "next buffer")
   "bb"  '(switch-to-buffer :which-key "list buffers")
+  "bB"  '(ibuffer-list-buffers :which-key "list ibuffers")
   "bk"  '(kill-current-buffer :which-key "kill current buffer")
   "bs"  '(save-buffer :which-key "save buffer")
   )
@@ -105,9 +107,23 @@
 (global-set-key (kbd "C-c u") 'winner-undo)
 (global-set-key (kbd "C-c r") 'winner-redo)
 
+;; save bookmark on change
+(setq bookmark-save-flag 1)
+;; open bookmark on start-up
+(setq inhibit-splash-screen t)
+(require 'bookmark)
+(list-bookmarks)
+(switch-to-buffer "*Bookmark List*")
+;; set bookmark file to sync across difference device
+(setq bookmark-default-file "~/dotconfig/emacs/bookmarks")
+(zzc/leader-keys
+  "bm"  '(:ignore t :which-key "bookmark")
+  "bmm"  '(bookmark-set :which-key "Add current file/dir to bookmark")
+  "bml"  '(list-bookmarks :which-key "Open Bookmark List"))
+
 (zzc/leader-keys
   "."  '(find-file :which-key "find file")
-  )
+)
 
 (use-package ivy
   :bind (("C-s" . swiper)
@@ -158,7 +174,7 @@
   "ts" '(hydra-text-scale/body :which-key "scale text"))
 
 (use-package posframe)
-    ;; (use-package rime
+;; (use-package rime
     ;;   :custom
     ;;   (rime-show-candidate 'posframe)
     ;;   (rime-user-data-dir "~/.config/Rime")
@@ -183,6 +199,9 @@
       :ensure nil
       :config (pyim-basedict-enable))
 
+    ;;(setq ivy-re-builders-alist
+    ;;      '((t . pyim-cregexp-ivy)))
+
     (setq default-input-method "pyim")
 
     ;; 我使用全拼
@@ -193,18 +212,18 @@
     ;; 1. 光标只有在注释里面时，才可以输入中文。
     ;; 2. 光标前是汉字字符时，才能输入中文。
     ;; 3. 使用 M-j 快捷键，强制将光标前的拼音字符串转换为中文。
-    (setq-default pyim-english-input-switch-functions
-                  '(pyim-probe-dynamic-english
-                    pyim-probe-isearch-mode
-                    pyim-probe-program-mode
-                    pyim-probe-org-structure-template))
+    ;; (setq-default pyim-english-input-switch-functions
+    ;;               '(pyim-probe-dynamic-english
+    ;;                 pyim-probe-program-mode
+    ;;                 pyim-probe-org-structure-template))
 
-    (setq-default pyim-punctuation-half-width-functions
-                  '(pyim-probe-punctuation-line-beginning
-                    pyim-probe-punctuation-after-punctuation))
+    ;; (setq-default pyim-punctuation-half-width-functions
+    ;;               '(pyim-probe-punctuation-line-beginning
+    ;;                 pyim-probe-punctuation-after-punctuation))
 
-    ;; 开启拼音搜索功能
-    (pyim-isearch-mode 1)
+    ;; 开启拼音
+    ;; 搜索功能
+    ;; (pyim-isearch-mode 1)
 
     ;; 使用 pupup-el 来绘制选词框
     (setq pyim-page-tooltip 'popup)
@@ -480,7 +499,7 @@
 (use-package visual-fill-column
   :hook (org-mode . zzc/org-mode-visual-fill))
 
-(setq org-agenda-dir "~/Documents/org/journal"
+(setq org-agenda-dir "~/Documents/org/notes/journal"
       org-agenda-files (list org-agenda-dir))
 
 (setq org-todo-keywords
@@ -542,6 +561,15 @@
   "na" '(org-agenda :which-key "org agenda")
   "nt" '(org-todo :which-key "org todo"))
 
+;;key-binds
+(zzc/leader-keys
+  "nc"  '(:ignore t :which-key "clock")
+  "nci" '(org-clock-in :which-key "clock-in")
+  "nco" '(org-clock-out :which-key "clock-out")
+  "ncq" '(org-clock-cancel :which-key "clock-cancel")
+  "ncr" '(org-clock-report :which-key "clock-report")
+  "ncd" '(org-clock-display :which-key "clock-display"))
+
 (straight-use-package
    '(ob-ledger :host github
                :repo "overtone/emacs-live"
@@ -576,14 +604,18 @@
 ;; (advice-add 'org-agenda :before #'vulpea-agenda-files-update)
 ;; (advice-add 'org-todo-list :before #'vulpea-agenda-files-update)
 
+ (use-package emacsql-sqlite-module)
+ (use-package emacsql-sqlite-builtin)
  (use-package org-roam
    :init
    (setq org-roam-v2-ack t)
    :after org
    :custom
-   (org-roam-directory "~/Documents/org")
+   (org-roam-directory "~/Documents/org/notes")
    (org-roam-dailies-directory "journal/")
    (org-roam-completion-everywhere t)
+   ;; use emacs 29 built in sql
+   (org-roam-database-connector 'sqlite-builtin)
    (org-roam-capture-templates
     '(("d" "default" plain
        "%?"
@@ -605,7 +637,7 @@
        :unnarrowed t)))
  (org-roam-dailies-capture-templates
     '(("d" "default" plain
-       "* Goals\n\n%?\n\n* Task Accomplished\n\n* Summary\n\n"
+       "* Tasks\n\n%?\n\n* Flashes\n\n* Summary\n\n"
        :if-new (file+head "%<%Y%m%d>.org" "#+title: %<%Y%m%d>\n"))))
    :bind (:map org-mode-map
           ("C-M-q" . completion-at-point))
@@ -663,6 +695,11 @@
 (add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
+
+(setq org-src-fontify-natively t
+    org-src-tab-acts-natively t
+    org-confirm-babel-evaluate nil
+    org-edit-src-content-indentation 0)
 
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun zzc/org-babel-tangle-config ()
