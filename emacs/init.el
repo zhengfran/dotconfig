@@ -79,6 +79,10 @@
   :config
   (setq evil-escape-key-sequence "fd")
   (setq evil-escape-delay 0.2))
+;; save file very time after quit inder mode
+(add-hook 'evil-insert-state-exit-hook
+          (lambda ()
+	    (call-interactively #'save-buffer)))
 
 (use-package which-key
   :init (which-key-mode)
@@ -126,33 +130,36 @@
 )
 
 (use-package ivy
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         ("C-q" . ivy-immediate-done)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
-  :config
-  (ivy-mode 1))
-
-(use-package ivy-rich
-  :config
-  (ivy-rich-mode 1))
+    :bind (("C-s" . swiper)
+           :map ivy-minibuffer-map
+           ("TAB" . ivy-alt-done)
+           ("C-l" . ivy-alt-done)
+           ("C-j" . ivy-next-line)
+           ("C-k" . ivy-previous-line)
+           ("C-q" . ivy-immediate-done)
+           :map ivy-switch-buffer-map
+           ("C-k" . ivy-previous-line)
+           ("C-l" . ivy-done)
+           ("C-d" . ivy-switch-buffer-kill)
+           :map ivy-reverse-i-search-map
+           ("C-k" . ivy-previous-line)
+           ("C-d" . ivy-reverse-i-search-kill))
+    :config
+    (ivy-mode 1))
 
 (use-package counsel
-  :bind (("M-x" . counsel-M-x)
-         ("C-x b" . counsel-ibuffer)
-         ("C-x C-f" . counsel-find-file)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history)))
+    :bind (("M-x" . counsel-M-x)
+           ("C-x b" . counsel-ibuffer)
+           ("C-x C-f" . counsel-find-file)
+           :map minibuffer-local-map
+           ("C-r" . 'counsel-minibuffer-history)))
+(use-package ivy-posframe
+      :config 
+     (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display))) 
+     (ivy-posframe-mode 1))
+(use-package ivy-rich
+    :config
+    (ivy-rich-mode 1))
 
 (use-package helpful
   :custom
@@ -450,6 +457,8 @@
 (defun zzc/org-mode-setup ()
   (org-indent-mode)
   (variable-pitch-mode 1)
+  (setq org-src-preserve-indentation nil 
+      org-edit-src-content-indentation 0)
   (visual-line-mode 1))
 
 (defun zzc/org-font-setup ()
@@ -478,26 +487,31 @@
   (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
   (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)))
 
-(use-package org
-  :hook (org-mode . zzc/org-mode-setup)
-  :config
-  (setq org-ellipsis " ▾")
-  (setq org-directory "~/Documents/org")
-  (zzc/org-font-setup))
+  (use-package org
+    :hook (org-mode . zzc/org-mode-setup)
+    :config
+    (setq org-ellipsis " ▾")
+    (setq org-directory "~/Documents/org")
+    (zzc/org-font-setup))
 
-(use-package org-bullets
-  :after org
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+  (use-package org-bullets
+    :after org
+    :hook (org-mode . org-bullets-mode)
+    :custom
+    (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
-(defun zzc/org-mode-visual-fill ()
-  (setq visual-fill-column-width 100
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
+  (defun zzc/org-mode-visual-fill ()
+    (setq visual-fill-column-width 100
+          visual-fill-column-center-text t)
+    (visual-fill-column-mode 1))
 
-(use-package visual-fill-column
-  :hook (org-mode . zzc/org-mode-visual-fill))
+  (use-package visual-fill-column
+    :hook (org-mode . zzc/org-mode-visual-fill))
+
+  (zzc/leader-keys
+    "l"  '(:ignore t :which-key "line/link")
+    "li" '(org-insert-link :which-key "Inser Link")
+    "ls" '(org-store-link :which-key "Generate Link"))
 
 (setq org-agenda-dir "~/Documents/org/notes/journal"
       org-agenda-files (list org-agenda-dir))
@@ -555,6 +569,8 @@
           ((org-agenda-overriding-header "Cancelled Projects")
            (org-agenda-files org-agenda-files)))))))
 
+;; Do not display Done items in org-agenda
+(setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo '("DONE" "COMPLETED" "CANC")))
 ;;key-binds
 (zzc/leader-keys
   "n"  '(:ignore t :which-key "notes")
@@ -694,6 +710,7 @@
 (add-to-list 'org-structure-template-alist '("cc" . "src c"))
 (add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("ai" . "ai")) ;;for org-ai
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
 
 (setq org-src-fontify-natively t
@@ -747,4 +764,72 @@
 ;;    "ebp"  '(eaf-open-pdf-from-history :which-key "eaf open pdf from history")
 ;; )
 
+;; insert date and time
+(defvar current-date-time-format "%Y %b %d %H:%M:%S %a %Z"
+  "Format of date to insert with `insert-current-date-time' func
+See help of `format-time-string' for possible replacements")
+
+(defvar current-time-format "%H:%M:%S"
+  "Format of date to insert with `insert-current-time' func.
+Note the weekly scope of the command's precision.")
+
+(defun zzc/insert-current-date-time ()
+  "insert the current date and time into current buffer.
+Uses `current-date-time-format' for the formatting the date/time."
+       (interactive)
+       (insert (format-time-string current-date-time-format (current-time)))
+       (insert "\n"))
+
+(defun zzc/insert-current-time ()
+  "insert the current time (1-week scope) into the current buffer."
+       (interactive)
+       (insert (format-time-string current-time-format (current-time)))
+       (insert "\n"))
+
+(zzc/leader-keys
+  "i"  '(:ignore t :which-key "insert")
+  "id"  '(zzc/insert-current-date-time :which-key "Inser current date and time")
+  "it"  '(zzc/insert-current-time :which-key "Insert current time"))
+
 ;;(use-package ledger-mode)
+
+;;(straight-use-package
+;; '(lsp-bridge :host github
+;;              :repo "manateelazycat/lsp-bridge"
+;;              :files ("*.el" "*.py" "acm" "core" "langserver"
+;;                      "multiserver" "resources")))
+;;(unless (package-installed-p 'yasnippet)
+;;  (package-install 'yasnippet))
+;;(require 'yasnippet)
+;;(yas-global-mode 1)
+;;
+;;(require 'lsp-bridge)
+;;(global-lsp-bridge-mode)
+
+(use-package org-ai
+  :ensure t
+  :commands (org-ai-mode
+             org-ai-global-mode)
+  :init
+  (setq org-ai-openai-api-token "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")
+  (add-hook 'org-mode-hook #'org-ai-mode) ; enable org-ai in org-mode
+  (org-ai-global-mode) ; installs global keybindings on C-c M-a
+  :config
+  ;;(setq org-ai-default-chat-model "gpt-4") ; if you are on the gpt-4 beta:
+  (org-ai-install-yasnippets)) ; if you are using yasnippet and want `ai` snippets
+
+(zzc/leader-keys
+  "oa"  '(:ignore t :which-key "org ai")
+  "oar"  '(org-ai-on-region :which-key "Ask AI about selected text")
+  "oas"  '(org-ai-summarize :which-key "Summarize selected text")
+  "oac"  '(org-ai-refactor-code :which-key "Refactor selected code")
+  "oap"  '(org-ai-prompt :which-key "Prompt user for a text and then print AI's reponse")
+  "oa$"  '(org-ai-open-account-usage-page :which-key "Check how much money burned")
+  )
+
+;; (straight-use-package
+;;    '(mind-wave :host github
+;;                :repo "manateelazycat/mind-wave"
+;;                :files ("*.el" "*.md" "*.py"))
+;; (add-to-list 'load-path "~/.emacs.d/straight/repos/mind-wave")
+;; (require 'mind-wave)

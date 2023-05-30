@@ -70,38 +70,42 @@
 * Key Binding
 ** EVIL
 #+begin_src emacs-lisp
-  (use-package evil
-    :demand t
-    :bind (("<escape>" . keyboard-escape-quit))
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-C-i-jump nil)
-    :config
-    (evil-mode 1)
-    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-          ;; Use visual line motions even outside of visual-line-mode buffers
-    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-    (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal))
-  (use-package evil-collection
-    :after evil
-    :config
-    (evil-collection-init))
-  (use-package undo-tree
-    :after evil
-    :diminish
-    :config
-    (evil-set-undo-system 'undo-tree)
-    (global-undo-tree-mode 1))
-  (use-package evil-escape
-    :init (evil-escape-mode)
-    :after evil
-    :config
-    (setq evil-escape-key-sequence "fd")
-    (setq evil-escape-delay 0.2))
+(use-package evil
+  :demand t
+  :bind (("<escape>" . keyboard-escape-quit))
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
+  :config
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+        ;; Use visual line motions even outside of visual-line-mode buffers
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
+(use-package evil-collection
+  :after evil
+  :config
+  (evil-collection-init))
+(use-package undo-tree
+  :after evil
+  :diminish
+  :config
+  (evil-set-undo-system 'undo-tree)
+  (global-undo-tree-mode 1))
+(use-package evil-escape
+  :init (evil-escape-mode)
+  :after evil
+  :config
+  (setq evil-escape-key-sequence "fd")
+  (setq evil-escape-delay 0.2))
+;; save file very time after quit inder mode
+(add-hook 'evil-insert-state-exit-hook
+          (lambda ()
+	    (call-interactively #'save-buffer)))
 #+end_src
 
 ** Which-key 
@@ -165,7 +169,7 @@
 )
 #+end_src
 * Completion System
-** ivy
+** ivy & counsel
 #+begin_src emacs-lisp
   (use-package ivy
     :bind (("C-s" . swiper)
@@ -185,22 +189,21 @@
     :config
     (ivy-mode 1))
 
-  (use-package ivy-rich
-    :config
-    (ivy-rich-mode 1))
-#+end_src
-
-#+RESULTS:
-
-** counsel 
-#+begin_src emacs-lisp
-  (use-package counsel
+(use-package counsel
     :bind (("M-x" . counsel-M-x)
            ("C-x b" . counsel-ibuffer)
            ("C-x C-f" . counsel-find-file)
            :map minibuffer-local-map
            ("C-r" . 'counsel-minibuffer-history)))
+(use-package ivy-posframe
+      :config 
+     (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display))) 
+     (ivy-posframe-mode 1))
+(use-package ivy-rich
+    :config
+    (ivy-rich-mode 1))
 #+end_src
+
 ** helpful 
 #+begin_src emacs-lisp
   (use-package helpful
@@ -536,36 +539,38 @@
 * ORG 
 ** General
 #+begin_src emacs-lisp
-  (defun zzc/org-mode-setup ()
-    (org-indent-mode)
-    (variable-pitch-mode 1)
-    (visual-line-mode 1))
+(defun zzc/org-mode-setup ()
+  (org-indent-mode)
+  (variable-pitch-mode 1)
+  (setq org-src-preserve-indentation nil 
+      org-edit-src-content-indentation 0)
+  (visual-line-mode 1))
 
-  (defun zzc/org-font-setup ()
-    ;; Replace list hyphen with dot
-    (font-lock-add-keywords 'org-mode
-                          '(("^ *\\([-]\\) "
-                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+(defun zzc/org-font-setup ()
+  ;; Replace list hyphen with dot
+  (font-lock-add-keywords 'org-mode
+                        '(("^ *\\([-]\\) "
+                          (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 
-    ;; Set faces for heading levels
-    (dolist (face '((org-level-1 . 1.4)
-                    (org-level-2 . 1.3)
-                    (org-level-3 . 1.2)
-                    (org-level-4 . 1.1)
-                    (org-level-5 . 1.05)
-                    (org-level-6 . 1.05)
-                    (org-level-7 . 1.05)
-                    (org-level-8 . 1.05)))
-      (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face))
+  ;; Set faces for heading levels
+  (dolist (face '((org-level-1 . 1.4)
+                  (org-level-2 . 1.3)
+                  (org-level-3 . 1.2)
+                  (org-level-4 . 1.1)
+                  (org-level-5 . 1.05)
+                  (org-level-6 . 1.05)
+                  (org-level-7 . 1.05)
+                  (org-level-8 . 1.05)))
+    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face))
 
-    ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-    (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
-    (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-    (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-    (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)))
+  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+  (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)))
 
   (use-package org
     :hook (org-mode . zzc/org-mode-setup)
@@ -587,6 +592,11 @@
 
   (use-package visual-fill-column
     :hook (org-mode . zzc/org-mode-visual-fill))
+
+  (zzc/leader-keys
+    "l"  '(:ignore t :which-key "line/link")
+    "li" '(org-insert-link :which-key "Inser Link")
+    "ls" '(org-store-link :which-key "Generate Link"))
 #+end_src
 ** Agenda 
 #+begin_src emacs-lisp
@@ -646,6 +656,8 @@
           ((org-agenda-overriding-header "Cancelled Projects")
            (org-agenda-files org-agenda-files)))))))
 
+;; Do not display Done items in org-agenda
+(setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo '("DONE" "COMPLETED" "CANC")))
 ;;key-binds
 (zzc/leader-keys
   "n"  '(:ignore t :which-key "notes")
@@ -808,6 +820,7 @@
 (add-to-list 'org-structure-template-alist '("cc" . "src c"))
 (add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("ai" . "ai")) ;;for org-ai
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
 #+end_src
 *** Syntax highlight in source block
@@ -870,10 +883,90 @@ Here is the link to [[https://github.com/emacs-eaf/emacs-application-framework][
   ;; )
 #+end_src
 
-* Programming Languages
-** Ledger
+* Snippets
+** Date and Time quick insert
+#+begin_src emacs-lisp
+;; insert date and time
+(defvar current-date-time-format "%Y %b %d %H:%M:%S %a %Z"
+  "Format of date to insert with `insert-current-date-time' func
+See help of `format-time-string' for possible replacements")
+
+(defvar current-time-format "%H:%M:%S"
+  "Format of date to insert with `insert-current-time' func.
+Note the weekly scope of the command's precision.")
+
+(defun zzc/insert-current-date-time ()
+  "insert the current date and time into current buffer.
+Uses `current-date-time-format' for the formatting the date/time."
+       (interactive)
+       (insert (format-time-string current-date-time-format (current-time)))
+       (insert "\n"))
+
+(defun zzc/insert-current-time ()
+  "insert the current time (1-week scope) into the current buffer."
+       (interactive)
+       (insert (format-time-string current-time-format (current-time)))
+       (insert "\n"))
+
+(zzc/leader-keys
+  "i"  '(:ignore t :which-key "insert")
+  "id"  '(zzc/insert-current-date-time :which-key "Inser current date and time")
+  "it"  '(zzc/insert-current-time :which-key "Insert current time"))
+#+end_src
+* Programming
+** Languages
+*** Ledger
 #+begin_src emacs-lisp
 ;;(use-package ledger-mode)
 #+end_src
+** LSP
+#+begin_src emacs-lisp
+;;(straight-use-package
+;; '(lsp-bridge :host github
+;;              :repo "manateelazycat/lsp-bridge"
+;;              :files ("*.el" "*.py" "acm" "core" "langserver"
+;;                      "multiserver" "resources")))
+;;(unless (package-installed-p 'yasnippet)
+;;  (package-install 'yasnippet))
+;;(require 'yasnippet)
+;;(yas-global-mode 1)
+;;
+;;(require 'lsp-bridge)
+;;(global-lsp-bridge-mode)
 
- 
+#+end_src
+* AI
+** Org-AI
+#+begin_src emacs-lisp
+(use-package org-ai
+  :ensure t
+  :commands (org-ai-mode
+             org-ai-global-mode)
+  :init
+  (setq org-ai-openai-api-token "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")
+  (add-hook 'org-mode-hook #'org-ai-mode) ; enable org-ai in org-mode
+  (org-ai-global-mode) ; installs global keybindings on C-c M-a
+  :config
+  ;;(setq org-ai-default-chat-model "gpt-4") ; if you are on the gpt-4 beta:
+  (org-ai-install-yasnippets)) ; if you are using yasnippet and want `ai` snippets
+
+(zzc/leader-keys
+  "oa"  '(:ignore t :which-key "org ai")
+  "oar"  '(org-ai-on-region :which-key "Ask AI about selected text")
+  "oas"  '(org-ai-summarize :which-key "Summarize selected text")
+  "oac"  '(org-ai-refactor-code :which-key "Refactor selected code")
+  "oap"  '(org-ai-prompt :which-key "Prompt user for a text and then print AI's reponse")
+  "oa$"  '(org-ai-open-account-usage-page :which-key "Check how much money burned")
+  )
+#+end_src
+
+** mind-wave
+#+begin_src emacs-lisp
+;; (straight-use-package
+;;    '(mind-wave :host github
+;;                :repo "manateelazycat/mind-wave"
+;;                :files ("*.el" "*.md" "*.py"))
+;; (add-to-list 'load-path "~/.emacs.d/straight/repos/mind-wave")
+;; (require 'mind-wave)
+#+end_src
+
