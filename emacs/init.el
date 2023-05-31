@@ -232,8 +232,9 @@
     ;; 搜索功能
     ;; (pyim-isearch-mode 1)
 
-    ;; 使用 pupup-el 来绘制选词框
-    (setq pyim-page-tooltip 'popup)
+    ;; 使用 posframe 来绘制选词框 
+    (require 'posframe)
+    (setq pyim-page-tooltip 'posframe)
 
     ;; 选词框显示5个候选词
     (setq pyim-page-length 5)
@@ -263,7 +264,7 @@
 
 (zzc/leader-keys
   "="  '(:ignore t :which-key "open")
-  "=b" '((lambda () (interactive) (find-file "~/Documents/org/finance/bills.org")) :which-key "open bill")
+  "=i" '((lambda () (interactive) (find-file "~/dotconfig/emacs/init.el")) :which-key "open init.el")
   "=c" '((lambda () (interactive) (find-file "~/dotconfig/emacs/config.org")) :which-key "open config file"))
 
 (use-package format-all 
@@ -390,7 +391,7 @@
 	      (meomacs-load-charset-font))))
 
 (use-package doom-themes
-  :init (load-theme 'doom-nord t))
+  :init (load-theme 'doom-solarized-light t))
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 10)))
@@ -455,10 +456,10 @@
   )
 
 (defun zzc/org-mode-setup ()
-  (org-indent-mode)
   (variable-pitch-mode 1)
   (setq org-src-preserve-indentation nil 
       org-edit-src-content-indentation 0)
+  (setq org-hide-emphasis-markers t)
   (visual-line-mode 1))
 
 (defun zzc/org-font-setup ()
@@ -494,11 +495,11 @@
     (setq org-directory "~/Documents/org")
     (zzc/org-font-setup))
 
-  (use-package org-bullets
-    :after org
-    :hook (org-mode . org-bullets-mode)
-    :custom
-    (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+  ;; (use-package org-bullets
+  ;;   :after org
+  ;;   :hook (org-mode . org-bullets-mode)
+  ;;   :custom
+  ;;   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
   (defun zzc/org-mode-visual-fill ()
     (setq visual-fill-column-width 100
@@ -507,6 +508,10 @@
 
   (use-package visual-fill-column
     :hook (org-mode . zzc/org-mode-visual-fill))
+
+(use-package org-modern
+  :config
+  (with-eval-after-load 'org (global-org-modern-mode)))
 
   (zzc/leader-keys
     "l"  '(:ignore t :which-key "line/link")
@@ -652,9 +657,10 @@
        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
        :unnarrowed t)))
  (org-roam-dailies-capture-templates
-    '(("d" "default" plain
+    '(("d" "Journal" plain 
        "* Tasks\n\n%?\n\n* Flashes\n\n* Summary\n\n"
-       :if-new (file+head "%<%Y%m%d>.org" "#+title: %<%Y%m%d>\n"))))
+       :if-new (file+head "%<%Y%m%d>.org" "#+title: %<%Y%m%d>\n#+filetags: daily\n#+startup: overview"))))
+
    :bind (:map org-mode-map
           ("C-M-q" . completion-at-point))
    :config
@@ -806,12 +812,14 @@ Uses `current-date-time-format' for the formatting the date/time."
 ;;(require 'lsp-bridge)
 ;;(global-lsp-bridge-mode)
 
+(use-package vterm
+    :ensure t)
+
 (use-package org-ai
   :ensure t
   :commands (org-ai-mode
              org-ai-global-mode)
   :init
-  (setq org-ai-openai-api-token "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")
   (add-hook 'org-mode-hook #'org-ai-mode) ; enable org-ai in org-mode
   (org-ai-global-mode) ; installs global keybindings on C-c M-a
   :config
@@ -825,7 +833,7 @@ Uses `current-date-time-format' for the formatting the date/time."
   "oac"  '(org-ai-refactor-code :which-key "Refactor selected code")
   "oap"  '(org-ai-prompt :which-key "Prompt user for a text and then print AI's reponse")
   "oa$"  '(org-ai-open-account-usage-page :which-key "Check how much money burned")
-  )
+)
 
 ;; (straight-use-package
 ;;    '(mind-wave :host github
