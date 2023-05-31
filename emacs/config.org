@@ -229,100 +229,100 @@
 #+end_src
 * Chinese Input
 #+begin_src emacs-lisp
-     (use-package posframe)
-  ;; (use-package rime
-      ;;   :custom
-      ;;   (rime-show-candidate 'posframe)
-      ;;   (rime-user-data-dir "~/.config/Rime")
-      ;;   (default-input-method "rime")
-      ;;   (rime-posframe-properties
-      ;;    (list :background-color "#333333"
-      ;;          :foreground-color "#dcdccc"
-      ;;          ;; :font "WenQuanYi Zen Hei"
-      ;;          :internal-border-width 10))
-      ;;   (rime-emacs-module-header-root "/Applications/Emacs.app/Contents/Resources/include/")
-      ;;   (rime-librime-root "~/dotconfig/emacs/librime/dist")
-      ;;   (rime-disable-predicates
-      ;;        '(rime-predicate-evil-mode-p
-      ;;          rime-predicate-after-alphabet-char-p
-      ;;          rime-predicate-prog-in-code-p))
-      ;; )
-    (use-package pyim
+   (use-package posframe)
+;; (use-package rime
+    ;;   :custom
+    ;;   (rime-show-candidate 'posframe)
+    ;;   (rime-user-data-dir "~/.config/Rime")
+    ;;   (default-input-method "rime")
+    ;;   (rime-posframe-properties
+    ;;    (list :background-color "#333333"
+    ;;          :foreground-color "#dcdccc"
+    ;;          ;; :font "WenQuanYi Zen Hei"
+    ;;          :internal-border-width 10))
+    ;;   (rime-emacs-module-header-root "/Applications/Emacs.app/Contents/Resources/include/")
+    ;;   (rime-librime-root "~/dotconfig/emacs/librime/dist")
+    ;;   (rime-disable-predicates
+    ;;        '(rime-predicate-evil-mode-p
+    ;;          rime-predicate-after-alphabet-char-p
+    ;;          rime-predicate-prog-in-code-p))
+    ;; )
+  (use-package pyim
+    :ensure nil
+    :config
+    ;; 激活 basedict 拼音词库
+    (use-package pyim-basedict
       :ensure nil
-      :config
-      ;; 激活 basedict 拼音词库
-      (use-package pyim-basedict
-        :ensure nil
-        :config (pyim-basedict-enable))
+      :config (pyim-basedict-enable))
 
-      ;;(setq ivy-re-builders-alist
-      ;;      '((t . pyim-cregexp-ivy)))
+    ;;(setq ivy-re-builders-alist
+    ;;      '((t . pyim-cregexp-ivy)))
 
-      (setq default-input-method "pyim")
+    (setq default-input-method "pyim")
 
-      ;; 我使用全拼
-      (setq pyim-default-scheme 'quanpin)
+    ;; 我使用全拼
+    (setq pyim-default-scheme 'quanpin)
 
-      ;; 设置 pyim 探针设置，这是 pyim 高级功能设置，可以实现 *无痛* 中英文切换 :-)
-      ;; 我自己使用的中英文动态切换规则是：
-      ;; 1. 光标只有在注释里面时，才可以输入中文。
-      ;; 2. 光标前是汉字字符时，才能输入中文。
-      ;; 3. 使用 M-j 快捷键，强制将光标前的拼音字符串转换为中文。
-      ;; (setq-default pyim-english-input-switch-functions
-      ;;               '(pyim-probe-dynamic-english
-      ;;                 pyim-probe-program-mode
-      ;;                 pyim-probe-org-structure-template))
+    ;; 设置 pyim 探针设置，这是 pyim 高级功能设置，可以实现 *无痛* 中英文切换 :-)
+    ;; 我自己使用的中英文动态切换规则是：
+    ;; 1. 光标只有在注释里面时，才可以输入中文。
+    ;; 2. 光标前是汉字字符时，才能输入中文。
+    ;; 3. 使用 M-j 快捷键，强制将光标前的拼音字符串转换为中文。
+    ;; (setq-default pyim-english-input-switch-functions
+    ;;               '(pyim-probe-dynamic-english
+    ;;                 pyim-probe-program-mode
+    ;;                 pyim-probe-org-structure-template))
 
-      ;; (setq-default pyim-punctuation-half-width-functions
-      ;;               '(pyim-probe-punctuation-line-beginning
-      ;;                 pyim-probe-punctuation-after-punctuation))
+    ;; (setq-default pyim-punctuation-half-width-functions
+    ;;               '(pyim-probe-punctuation-line-beginning
+    ;;                 pyim-probe-punctuation-after-punctuation))
 
-      ;; 开启拼音
-      ;; 搜索功能
-      ;; (pyim-isearch-mode 1)
+    ;; 开启拼音
+    ;; 搜索功能
+    ;; (pyim-isearch-mode 1)
 
-      ;; 使用 pupup-el 来绘制选词框
-      (setq pyim-page-tooltip 'popup)
+    ;; 使用 posframe 来绘制选词框 
+    (require 'posframe)
+    (setq pyim-page-tooltip 'posframe)
 
-      ;; 选词框显示5个候选词
-      (setq pyim-page-length 5)
+    ;; 选词框显示5个候选词
+    (setq pyim-page-length 5)
 
-      ;; 让 Emacs 启动时自动加载 pyim 词库
-      (add-hook 'emacs-startup-hook
-                #'(lambda () (pyim-restart-1 t)))
-      :bind
-      (("M-j" . pyim-convert-string-at-point) ;与 pyim-probe-dynamic-english 配合
-       ("C-;" . pyim-delete-word-from-personal-buffer)))
-  (setq default-input-method "pyim")
-  (global-set-key (kbd "C-\\") 'toggle-input-method)
+    ;; 让 Emacs 启动时自动加载 pyim 词库
+    (add-hook 'emacs-startup-hook
+              #'(lambda () (pyim-restart-1 t)))
+    :bind
+    (("M-j" . pyim-convert-string-at-point) ;与 pyim-probe-dynamic-english 配合
+     ("C-;" . pyim-delete-word-from-personal-buffer)))
+(setq default-input-method "pyim")
+(global-set-key (kbd "C-\\") 'toggle-input-method)
 #+end_src
 
 * Editing 
 ** Helper
 #+begin_src emacs-lisp
-  ;; comment line helper
-  (
-   defun zzc/comment-or-uncomment-region-or-line ()
-    "Comments or uncomments the region or the current line if there's no active region."
-    (interactive)
-    (let (beg end)
-      (if (region-active-p)
-          (setq beg (region-beginning) end (region-end))
-        (setq beg (line-beginning-position) end (line-end-position)))
-      (comment-or-uncomment-region beg end)))
-  (
-   zzc/leader-keys
-    "zz"  '(zzc/comment-or-uncomment-region-or-line :which-key "quick comment/uncomment"))
+;; comment line helper
+(
+ defun zzc/comment-or-uncomment-region-or-line ()
+  "Comments or uncomments the region or the current line if there's no active region."
+  (interactive)
+  (let (beg end)
+    (if (region-active-p)
+        (setq beg (region-beginning) end (region-end))
+      (setq beg (line-beginning-position) end (line-end-position)))
+    (comment-or-uncomment-region beg end)))
+(
+ zzc/leader-keys
+  "zz"  '(zzc/comment-or-uncomment-region-or-line :which-key "quick comment/uncomment"))
 #+end_src
 ** Open specific file 
 #+begin_src emacs-lisp
   (zzc/leader-keys
     "="  '(:ignore t :which-key "open")
-    "=b" '((lambda () (interactive) (find-file "~/Documents/org/finance/bills.org")) :which-key "open bill")
+    "=i" '((lambda () (interactive) (find-file "~/dotconfig/emacs/init.el")) :which-key "open init.el")
     "=c" '((lambda () (interactive) (find-file "~/dotconfig/emacs/config.org")) :which-key "open config file"))
 #+end_src
 
-#+RESULTS:
 ** Formatter
 #+begin_src emacs-lisp
    (use-package format-all 
@@ -463,7 +463,7 @@
 ** Theme 
 #+begin_src emacs-lisp
   (use-package doom-themes
-    :init (load-theme 'doom-nord t))
+    :init (load-theme 'doom-solarized-light t))
   (use-package doom-modeline
     :init (doom-modeline-mode 1)
     :custom ((doom-modeline-height 10)))
@@ -540,10 +540,10 @@
 ** General
 #+begin_src emacs-lisp
 (defun zzc/org-mode-setup ()
-  (org-indent-mode)
   (variable-pitch-mode 1)
   (setq org-src-preserve-indentation nil 
       org-edit-src-content-indentation 0)
+  (setq org-hide-emphasis-markers t)
   (visual-line-mode 1))
 
 (defun zzc/org-font-setup ()
@@ -579,11 +579,11 @@
     (setq org-directory "~/Documents/org")
     (zzc/org-font-setup))
 
-  (use-package org-bullets
-    :after org
-    :hook (org-mode . org-bullets-mode)
-    :custom
-    (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+  ;; (use-package org-bullets
+  ;;   :after org
+  ;;   :hook (org-mode . org-bullets-mode)
+  ;;   :custom
+  ;;   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
   (defun zzc/org-mode-visual-fill ()
     (setq visual-fill-column-width 100
@@ -592,6 +592,10 @@
 
   (use-package visual-fill-column
     :hook (org-mode . zzc/org-mode-visual-fill))
+
+(use-package org-modern
+  :config
+  (with-eval-after-load 'org (global-org-modern-mode)))
 
   (zzc/leader-keys
     "l"  '(:ignore t :which-key "line/link")
@@ -695,77 +699,78 @@
 ** Org-roam
 *** Pure roam
 #+begin_src emacs-lisp
-  ;; (defun vulpea-project-files ()
-  ;;     "Return a list of note files containing 'project' tag." ;
-  ;;     (seq-uniq
-  ;;      (seq-map
-  ;;       #'car
-  ;;       (org-roam-db-query
-  ;;        [:select [nodes:file]
-  ;;         :from tags
-  ;;         :left-join nodes
-  ;;         :on (= tags:node-id nodes:id)
-  ;;         :where (like tag (quote "%\"project\"%"))]))))
+;; (defun vulpea-project-files ()
+;;     "Return a list of note files containing 'project' tag." ;
+;;     (seq-uniq
+;;      (seq-map
+;;       #'car
+;;       (org-roam-db-query
+;;        [:select [nodes:file]
+;;         :from tags
+;;         :left-join nodes
+;;         :on (= tags:node-id nodes:id)
+;;         :where (like tag (quote "%\"project\"%"))]))))
 
-  ;; (defun vulpea-agenda-files-update (&rest _)
-  ;;   "Update the value of `org-agenda-files'."
-  ;;   (setq org-agenda-files (vulpea-project-files)))
+;; (defun vulpea-agenda-files-update (&rest _)
+;;   "Update the value of `org-agenda-files'."
+;;   (setq org-agenda-files (vulpea-project-files)))
 
-  ;; ;; (add-hook 'find-file-hook #'vulpea-project-update-tag)
-  ;; ;; (add-hook 'before-save-hook #'vulpea-project-update-tag)
+;; ;; (add-hook 'find-file-hook #'vulpea-project-update-tag)
+;; ;; (add-hook 'before-save-hook #'vulpea-project-update-tag)
 
-  ;; (advice-add 'org-agenda :before #'vulpea-agenda-files-update)
-  ;; (advice-add 'org-todo-list :before #'vulpea-agenda-files-update)
+;; (advice-add 'org-agenda :before #'vulpea-agenda-files-update)
+;; (advice-add 'org-todo-list :before #'vulpea-agenda-files-update)
 
-   (use-package emacsql-sqlite-module)
-   (use-package emacsql-sqlite-builtin)
-   (use-package org-roam
-     :init
-     (setq org-roam-v2-ack t)
-     :after org
-     :custom
-     (org-roam-directory "~/Documents/org/notes")
-     (org-roam-dailies-directory "journal/")
-     (org-roam-completion-everywhere t)
-     ;; use emacs 29 built in sql
-     (org-roam-database-connector 'sqlite-builtin)
-     (org-roam-capture-templates
-      '(("d" "default" plain
-         "%?"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-         :unnarrowed t)
-        ("l" "programming language" plain
-         "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-         :unnarrowed t)
-        ("b" "book notes" plain
-         "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-         :unnarrowed t)
-        ("w" "work-project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Docs\n\n"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project work")
-         :unnarrowed t)
-        ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Conclusion\n\n"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
-         :unnarrowed t)))
-   (org-roam-dailies-capture-templates
-      '(("d" "default" plain
-         "* Tasks\n\n%?\n\n* Flashes\n\n* Summary\n\n"
-         :if-new (file+head "%<%Y%m%d>.org" "#+title: %<%Y%m%d>\n"))))
-     :bind (:map org-mode-map
-            ("C-M-q" . completion-at-point))
-     :config
-     (org-roam-setup)
-     (require 'org-roam-dailies) ;; Ensure the keymap is available
-     (org-roam-db-autosync-mode))
+ (use-package emacsql-sqlite-module)
+ (use-package emacsql-sqlite-builtin)
+ (use-package org-roam
+   :init
+   (setq org-roam-v2-ack t)
+   :after org
+   :custom
+   (org-roam-directory "~/Documents/org/notes")
+   (org-roam-dailies-directory "journal/")
+   (org-roam-completion-everywhere t)
+   ;; use emacs 29 built in sql
+   (org-roam-database-connector 'sqlite-builtin)
+   (org-roam-capture-templates
+    '(("d" "default" plain
+       "%?"
+       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+       :unnarrowed t)
+      ("l" "programming language" plain
+       "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
+       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+       :unnarrowed t)
+      ("b" "book notes" plain
+       "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
+       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+       :unnarrowed t)
+      ("w" "work-project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Docs\n\n"
+       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project work")
+       :unnarrowed t)
+      ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Conclusion\n\n"
+       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
+       :unnarrowed t)))
+ (org-roam-dailies-capture-templates
+    '(("d" "Journal" plain 
+       "* Tasks\n\n%?\n\n* Flashes\n\n* Summary\n\n"
+       :if-new (file+head "%<%Y%m%d>.org" "#+title: %<%Y%m%d>\n#+filetags: daily\n#+startup: overview"))))
 
-   (zzc/leader-keys
-     "nr"  '(:ignore t :which-key "roam")
-     "nrf"  '(org-roam-node-find :which-key "find roam node")
-     "nrl"  '(org-roam-buffer-toggle :which-key "list roam backlinks")
-     "nri"  '(org-roam-node-insert :which-key "insert roam node")
-     "nrs"  '(org-roam-db-sync :which-key "sync roam database")
-     )
+   :bind (:map org-mode-map
+          ("C-M-q" . completion-at-point))
+   :config
+   (org-roam-setup)
+   (require 'org-roam-dailies) ;; Ensure the keymap is available
+   (org-roam-db-autosync-mode))
+
+ (zzc/leader-keys
+   "nr"  '(:ignore t :which-key "roam")
+   "nrf"  '(org-roam-node-find :which-key "find roam node")
+   "nrl"  '(org-roam-buffer-toggle :which-key "list roam backlinks")
+   "nri"  '(org-roam-node-insert :which-key "insert roam node")
+   "nrs"  '(org-roam-db-sync :which-key "sync roam database")
+   )
 #+end_src
 
 *** Org-roam-daily
@@ -935,15 +940,21 @@ Uses `current-date-time-format' for the formatting the date/time."
 ;;(global-lsp-bridge-mode)
 
 #+end_src
+** Terminal
+Need to install =cmake= and =libverm-dev=
+#+begin_src emacs-lisp
+(use-package vterm
+    :ensure t)
+#+end_src
 * AI
 ** Org-AI
+Needs to set API KEY in =~/.netrc= , probablu can investigate =~/.authinf.pgp= later if got time
 #+begin_src emacs-lisp
 (use-package org-ai
   :ensure t
   :commands (org-ai-mode
              org-ai-global-mode)
   :init
-  (setq org-ai-openai-api-token "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")
   (add-hook 'org-mode-hook #'org-ai-mode) ; enable org-ai in org-mode
   (org-ai-global-mode) ; installs global keybindings on C-c M-a
   :config
@@ -957,7 +968,7 @@ Uses `current-date-time-format' for the formatting the date/time."
   "oac"  '(org-ai-refactor-code :which-key "Refactor selected code")
   "oap"  '(org-ai-prompt :which-key "Prompt user for a text and then print AI's reponse")
   "oa$"  '(org-ai-open-account-usage-page :which-key "Check how much money burned")
-  )
+)
 #+end_src
 
 ** mind-wave
@@ -969,4 +980,5 @@ Uses `current-date-time-format' for the formatting the date/time."
 ;; (add-to-list 'load-path "~/.emacs.d/straight/repos/mind-wave")
 ;; (require 'mind-wave)
 #+end_src
+
 
