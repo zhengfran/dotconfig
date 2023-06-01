@@ -97,6 +97,8 @@
     :prefix "SPC"
     :global-prefix " M-SPC"))
 
+
+
 (zzc/leader-keys
   "b"  '(:ignore t :which-key "buffer")
   "bp"  '(switch-to-prev-buffer :which-key "previous buffer")
@@ -110,6 +112,8 @@
 (winner-mode 1)
 (global-set-key (kbd "C-c u") 'winner-undo)
 (global-set-key (kbd "C-c r") 'winner-redo)
+
+(use-package projectile)
 
 ;; save bookmark on change
 (setq bookmark-save-flag 1)
@@ -127,6 +131,129 @@
 
 (zzc/leader-keys
   "."  '(find-file :which-key "find file")
+)
+
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay        0.5
+          treemacs-directory-name-transformer      #'identity
+          treemacs-display-in-side-window          t
+          treemacs-eldoc-display                   'simple
+          treemacs-file-event-delay                2000
+          treemacs-file-extension-regex            treemacs-last-period-regex-value
+          treemacs-file-follow-delay               0.2
+          treemacs-file-name-transformer           #'identity
+          treemacs-follow-after-init               t
+          treemacs-expand-after-init               t
+          treemacs-find-workspace-method           'find-for-file-or-pick-first
+          treemacs-git-command-pipe                ""
+          treemacs-goto-tag-strategy               'refetch-index
+          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+          treemacs-hide-dot-git-directory          t
+          treemacs-indentation                     2
+          treemacs-indentation-string              " "
+          treemacs-is-never-other-window           nil
+          treemacs-max-git-entries                 5000
+          treemacs-missing-project-action          'ask
+          treemacs-move-forward-on-expand          nil
+          treemacs-no-png-images                   nil
+          treemacs-no-delete-other-windows         t
+          treemacs-project-follow-cleanup          nil
+          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                        'left
+          treemacs-read-string-input               'from-child-frame
+          treemacs-recenter-distance               0.1
+          treemacs-recenter-after-file-follow      nil
+          treemacs-recenter-after-tag-follow       nil
+          treemacs-recenter-after-project-jump     'always
+          treemacs-recenter-after-project-expand   'on-distance
+          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+          treemacs-project-follow-into-home        nil
+          treemacs-show-cursor                     nil
+          treemacs-show-hidden-files               t
+          treemacs-silent-filewatch                nil
+          treemacs-silent-refresh                  nil
+          treemacs-sorting                         'alphabetic-asc
+          treemacs-select-when-already-in-treemacs 'move-back
+          treemacs-space-between-root-nodes        t
+          treemacs-tag-follow-cleanup              t
+          treemacs-tag-follow-delay                1.5
+          treemacs-text-scale                      nil
+          treemacs-user-mode-line-format           nil
+          treemacs-user-header-line-format         nil
+          treemacs-wide-toggle-width               70
+          treemacs-width                           35
+          treemacs-width-increment                 1
+          treemacs-width-is-initially-locked       t
+          treemacs-workspace-switch-cleanup        nil)
+
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode 'always)
+    (when treemacs-python-executable
+      (treemacs-git-commit-diff-mode t))
+
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple)))
+
+    (treemacs-hide-gitignored-files-mode nil)))
+  ;;:bind
+  ;;(:map global-map
+  ;;      ("M-0"       . treemacs-select-window)
+  ;;      ("C-x t 1"   . treemacs-delete-other-windows)
+  ;;      ("C-x t t"   . treemacs)
+  ;;      ("C-x t d"   . treemacs-select-directory)
+  ;;      ("C-x t B"   . treemacs-bookmark)
+  ;;      ("C-x t C-t" . treemacs-find-file)
+  ;;      ("C-x t M-t" . treemacs-find-tag)))
+
+(use-package treemacs-evil
+  :after (treemacs evil)
+  :ensure t)
+
+;;(use-package treemacs-projectile
+;;  :after (treemacs projectile)
+;;  :ensure t)
+
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once)
+  :ensure t)
+
+;;(use-package treemacs-magit
+;;  :after (treemacs magit)
+;;  :ensure t)
+
+;;(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+;;  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+;;  :ensure t
+;;  :config (treemacs-set-scope-type 'Perspectives))
+;;
+;;(use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+;;  :after (treemacs)
+;;  :ensure t
+;;  :config (treemacs-set-scope-type 'Tabs))
+
+
+(zzc/leader-keys
+  "o"  '(:ignore t :which-key "treemacs")
+  "op"  '(treemacs :which-key "Toggle treemacs")
+  "of"  '(treemacs-find-file :which-key "Show current file in treemacs")
+  "ot"  '(treemacs-load-theme :which-key "Change Treemacs theme")
 )
 
 (use-package ivy
@@ -799,6 +926,8 @@ Uses `current-date-time-format' for the formatting the date/time."
 
 ;;(use-package ledger-mode)
 
+
+
 ;;(straight-use-package
 ;; '(lsp-bridge :host github
 ;;              :repo "manateelazycat/lsp-bridge"
@@ -814,6 +943,50 @@ Uses `current-date-time-format' for the formatting the date/time."
 
 (use-package vterm
     :ensure t)
+(zzc/leader-keys
+  "t"  '(:ignore t :which-key "toggles")
+  "tv" '(counsel-load-theme :which-key "open vterm"))
+
+(use-package org-noter
+  :config
+  ;; Your org-noter config ........
+  (require 'org-noter-pdftools))
+
+(use-package org-pdftools
+  :hook (org-mode . org-pdftools-setup-link))
+
+(use-package org-noter-pdftools
+  :after org-noter
+  :config
+  ;; Add a function to ensure precise note is inserted
+  (defun org-noter-pdftools-insert-precise-note (&optional toggle-no-questions)
+    (interactive "P")
+    (org-noter--with-valid-session
+     (let ((org-noter-insert-note-no-questions (if toggle-no-questions
+                                                   (not org-noter-insert-note-no-questions)
+                                                 org-noter-insert-note-no-questions))
+           (org-pdftools-use-isearch-link t)
+           (org-pdftools-use-freepointer-annot t))
+       (org-noter-insert-note (org-noter--get-precise-info)))))
+
+  ;; fix https://github.com/weirdNox/org-noter/pull/93/commits/f8349ae7575e599f375de1be6be2d0d5de4e6cbf
+  (defun org-noter-set-start-location (&optional arg)
+    "When opening a session with this document, go to the current location.
+With a prefix ARG, remove start location."
+    (interactive "P")
+    (org-noter--with-valid-session
+     (let ((inhibit-read-only t)
+           (ast (org-noter--parse-root))
+           (location (org-noter--doc-approx-location (when (called-interactively-p 'any) 'interactive))))
+       (with-current-buffer (org-noter--session-notes-buffer session)
+         (org-with-wide-buffer
+          (goto-char (org-element-property :begin ast))
+          (if arg
+              (org-entry-delete nil org-noter-property-note-location)
+            (org-entry-put nil org-noter-property-note-location
+                           (org-noter--pretty-print-location location))))))))
+  (with-eval-after-load 'pdf-annot
+    (add-hook 'pdf-annot-activate-handler-functions #'org-noter-pdftools-jump-to-note)))
 
 (use-package org-ai
   :ensure t
