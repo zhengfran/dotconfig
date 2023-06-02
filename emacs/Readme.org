@@ -1,0 +1,69 @@
+* Introduction
+This file provides a set of configurations for the tools I used most often in my daily work and development.
+
+* ZSH
+I use zsh as the default shell and use oh my zsh to manage it, powerlevel10k is the zsh theme I currently use. Below is the command to install them
+#+begin_src shell
+# install and change default shell to zsh
+sudo apt install -y zsh && chsh -s $(which zsh)
+# install oh my zsh
+sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+# install powerlevel10k
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
+# install plugins
+# zsh-autosuggestions
+git clone --depth=1  https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+#zsh-syntax-highlighting
+git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+#+end_src
+After this create a symbolic link to the .zshrc file in the directory at ~~/.zshrc~ and do
+#+begin_src shell
+ln -s ~/dotconfig/zsh/zshrc ~/.zshrc
+source ~/.zshrc
+#+end_src
+By right the p10k configuration menu will popup, go through it and it should work.
+* TMUX
+Version must be greater than 3.3, if package manager version is lower than than, can try to compile latest from source.
+ #+begin_src shell
+ ## compile latest from source
+ sudo apt install -y libevent-dev
+ ./configure && make -j$(proc)
+ sudo make install
+
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+ln -s ~/dotconfig/tmux/.tmux.conf ~/.tmux.conf
+tmux source-file ~/.tmux.conf
+ #+end_src
+
+* NeoVim
+Abandoned as of 2023 Jun 02 17:55:38 Fri +08
+* Emacs
+** Build emacs 29 from source
+#+begin_src shell
+# clone source code
+git clone --depth=1 --branch emacs-29 git://git.savannah.gnu.org/emacs.git
+
+# install tools to compile
+sudo apt install -y autoconf autogen automake gcc libgccjit0 libgccjit-9-dev libjansson4 libjansson-dev gnutls-bin build-essential software-properties-common libgtk-3-dev libgnutls28-dev libtiff5-dev libgif-dev libjpeg-dev libpng-dev libxpm-dev libncurses-dev texinfo imagemagick libmagickwand-dev libsqlite3-dev elpa-pdf-tools cmake libvterm-dev libtool-bin
+
+#compile and install
+./autogen.sh && ./configure --with-native-compilation=aot --with-json --with-sqlite3 --with-tree-sitter --with-gnutls --with-imagemagick --with-pgtk
+make -j$(proc)
+sudo make install
+
+# create symbolic links
+ln -s ~/dotconfig/emacs/init.el ~/.emacs.d/init.el
+#for org agenda files and roam files
+ln -s ~/Nextcloud/org ~/Documents/org
+#+end_src
+** Mannual steps
+Most emacs package I use will be automatically downloaded, but some packages needs additional mannual configuration.
+*** Open AI API Key
+#+begin_src shell
+# replace key with real API key
+export open_api_key="key"
+cat > ~/.netrc <<EOF
+machine api.openai.com login org-ai password $open_api_key
+EOF
+#+end_src
+
