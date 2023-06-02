@@ -950,7 +950,7 @@ Uses `current-date-time-format' for the formatting the date/time."
 (use-package org-noter
   :config
   ;; Your org-noter config ........
-  (require 'org-noter-pdftools))
+)
 
 (use-package org-pdftools
   :hook (org-mode . org-pdftools-setup-link))
@@ -1014,3 +1014,12 @@ With a prefix ARG, remove start location."
 ;;                :files ("*.el" "*.md" "*.py"))
 ;; (add-to-list 'load-path "~/.emacs.d/straight/repos/mind-wave")
 ;; (require 'mind-wave)
+
+(when (and (eq system-type 'gnu/linux)
+           (string-match
+            "Linux.*Microsoft.*Linux"
+            (shell-command-to-string "uname -a")))
+  (setq
+   browse-url-generic-program  "/mnt/c/Windows/System32/cmd.exe"
+   browse-url-generic-args     '("/c" "start")
+   browse-url-browser-function #'browse-url-generic))
