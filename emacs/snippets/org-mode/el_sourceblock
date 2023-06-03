@@ -2,6 +2,6 @@
 # name: emacs lisp source block 
 # key: <el
 # --
-#+BEGIN_SRC el
+#+BEGIN_SRC emacs-lisp
 $0
 #+END_SRC
