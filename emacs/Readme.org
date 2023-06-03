@@ -22,6 +22,7 @@ ln -s ~/dotconfig/zsh/zshrc ~/.zshrc
 source ~/.zshrc
 #+end_src
 By right the p10k configuration menu will popup, go through it and it should work.
+
 * TMUX
 Version must be greater than 3.3, if package manager version is lower than than, can try to compile latest from source.
  #+begin_src shell
@@ -37,6 +38,7 @@ tmux source-file ~/.tmux.conf
 
 * NeoVim
 Abandoned as of 2023 Jun 02 17:55:38 Fri +08
+
 * Emacs
 ** Build emacs 29 from source
 #+begin_src shell
@@ -56,6 +58,7 @@ ln -s ~/dotconfig/emacs/init.el ~/.emacs.d/init.el
 #for org agenda files and roam files
 ln -s ~/Nextcloud/org ~/Documents/org
 #+end_src
+
 ** Mannual steps
 Most emacs package I use will be automatically downloaded, but some packages needs additional mannual configuration.
 *** Open AI API Key
