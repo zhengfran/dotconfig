@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: emacs lisp source block 
+# key: <el
+# --
+#+BEGIN_SRC el
+$0
+#+END_SRC

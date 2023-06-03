@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: metadata
+# key: <meta
+# --
+
+#+TITLE: $1
+#+AUTHOR: Zheng Zhicheng
+#+DATE: `(format-time-string "%Y-%m-%d")`
+
+$0
