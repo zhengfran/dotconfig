@@ -838,14 +838,6 @@
 ;; save org mode after refiling
 (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-(require 'org-tempo)
-(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-(add-to-list 'org-structure-template-alist '("cc" . "src c"))
-(add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-(add-to-list 'org-structure-template-alist '("ai" . "ai")) ;;for org-ai
-(add-to-list 'org-structure-template-alist '("py" . "src python"))
-
 (setq org-src-fontify-natively t
     org-src-tab-acts-natively t
     org-confirm-babel-evaluate nil
@@ -897,32 +889,18 @@
 ;;    "ebp"  '(eaf-open-pdf-from-history :which-key "eaf open pdf from history")
 ;; )
 
-;; insert date and time
-(defvar current-date-time-format "%Y %b %d %H:%M:%S %a %Z"
-  "Format of date to insert with `insert-current-date-time' func
-See help of `format-time-string' for possible replacements")
-
-(defvar current-time-format "%H:%M:%S"
-  "Format of date to insert with `insert-current-time' func.
-Note the weekly scope of the command's precision.")
-
-(defun zzc/insert-current-date-time ()
-  "insert the current date and time into current buffer.
-Uses `current-date-time-format' for the formatting the date/time."
-       (interactive)
-       (insert (format-time-string current-date-time-format (current-time)))
-       (insert "\n"))
-
-(defun zzc/insert-current-time ()
-  "insert the current time (1-week scope) into the current buffer."
-       (interactive)
-       (insert (format-time-string current-time-format (current-time)))
-       (insert "\n"))
+(use-package yasnippet
+  :init
+  (add-hook 'yas-minor-mode-hook (lambda()
+				       (yas-activate-extra-mode 'fundamental-mode)))
+  :config
+  (setq yas-snippet-dirs '("~/dotconfig/emacs/snippets"))
+  (yas-global-mode 1))
 
 (zzc/leader-keys
-  "i"  '(:ignore t :which-key "insert")
-  "id"  '(zzc/insert-current-date-time :which-key "Inser current date and time")
-  "it"  '(zzc/insert-current-time :which-key "Insert current time"))
+  "s"  '(:ignore t :which-key "snippet")
+  "sc"  '(yas-new-snippet :which-key "Create new snippet")
+  "si"  '(yas-insert-snippet :which-key "Insert snippet"))
 
 ;;(use-package ledger-mode)
 
@@ -948,6 +926,7 @@ Uses `current-date-time-format' for the formatting the date/time."
   "tv" '(counsel-load-theme :which-key "open vterm"))
 
 (use-package org-noter
+  :after org-pdftools
   :config
   ;; Your org-noter config ........
 )
@@ -988,6 +967,11 @@ With a prefix ARG, remove start location."
   (with-eval-after-load 'pdf-annot
     (add-hook 'pdf-annot-activate-handler-functions #'org-noter-pdftools-jump-to-note)))
 
+(straight-use-package
+ '(org-ai :type git :host github :repo "rksm/org-ai"
+          :local-repo "org-ai"
+          :files ("*.el" "README.md" "snippets")))
+
 (use-package org-ai
   :ensure t
   :commands (org-ai-mode
@@ -997,7 +981,8 @@ With a prefix ARG, remove start location."
   (org-ai-global-mode) ; installs global keybindings on C-c M-a
   :config
   ;;(setq org-ai-default-chat-model "gpt-4") ; if you are on the gpt-4 beta:
-  (org-ai-install-yasnippets)) ; if you are using yasnippet and want `ai` snippets
+  (org-ai-install-yasnippets)
+) ; if you are using yasnippet and want `ai` snippets
 
 (zzc/leader-keys
   "oa"  '(:ignore t :which-key "org ai")

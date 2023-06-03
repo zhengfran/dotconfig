@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: org-ai 
+# key: <ai 
+# --
+#+BEGIN_SRC org_ai
+$0
+#+END_SRC
