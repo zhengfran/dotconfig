@@ -889,48 +889,13 @@
 ;;    "ebp"  '(eaf-open-pdf-from-history :which-key "eaf open pdf from history")
 ;; )
 
-;; insert date and time
-(defvar current-date-time-format "%Y %b %d %H:%M:%S %a %Z"
-  "Format of date to insert with `insert-current-date-time' func
-See help of `format-time-string' for possible replacements")
-
-(defvar current-date-format "%d %b %Y"
-  "Format of date to insert with `insert-current-date' func.
-Note the weekly scope of the command's precision.")
-
-(defvar current-time-format "%H:%M:%S"
-  "Format of date to insert with `insert-current-time' func.
-Note the weekly scope of the command's precision.")
-
-(defun zzc/insert-current-date ()
-  "insert the current date into the current buffer."
-       (interactive)
-       (insert (format-time-string current-date-format (current-time))))
-
-(defun zzc/insert-current-date-time ()
-  "insert the current date and time into current buffer.
-Uses `current-date-time-format' for the formatting the date/time."
-       (interactive)
-       (insert (format-time-string current-date-time-format (current-time)))
-       (insert "\n"))
-
-(defun zzc/insert-current-time ()
-  "insert the current time (1-week scope) into the current buffer."
-       (interactive)
-       (insert (format-time-string current-time-format (current-time))))
-
-(zzc/leader-keys
-  "i"  '(:ignore t :which-key "insert")
-  "id"  '(zzc/insert-current-date :which-key "Inser current date")
-  "if"  '(zzc/insert-current-date-time :which-key "Inser current date and time")
-  "it"  '(zzc/insert-current-time :which-key "Insert current time"))
-
 (use-package yasnippet
+  :init
+  (add-hook 'yas-minor-mode-hook (lambda()
+				       (yas-activate-extra-mode 'fundamental-mode)))
   :config
   (setq yas-snippet-dirs '("~/dotconfig/emacs/snippets"))
-  (yas-global-mode 1)
-  (add-hook 'yas-minor-mode-hook (lamda()
-				       (yas-activate-extra-mode 'fundamental-mode))))
+  (yas-global-mode 1))
 
 (zzc/leader-keys
   "s"  '(:ignore t :which-key "snippet")
