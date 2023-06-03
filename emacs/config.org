@@ -123,13 +123,35 @@
   (general-create-definer zzc/leader-keys
     :keymaps '(normal insert visual emacs)
     :prefix "SPC"
-    :global-prefix " M-SPC"))
+    :global-prefix "M-SPC"))
 #+end_src
 
 * Buffer & Window
 ** Where to open new buffer
-#+begin_src emacs-lisp
+#+BEGIN_SRC emacs-lisp
 
+#+END_SRC
+** Perspective
+#+BEGIN_SRC emacs-lisp
+(use-package perspective
+  :bind
+  ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
+  :custom
+  (persp-mode-prefix-key (kbd "C-c p"))  ; pick your own prefix key here
+  :config
+  (setq persp-state-default-file "~/.emacs.d/persp-session")
+  (add-hook 'kill-emacs-hook #'persp-state-save)
+  :init
+  (persp-mode))
+#+END_SRC
+
+** Projectile
+#+begin_src emacs-lisp
+(use-package projectile
+  :init
+  (projectile-mode))
+(zzc/leader-keys
+    "pp"  '(projectile-command-map :which-key "projectile prefix"))
 #+end_src
 ** Key mapping
 #+begin_src emacs-lisp
@@ -148,10 +170,6 @@
 (winner-mode 1)
 (global-set-key (kbd "C-c u") 'winner-undo)
 (global-set-key (kbd "C-c r") 'winner-redo)
-#+end_src
-** Projectile
-#+begin_src emacs-lisp
-(use-package projectile)
 #+end_src
 * File
 ** Bookmarks
@@ -1147,7 +1165,6 @@ Needs to set API KEY in =~/.netrc= , probably can investigate =~/.authinf.pgp= l
 ;; (add-to-list 'load-path "~/.emacs.d/straight/repos/mind-wave")
 ;; (require 'mind-wave)
 #+end_src
-
 
 * System related
 ** WSL

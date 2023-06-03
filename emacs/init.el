@@ -95,9 +95,26 @@
   (general-create-definer zzc/leader-keys
     :keymaps '(normal insert visual emacs)
     :prefix "SPC"
-    :global-prefix " M-SPC"))
+    :global-prefix "M-SPC"))
 
 
+
+(use-package perspective
+  :bind
+  ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
+  :custom
+  (persp-mode-prefix-key (kbd "C-c p"))  ; pick your own prefix key here
+  :config
+  (setq persp-state-default-file "~/.emacs.d/persp-session")
+  (add-hook 'kill-emacs-hook #'persp-state-save)
+  :init
+  (persp-mode))
+
+(use-package projectile
+  :init
+  (projectile-mode))
+(zzc/leader-keys
+    "pp"  '(projectile-command-map :which-key "projectile prefix"))
 
 (zzc/leader-keys
   "b"  '(:ignore t :which-key "buffer")
@@ -112,8 +129,6 @@
 (winner-mode 1)
 (global-set-key (kbd "C-c u") 'winner-undo)
 (global-set-key (kbd "C-c r") 'winner-redo)
-
-(use-package projectile)
 
 ;; save bookmark on change
 (setq bookmark-save-flag 1)
