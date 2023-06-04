@@ -1105,6 +1105,7 @@ Need to install =cmake= and =libverm-dev=
   "tv" '(counsel-load-theme :which-key "open vterm"))
 #+end_src
 ** Ctags
+Needs to install universal-ctags
 #+BEGIN_SRC emacs-lisp
 
 #+END_SRC
