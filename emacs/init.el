@@ -1,4 +1,6 @@
 ;; -*- lexical-binding: t; -*-
+;;disable warnings temporarily
+(setq warning-minimum-level :emergency)
 ;; The default is 800 kilobytes.  Measured in bytes.
 (setq gc-cons-threshold (* 50 1000 1000))
 ;; Profile emacs startup
@@ -129,6 +131,25 @@
 (winner-mode 1)
 (global-set-key (kbd "C-c u") 'winner-undo)
 (global-set-key (kbd "C-c r") 'winner-redo)
+
+(defvar toggle-one-window-window-configuration nil
+  "The window configuration use for `toggle-one-window'.")
+
+(defun toggle-one-window ()
+  "Toggle between window layout and one window."
+  (interactive)
+  (if (equal (length (cl-remove-if #'window-dedicated-p (window-list))) 1)
+      (if toggle-one-window-window-configuration
+          (progn
+            (set-window-configuration toggle-one-window-window-configuration)
+            (setq toggle-one-window-window-configuration nil))
+        (message "No other windows exist."))
+    (setq toggle-one-window-window-configuration (current-window-configuration))
+    (delete-other-windows)))
+(general-define-key
+ :prefix "C-c"
+ ;; bind "C-c a" to 'org-agenda
+ "m" 'toggle-one-window)
 
 ;; save bookmark on change
 (setq bookmark-save-flag 1)
@@ -940,6 +961,8 @@
   "t"  '(:ignore t :which-key "toggles")
   "tv" '(counsel-load-theme :which-key "open vterm"))
 
+
+
 (use-package org-noter
   :after org-pdftools
   :config
@@ -981,6 +1004,10 @@ With a prefix ARG, remove start location."
                            (org-noter--pretty-print-location location))))))))
   (with-eval-after-load 'pdf-annot
     (add-hook 'pdf-annot-activate-handler-functions #'org-noter-pdftools-jump-to-note)))
+
+(use-package nov
+  :init
+  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
 
 (straight-use-package
  '(org-ai :type git :host github :repo "rksm/org-ai"

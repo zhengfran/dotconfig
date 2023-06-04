@@ -6,6 +6,8 @@
 * Startup
 #+begin_src emacs-lisp
 ;; -*- lexical-binding: t; -*-
+;;disable warnings temporarily
+(setq warning-minimum-level :emergency)
 ;; The default is 800 kilobytes.  Measured in bytes.
 (setq gc-cons-threshold (* 50 1000 1000))
 ;; Profile emacs startup
@@ -171,6 +173,28 @@
 (global-set-key (kbd "C-c u") 'winner-undo)
 (global-set-key (kbd "C-c r") 'winner-redo)
 #+end_src
+** Maxmize window toggle
+#+BEGIN_SRC emacs-lisp
+(defvar toggle-one-window-window-configuration nil
+  "The window configuration use for `toggle-one-window'.")
+
+(defun toggle-one-window ()
+  "Toggle between window layout and one window."
+  (interactive)
+  (if (equal (length (cl-remove-if #'window-dedicated-p (window-list))) 1)
+      (if toggle-one-window-window-configuration
+          (progn
+            (set-window-configuration toggle-one-window-window-configuration)
+            (setq toggle-one-window-window-configuration nil))
+        (message "No other windows exist."))
+    (setq toggle-one-window-window-configuration (current-window-configuration))
+    (delete-other-windows)))
+(general-define-key
+ :prefix "C-c"
+ ;; bind "C-c a" to 'org-agenda
+ "m" 'toggle-one-window)
+#+END_SRC
+
 * File
 ** Bookmarks
 #+begin_src emacs-lisp
@@ -1080,7 +1104,12 @@ Need to install =cmake= and =libverm-dev=
   "t"  '(:ignore t :which-key "toggles")
   "tv" '(counsel-load-theme :which-key "open vterm"))
 #+end_src
-* Notes
+** Ctags
+#+BEGIN_SRC emacs-lisp
+
+#+END_SRC
+
+* Book Notes
 Need to do M-x pdf-tools-install
 #+begin_src emacs-lisp
 (use-package org-noter
@@ -1124,6 +1153,10 @@ With a prefix ARG, remove start location."
                            (org-noter--pretty-print-location location))))))))
   (with-eval-after-load 'pdf-annot
     (add-hook 'pdf-annot-activate-handler-functions #'org-noter-pdftools-jump-to-note)))
+
+(use-package nov
+  :init
+  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
 #+end_src
 * AI
 ** Org-AI
