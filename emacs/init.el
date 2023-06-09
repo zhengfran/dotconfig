@@ -1,6 +1,8 @@
 ;; -*- lexical-binding: t; -*-
 ;;disable warnings temporarily
 (setq warning-minimum-level :emergency)
+;;disable bell
+(setq visible-bell 1)
 ;; The default is 800 kilobytes.  Measured in bytes.
 (setq gc-cons-threshold (* 50 1000 1000))
 ;; Profile emacs startup
@@ -10,21 +12,6 @@
     (emacs-init-time "%.2f")
         gcs-done)))
 (defvar native-comp-deferred-compilation-deny-list nil)
-
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-(straight-use-package 'use-package)
-(setq straight-use-package-by-default t)
 
 ;; Initialize package sources
 (require 'package)
@@ -99,7 +86,32 @@
     :prefix "SPC"
     :global-prefix "M-SPC"))
 
+(setq
+ display-buffer-alist
+ '(("^\\*[Hh]elp"                            ;正则匹配buffer name
+    (display-buffer-reuse-window
+     ;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些alist
+     display-buffer-in-side-window)
+    (side . right)                        ;参数alist从这里开始。这个side会被display-buffer-in-side-window使用
+    (window-width . 0.5)                     ;emacs会自动把这个设置到window-parameter里
+    (window-height . 0.33)                   ;同上
+    (slot . 1)                               ;这个会被display-buffer-in-side-window使用，控制window位置
+    (reusable-frames . visible)              ;这个参数看第三个链接的display-buffer
+    (haha . whatever)                        ;当然随你放什么
+    (window-parameters                       ;emacs 26及以上会自动把下面的设置到window-parameter里
+     (select . t)                            ;自定义的param
+     (quit . t)                              ;同上
+     (popup . t)                             ;同上
+     (mode-line-format . none)               ;emacs version > 25， none会隐藏mode line，nil会显示...
+     (no-other-window . t)                   ;随你设置其他的window-parameter，看文档
+     ))))
 
+(use-package project
+  ;; Cannot use :hook because 'project-find-functions does not end in -hook
+  ;; Cannot use :init (must use :config) because otherwise
+  ;; project-find-functions is not yet initialized.
+  :config
+  (setq project-vc-extra-root-markers '(".project" "*.csproj")))
 
 (use-package perspective
   :bind
@@ -111,12 +123,6 @@
   (add-hook 'kill-emacs-hook #'persp-state-save)
   :init
   (persp-mode))
-
-(use-package projectile
-  :init
-  (projectile-mode))
-(zzc/leader-keys
-    "pp"  '(projectile-command-map :which-key "projectile prefix"))
 
 (zzc/leader-keys
   "b"  '(:ignore t :which-key "buffer")
@@ -169,170 +175,73 @@
   "."  '(find-file :which-key "find file")
 )
 
-(use-package treemacs
-  :ensure t
-  :defer t
+;; (use-package ivy
+;;   :bind (("C-s" . swiper)
+;;          :map ivy-minibuffer-map
+;;          ("TAB" . ivy-alt-done)
+;;          ("C-l" . ivy-alt-done)
+;;          ("C-j" . ivy-next-line)
+;;          ("C-k" . ivy-previous-line)
+;;          ("C-q" . ivy-immediate-done)
+;;          :map ivy-switch-buffer-map
+;;          ("C-k" . ivy-previous-line)
+;;          ("C-l" . ivy-done)
+;;          ("C-d" . ivy-switch-buffer-kill)
+;;          :map ivy-reverse-i-search-map
+;;          ("C-k" . ivy-previous-line)
+;;          ("C-d" . ivy-reverse-i-search-kill))
+;;   :config
+;;   (ivy-mode 1))
+;; (use-package counsel
+;;     :bind (("M-x" . counsel-M-x)
+;;            ("C-x b" . counsel-ibuffer)
+;;            ("C-x C-f" . counsel-find-file)
+;;            :map minibuffer-local-map
+;;            ("C-r" . 'counsel-minibuffer-history)))
+;; (use-package ivy-posframe
+;;       :config 
+;;      (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display))) 
+;;      (ivy-posframe-mode 1))
+;; (use-package ivy-rich
+;;     :config
+;;     (ivy-rich-mode 1))
+
+(use-package vertico
   :init
-  (with-eval-after-load 'winum
-    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-  :config
-  (progn
-    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-          treemacs-deferred-git-apply-delay        0.5
-          treemacs-directory-name-transformer      #'identity
-          treemacs-display-in-side-window          t
-          treemacs-eldoc-display                   'simple
-          treemacs-file-event-delay                2000
-          treemacs-file-extension-regex            treemacs-last-period-regex-value
-          treemacs-file-follow-delay               0.2
-          treemacs-file-name-transformer           #'identity
-          treemacs-follow-after-init               t
-          treemacs-expand-after-init               t
-          treemacs-find-workspace-method           'find-for-file-or-pick-first
-          treemacs-git-command-pipe                ""
-          treemacs-goto-tag-strategy               'refetch-index
-          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-          treemacs-hide-dot-git-directory          t
-          treemacs-indentation                     2
-          treemacs-indentation-string              " "
-          treemacs-is-never-other-window           nil
-          treemacs-max-git-entries                 5000
-          treemacs-missing-project-action          'ask
-          treemacs-move-forward-on-expand          nil
-          treemacs-no-png-images                   nil
-          treemacs-no-delete-other-windows         t
-          treemacs-project-follow-cleanup          nil
-          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-          treemacs-position                        'left
-          treemacs-read-string-input               'from-child-frame
-          treemacs-recenter-distance               0.1
-          treemacs-recenter-after-file-follow      nil
-          treemacs-recenter-after-tag-follow       nil
-          treemacs-recenter-after-project-jump     'always
-          treemacs-recenter-after-project-expand   'on-distance
-          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-          treemacs-project-follow-into-home        nil
-          treemacs-show-cursor                     nil
-          treemacs-show-hidden-files               t
-          treemacs-silent-filewatch                nil
-          treemacs-silent-refresh                  nil
-          treemacs-sorting                         'alphabetic-asc
-          treemacs-select-when-already-in-treemacs 'move-back
-          treemacs-space-between-root-nodes        t
-          treemacs-tag-follow-cleanup              t
-          treemacs-tag-follow-delay                1.5
-          treemacs-text-scale                      nil
-          treemacs-user-mode-line-format           nil
-          treemacs-user-header-line-format         nil
-          treemacs-wide-toggle-width               70
-          treemacs-width                           35
-          treemacs-width-increment                 1
-          treemacs-width-is-initially-locked       t
-          treemacs-workspace-switch-cleanup        nil)
-
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
-
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (treemacs-fringe-indicator-mode 'always)
-    (when treemacs-python-executable
-      (treemacs-git-commit-diff-mode t))
-
-    (pcase (cons (not (null (executable-find "git")))
-                 (not (null treemacs-python-executable)))
-      (`(t . t)
-       (treemacs-git-mode 'deferred))
-      (`(t . _)
-       (treemacs-git-mode 'simple)))
-
-    (treemacs-hide-gitignored-files-mode nil)))
-  ;;:bind
-  ;;(:map global-map
-  ;;      ("M-0"       . treemacs-select-window)
-  ;;      ("C-x t 1"   . treemacs-delete-other-windows)
-  ;;      ("C-x t t"   . treemacs)
-  ;;      ("C-x t d"   . treemacs-select-directory)
-  ;;      ("C-x t B"   . treemacs-bookmark)
-  ;;      ("C-x t C-t" . treemacs-find-file)
-  ;;      ("C-x t M-t" . treemacs-find-tag)))
-
-(use-package treemacs-evil
-  :after (treemacs evil)
-  :ensure t)
-
-;;(use-package treemacs-projectile
-;;  :after (treemacs projectile)
-;;  :ensure t)
-
-(use-package treemacs-icons-dired
-  :hook (dired-mode . treemacs-icons-dired-enable-once)
-  :ensure t)
-
-;;(use-package treemacs-magit
-;;  :after (treemacs magit)
-;;  :ensure t)
-
-;;(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-;;  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
-;;  :ensure t
-;;  :config (treemacs-set-scope-type 'Perspectives))
-;;
-;;(use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
-;;  :after (treemacs)
-;;  :ensure t
-;;  :config (treemacs-set-scope-type 'Tabs))
-
-
-(zzc/leader-keys
-  "o"  '(:ignore t :which-key "treemacs")
-  "op"  '(treemacs :which-key "Toggle treemacs")
-  "of"  '(treemacs-find-file :which-key "Show current file in treemacs")
-  "ot"  '(treemacs-load-theme :which-key "Change Treemacs theme")
+  (vertico-mode)
+  (vertico-multiform-mode))
+(use-package vertico-posframe
+    :init
+    (vertico-posframe-mode)
+    :config
+    (setq vertico-posframe-poshandler 'posframe-poshandler-point-window-center)
 )
-
-(use-package ivy
-    :bind (("C-s" . swiper)
-           :map ivy-minibuffer-map
-           ("TAB" . ivy-alt-done)
-           ("C-l" . ivy-alt-done)
-           ("C-j" . ivy-next-line)
-           ("C-k" . ivy-previous-line)
-           ("C-q" . ivy-immediate-done)
-           :map ivy-switch-buffer-map
-           ("C-k" . ivy-previous-line)
-           ("C-l" . ivy-done)
-           ("C-d" . ivy-switch-buffer-kill)
-           :map ivy-reverse-i-search-map
-           ("C-k" . ivy-previous-line)
-           ("C-d" . ivy-reverse-i-search-kill))
-    :config
-    (ivy-mode 1))
-
-(use-package counsel
-    :bind (("M-x" . counsel-M-x)
-           ("C-x b" . counsel-ibuffer)
-           ("C-x C-f" . counsel-find-file)
-           :map minibuffer-local-map
-           ("C-r" . 'counsel-minibuffer-history)))
-(use-package ivy-posframe
-      :config 
-     (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display))) 
-     (ivy-posframe-mode 1))
-(use-package ivy-rich
-    :config
-    (ivy-rich-mode 1))
-
-(use-package helpful
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
+;;save history
+(use-package savehist
+  :init
+  (savehist-mode))
+(use-package orderless
+  :config
+  (setq completion-styles '(orderless)))
+(use-package marginalia
+  :config
+  (marginalia-mode))
+(use-package embark
   :bind
-  ([remap describe-function] . counsel-describe-function)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
+  ( "C-;" . 'embark-act))
+(use-package consult
+  :bind
+  ( "C-s" . 'consult-line))
+
+;;  (use-package helpful
+;;    :custom
+;;    (counsel-describe-function-function #'helpful-callable)
+;;    (counsel-describe-variable-function #'helpful-variable)
+;;    :bind
+;;    ([remap describe-function] . counsel-describe-function)
+;;    ([remap describe-command] . helpful-command)
+;;    ([remap describe-variable] . counsel-describe-variable)
+;;    ([remap describe-key] . helpful-key))
 
 (use-package hydra)
 (defhydra hydra-text-scale (:timeout 4)
@@ -361,55 +270,38 @@
     ;;          rime-predicate-after-alphabet-char-p
     ;;          rime-predicate-prog-in-code-p))
     ;; )
-  (use-package pyim
+(use-package pyim
+  :ensure nil
+  :config
+  ;; 激活 basedict 拼音词库
+  (use-package pyim-basedict
     :ensure nil
-    :config
-    ;; 激活 basedict 拼音词库
-    (use-package pyim-basedict
-      :ensure nil
-      :config (pyim-basedict-enable))
+    :config (pyim-basedict-enable))
 
-    ;;(setq ivy-re-builders-alist
-    ;;      '((t . pyim-cregexp-ivy)))
+  ;;(setq ivy-re-builders-alist
+  ;;      '((t . pyim-cregexp-ivy)))
 
-    (setq default-input-method "pyim")
+  (setq default-input-method "pyim")
 
-    ;; 我使用全拼
-    (setq pyim-default-scheme 'quanpin)
-
-    ;; 设置 pyim 探针设置，这是 pyim 高级功能设置，可以实现 *无痛* 中英文切换 :-)
-    ;; 我自己使用的中英文动态切换规则是：
-    ;; 1. 光标只有在注释里面时，才可以输入中文。
-    ;; 2. 光标前是汉字字符时，才能输入中文。
-    ;; 3. 使用 M-j 快捷键，强制将光标前的拼音字符串转换为中文。
-    ;; (setq-default pyim-english-input-switch-functions
-    ;;               '(pyim-probe-dynamic-english
-    ;;                 pyim-probe-program-mode
-    ;;                 pyim-probe-org-structure-template))
-
-    ;; (setq-default pyim-punctuation-half-width-functions
-    ;;               '(pyim-probe-punctuation-line-beginning
-    ;;                 pyim-probe-punctuation-after-punctuation))
+  ;; 我使用全拼
+  (setq pyim-default-scheme 'quanpin)
 
     ;; 开启拼音
-    ;; 搜索功能
-    ;; (pyim-isearch-mode 1)
+  ;; 搜索功能
+  ;; (pyim-isearch-mode 1)
 
-    ;; 使用 posframe 来绘制选词框 
-    (require 'posframe)
-    (setq pyim-page-tooltip 'posframe)
+  ;; 使用 posframe 来绘制选词框 
+  (require 'posframe)
+  (setq pyim-page-tooltip 'posframe)
 
-    ;; 选词框显示5个候选词
-    (setq pyim-page-length 5)
+  ;; 选词框显示5个候选词
+  (setq pyim-page-length 5)
 
-    ;; 让 Emacs 启动时自动加载 pyim 词库
-    (add-hook 'emacs-startup-hook
-              #'(lambda () (pyim-restart-1 t)))
-    :bind
-    (("M-j" . pyim-convert-string-at-point) ;与 pyim-probe-dynamic-english 配合
-     ("C-;" . pyim-delete-word-from-personal-buffer)))
+  ;; 让 Emacs 启动时自动加载 pyim 词库
+  (add-hook 'emacs-startup-hook
+            #'(lambda () (pyim-restart-1 t)))
 (setq default-input-method "pyim")
-(global-set-key (kbd "C-\\") 'toggle-input-method)
+(global-set-key (kbd "C-\\") 'toggle-input-method))
 
 ;; comment line helper
 (
@@ -455,6 +347,8 @@
 (menu-bar-mode -1) ;;disable menu bar
 (set-fringe-mode 10) ;;Give some breathing room
 (column-number-mode)
+(global-hl-line-mode)
+(global-visual-line-mode)
 (global-display-line-numbers-mode t)
 (setq-default display-line-numbers-width-start t)
 ;; Disable line numbers for some modes
@@ -488,82 +382,93 @@
 (zzc/leader-keys
   "ll" '(doom/toggle-line-numbers :which-key "toggle line numbers"))
 
-;;(set-face-attribute 'default nil :font "MesloLGS NF" :height 160)
-    ;; Set the fixed pitch face
-    ;;(set-face-attribute 'fixed-pitch nil :font "MesloLGS NF" :height 160)
-    ;; Set the variable pitch face
-    ;;(set-face-attribute 'variable-pitch nil :font "Cantarell" :height 200 :weight 'regular)
-    (defvar meomacs-font-size 16
-      "Current font size.")
+(defvar meomacs-font-size 16
+    "Current font size.")
 
-  (defvar meomacs-fonts '((default . "MesloLGS NF")
-			  (cjk . "Unifont")
-			  (symbol . "Unifont")
-			  (fixed . "MesloLGS NF")
-			  (fixed-serif . "Dejavu Serif")
-			  (variable . "Cantarell")
-			  (wide . "MesloLGS NF")
-			  (tall . "MesloLGS NF"))
+(defvar meomacs-fonts '((default . "MesloLGS NF")
+    (cjk . "Unifont")
+    (symbol . "Unifont")
+    (fixed . "MesloLGS NF")
+    (fixed-serif . "Dejavu Serif")
+    (variable . "Cantarell")
+    (wide . "MesloLGS NF")
+    (tall . "MesloLGS NF"))
     "Fonts to use.")
 (defun meomacs--get-font-family (key)
-  (let ((font (alist-get key meomacs-fonts)))
-    (if (string-empty-p font)
-	(alist-get 'default meomacs-fonts)
-      font)))
+   (let ((font (alist-get key meomacs-fonts)))
+     (if (string-empty-p font)
+	 (alist-get 'default meomacs-fonts)
+       font)))
 
 (defun meomacs-load-default-font ()
-  "Load default font configuration."
-  (let ((default-font (format "%s-%s"
-			      (meomacs--get-font-family 'default)
-			      meomacs-font-size)))
-    (add-to-list 'default-frame-alist (cons 'font default-font))))
+    "Load default font configuration."
+    (let ((default-font (format "%s-%s"
+				(meomacs--get-font-family 'default)
+				meomacs-font-size)))
+      (add-to-list 'default-frame-alist (cons 'font default-font))))
 
 (defun meomacs-load-face-font ()
-  "Load face font configuration."
-  (let ((variable-font (meomacs--get-font-family 'variable))
-	(fixed-font (meomacs--get-font-family 'fixed))
-	(fixed-serif-font (meomacs--get-font-family 'fixed-serif)))
-    (set-face-attribute 'variable-pitch nil :family variable-font)
-    (set-face-attribute 'fixed-pitch nil :family fixed-font)
-    (set-face-attribute 'fixed-pitch-serif nil :family fixed-serif-font)))
+    "Load face font configuration."
+    (let ((variable-font (meomacs--get-font-family 'variable))
+	  (fixed-font (meomacs--get-font-family 'fixed))
+	  (fixed-serif-font (meomacs--get-font-family 'fixed-serif)))
+      (set-face-attribute 'variable-pitch nil :family variable-font)
+      (set-face-attribute 'fixed-pitch nil :family fixed-font)
+      (set-face-attribute 'fixed-pitch-serif nil :family fixed-serif-font)))
 
 (defun meomacs-load-charset-font (&optional font)
-  "Load charset font configuration."
-  (let ((default-font (or font (format "%s-%s"
-				       (meomacs--get-font-family 'default)
-				       meomacs-font-size)))
-	(cjk-font (meomacs--get-font-family 'cjk))
-	(symbol-font (meomacs--get-font-family 'symbol)))
-    (set-frame-font default-font)
-    (let ((fontset (create-fontset-from-ascii-font default-font)))
-      ;; Fonts for charsets
-      (dolist (charset '(kana han hangul cjk-misc bopomofo))
-	(set-fontset-font fontset charset cjk-font))
-      (set-fontset-font fontset 'symbol symbol-font)
-      ;; Apply fontset
-      (set-frame-parameter nil 'font fontset)
-      (add-to-list 'default-frame-alist (cons 'font fontset)))))
+    "Load charset font configuration."
+    (let ((default-font (or font (format "%s-%s"
+					 (meomacs--get-font-family 'default)
+					 meomacs-font-size)))
+	  (cjk-font (meomacs--get-font-family 'cjk))
+	  (symbol-font (meomacs--get-font-family 'symbol)))
+      (set-frame-font default-font)
+      (let ((fontset (create-fontset-from-ascii-font default-font)))
+	;; Fonts for charsets
+	(dolist (charset '(kana han hangul cjk-misc bopomofo))
+	  (set-fontset-font fontset charset cjk-font))
+	(set-fontset-font fontset 'symbol symbol-font)
+	;; Apply fontset
+	(set-frame-parameter nil 'font fontset)
+	(add-to-list 'default-frame-alist (cons 'font fontset)))))
 
-(meomacs-load-default-font)
-(meomacs-load-face-font)
+  (meomacs-load-default-font)
+  (meomacs-load-face-font)
 
-;; Run after startup
-(add-hook 'after-init-hook
-	  (lambda ()
-	    (when window-system
-	      (meomacs-load-charset-font))))
+  ;; Run after startup
+  (add-hook 'after-init-hook
+	    (lambda ()
+	      (when window-system
+		(meomacs-load-charset-font))))
 
-(use-package doom-themes
-  :init (load-theme 'doom-solarized-light t))
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 10)))
 ;;M-X run all-the-icons-install-fonts
 (use-package all-the-icons) ;;needed by doom-modeline
 
-(zzc/leader-keys
-  "t"  '(:ignore t :which-key "toggles")
-  "te" '(counsel-load-theme :which-key "choose theme"))
+(use-package modus-themes
+  :config
+  ;; Add all your customizations prior to loading the themes
+  (setq modus-themes-italic-constructs t
+        modus-themes-bold-constructs t
+	modus-themes-org-blocks  'tinted-background
+	modus-themes-region '(bg-only))
+  (setq modus-themes-headings
+	'((1 . (rainbow overline background 1.3))
+	  (2 . (rainbow overline background 1.2))
+	  (3 . (rainbow bold 1.1))
+	  (t . (semilight 1.05))))
+
+  (setq modus-themes-scale-headings t)
+
+  ;; Maybe define some palette overrides, such as by using our presets
+   (setq modus-themes-common-palette-overrides
+         modus-themes-preset-overrides-intense)
+
+  ;; Load the theme of your choice.
+  (load-theme 'modus-operandi t))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -600,8 +505,6 @@
   ("C-j" awesome-tab-ace-jump)
   ("C-h" awesome-tab-move-current-tab-to-left)
   ("C-l" awesome-tab-move-current-tab-to-right)
-  ("b" ivy-switch-buffer)
-  ("g" awesome-tab-counsel-switch-group)
   ("C-k" kill-current-buffer)
   ("C-S-k" awesome-tab-kill-other-buffers-in-current-group)
   ("q" nil "quit"))
@@ -618,68 +521,45 @@
   "tca" '(awesome-tab-kill-other-buffers-in-current-group :which-key "close all tabs in current group")
   )
 
-(defun zzc/org-mode-setup ()
-  (variable-pitch-mode 1)
-  (setq org-src-preserve-indentation nil 
-      org-edit-src-content-indentation 0)
-  (setq org-hide-emphasis-markers t)
-  (visual-line-mode 1))
-
-(defun zzc/org-font-setup ()
-  ;; Replace list hyphen with dot
-  (font-lock-add-keywords 'org-mode
-                        '(("^ *\\([-]\\) "
-                          (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-
-  ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.4)
-                  (org-level-2 . 1.3)
-                  (org-level-3 . 1.2)
-                  (org-level-4 . 1.1)
-                  (org-level-5 . 1.05)
-                  (org-level-6 . 1.05)
-                  (org-level-7 . 1.05)
-                  (org-level-8 . 1.05)))
-    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face))
-
-  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
-  (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)))
-
-  (use-package org
-    :hook (org-mode . zzc/org-mode-setup)
-    :config
-    (setq org-ellipsis " ▾")
-    (setq org-directory "~/Documents/org")
-    (zzc/org-font-setup))
-
-  ;; (use-package org-bullets
-  ;;   :after org
-  ;;   :hook (org-mode . org-bullets-mode)
-  ;;   :custom
-  ;;   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
-
-  (defun zzc/org-mode-visual-fill ()
-    (setq visual-fill-column-width 100
-          visual-fill-column-center-text t)
-    (visual-fill-column-mode 1))
-
-  (use-package visual-fill-column
-    :hook (org-mode . zzc/org-mode-visual-fill))
+(use-package org
+  :config
+  (setq org-directory "~/Documents/org"))
 
 (use-package org-modern
   :config
+   (setq
+    ;; Edit settings
+    org-auto-align-tags nil
+    org-tags-column 0
+    org-catch-invisible-edits 'show-and-error
+    org-insert-heading-respect-content t
+
+    ;; Org styling, hide markup etc.
+    org-hide-emphasis-markers t
+    org-ellipsis "…"
+
+    ;; Agenda styling
+    org-agenda-tags-column 0
+    org-agenda-time-grid
+    '((daily today require-timed)
+      (800 1000 1200 1400 1600 1800 2000)
+      " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+    org-agenda-current-time-string
+    "⭠ now ─────────────────────────────────────────────────")
   (with-eval-after-load 'org (global-org-modern-mode)))
 
-  (zzc/leader-keys
-    "l"  '(:ignore t :which-key "line/link")
-    "li" '(org-insert-link :which-key "Inser Link")
-    "ls" '(org-store-link :which-key "Generate Link"))
+(defun zzc/org-mode-visual-fill ()
+  (setq visual-fill-column-width 80
+        visual-fill-column-center-text t)
+  (visual-fill-column-mode 1))
+
+(use-package visual-fill-column
+  :hook (org-mode . zzc/org-mode-visual-fill))
+
+(zzc/leader-keys
+  "l"  '(:ignore t :which-key "line/link")
+  "li" '(org-insert-link :which-key "Inser Link")
+  "ls" '(org-store-link :which-key "Generate Link"))
 
 (setq org-agenda-dir "~/Documents/org/notes/journal"
       org-agenda-files (list org-agenda-dir))
@@ -754,90 +634,85 @@
   "ncr" '(org-clock-report :which-key "clock-report")
   "ncd" '(org-clock-display :which-key "clock-display"))
 
-(straight-use-package
-   '(ob-ledger :host github
-               :repo "overtone/emacs-live"
-               :files ("packs/stable/org-pack/lib/org-mode/lisp/ob-ledger.el")))
-
 (org-babel-do-load-languages
   'org-babel-load-languages
   '((emacs-lisp . t)
-     (ledger . t)
      (python . t)))
 (setq org-confirm-babel-evaluate nil)
 
-;; (defun vulpea-project-files ()
-;;     "Return a list of note files containing 'project' tag." ;
-;;     (seq-uniq
-;;      (seq-map
-;;       #'car
-;;       (org-roam-db-query
-;;        [:select [nodes:file]
-;;         :from tags
-;;         :left-join nodes
-;;         :on (= tags:node-id nodes:id)
-;;         :where (like tag (quote "%\"project\"%"))]))))
+(defun vulpea-project-files ()
+    "Return a list of note files containing 'project' tag." ;
+    (seq-uniq
+     (seq-map
+      #'car
+      (org-roam-db-query
+       [:select [nodes:file]
+	:from tags
+	:left-join nodes
+	:on (= tags:node-id nodes:id)
+	:where (like tag (quote "%\"project\"%"))]))))
 
-;; (defun vulpea-agenda-files-update (&rest _)
-;;   "Update the value of `org-agenda-files'."
-;;   (setq org-agenda-files (vulpea-project-files)))
+(defun vulpea-agenda-files-update (&rest _)
+  "Update the value of `org-agenda-files'."
+  (setq org-agenda-files (vulpea-project-files)))
 
-;; ;; (add-hook 'find-file-hook #'vulpea-project-update-tag)
-;; ;; (add-hook 'before-save-hook #'vulpea-project-update-tag)
+;; (add-hook 'find-file-hook #'vulpea-project-update-tag)
+;; (add-hook 'before-save-hook #'vulpea-project-update-tag)
 
-;; (advice-add 'org-agenda :before #'vulpea-agenda-files-update)
-;; (advice-add 'org-todo-list :before #'vulpea-agenda-files-update)
+(advice-add 'org-agenda :before #'vulpea-agenda-files-update)
+(advice-add 'org-todo-list :before #'vulpea-agenda-files-update)
 
- (use-package emacsql-sqlite-module)
- (use-package emacsql-sqlite-builtin)
- (use-package org-roam
-   :init
-   (setq org-roam-v2-ack t)
-   :after org
-   :custom
-   (org-roam-directory "~/Documents/org/notes")
-   (org-roam-dailies-directory "journal/")
-   (org-roam-completion-everywhere t)
-   ;; use emacs 29 built in sql
-   (org-roam-database-connector 'sqlite-builtin)
-   (org-roam-capture-templates
-    '(("d" "default" plain
-       "%?"
-       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-       :unnarrowed t)
-      ("l" "programming language" plain
-       "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
-       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-       :unnarrowed t)
-      ("b" "book notes" plain
-       "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
-       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-       :unnarrowed t)
-      ("w" "work-project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Docs\n\n"
-       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project work")
-       :unnarrowed t)
-      ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Conclusion\n\n"
-       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
-       :unnarrowed t)))
- (org-roam-dailies-capture-templates
-    '(("d" "Journal" plain 
-       "* Tasks\n\n%?\n\n* Flashes\n\n* Summary\n\n"
-       :if-new (file+head "%<%Y%m%d>.org" "#+title: %<%Y%m%d>\n#+filetags: daily\n#+startup: overview"))))
+(use-package emacsql-sqlite-module)
+(use-package emacsql-sqlite-builtin)
+(use-package org-roam
+  :ensure t
+  :init
+  (setq org-roam-v2-ack t)
+  :after org
+  :custom
+  (org-roam-directory "~/Documents/org/notes")
+  (org-roam-dailies-directory "journal/")
+  (org-roam-completion-everywhere t)
+  ;; use emacs 29 built in sql
+  (org-roam-database-connector 'sqlite-builtin)
+  (org-roam-capture-templates
+   '(("d" "default" plain
+      "%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+      :unnarrowed t)
+     ("l" "programming language" plain
+      "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+      :unnarrowed t)
+     ("b" "book notes" plain
+      "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+      :unnarrowed t)
+     ("w" "work-project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Docs\n\n"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project work")
+      :unnarrowed t)
+     ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Conclusion\n\n"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
+      :unnarrowed t)))
+(org-roam-dailies-capture-templates
+   '(("d" "Journal" plain 
+      "* Tasks\n\n%?\n\n* Flashes\n\n* Summary\n\n"
+      :if-new (file+head "%<%Y%m%d>.org" "#+title: %<%Y%m%d>\n#+filetags: daily\n#+startup: overview"))))
 
-   :bind (:map org-mode-map
-          ("C-M-q" . completion-at-point))
-   :config
-   (org-roam-setup)
-   (require 'org-roam-dailies) ;; Ensure the keymap is available
-   (org-roam-db-autosync-mode))
+  :bind (:map org-mode-map
+	 ("C-M-q" . completion-at-point))
+  :config
+  (org-roam-setup)
+  (require 'org-roam-dailies) ;; Ensure the keymap is available
+  (org-roam-db-autosync-mode))
 
- (zzc/leader-keys
-   "nr"  '(:ignore t :which-key "roam")
-   "nrf"  '(org-roam-node-find :which-key "find roam node")
-   "nrl"  '(org-roam-buffer-toggle :which-key "list roam backlinks")
-   "nri"  '(org-roam-node-insert :which-key "insert roam node")
-   "nrs"  '(org-roam-db-sync :which-key "sync roam database")
-   )
+(zzc/leader-keys
+  "nr"  '(:ignore t :which-key "roam")
+  "nrf"  '(org-roam-node-find :which-key "find roam node")
+  "nrl"  '(org-roam-buffer-toggle :which-key "list roam backlinks")
+  "nri"  '(org-roam-node-insert :which-key "insert roam node")
+  "nrs"  '(org-roam-db-sync :which-key "sync roam database")
+  )
 
 (zzc/leader-keys
     "nd"  '(:ignore t :which-key "daily")
@@ -938,8 +813,6 @@
   "sc"  '(yas-new-snippet :which-key "Create new snippet")
   "si"  '(yas-insert-snippet :which-key "Insert snippet"))
 
-;;(use-package ledger-mode)
-
 
 
 ;;(straight-use-package
@@ -947,19 +820,29 @@
 ;;              :repo "manateelazycat/lsp-bridge"
 ;;              :files ("*.el" "*.py" "acm" "core" "langserver"
 ;;                      "multiserver" "resources")))
-;;(unless (package-installed-p 'yasnippet)
-;;  (package-install 'yasnippet))
-;;(require 'yasnippet)
-;;(yas-global-mode 1)
+;;(use-package lsp-bridge
+;;   :commands lsp-bridge-mode
+;;   :load-path ""
+;;   :ensure nil
+;;   :init
+;;   (use-package markdown-mode)
+;;   (use-package posframe)
 ;;
-;;(require 'lsp-bridge)
-;;(global-lsp-bridge-mode)
+;;   :config
+;;   (setq lsp-bridge-enable-auto-format-code t)
+;;
+;;   (global-lsp-bridge-mode))
+;; (add-to-list 'load-path "~/.emacs.d/lsp-bridge")
+
+;; (use-package markdown-mode)
+;; (require 'lsp-bridge)
+;; (global-lsp-bridge-mode)
 
 (use-package vterm
     :ensure t)
 (zzc/leader-keys
   "t"  '(:ignore t :which-key "toggles")
-  "tv" '(counsel-load-theme :which-key "open vterm"))
+  "tv" '(vterm :which-key "open vterm"))
 
 
 
@@ -1009,11 +892,6 @@ With a prefix ARG, remove start location."
   :init
   (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
 
-(straight-use-package
- '(org-ai :type git :host github :repo "rksm/org-ai"
-          :local-repo "org-ai"
-          :files ("*.el" "README.md" "snippets")))
-
 (use-package org-ai
   :ensure t
   :commands (org-ai-mode
@@ -1050,3 +928,93 @@ With a prefix ARG, remove start location."
    browse-url-generic-program  "/mnt/c/Windows/System32/cmd.exe"
    browse-url-generic-args     '("/c" "start")
    browse-url-browser-function #'browse-url-generic))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(connection-local-criteria-alist
+   '(((:application tramp)
+      tramp-connection-local-default-system-profile tramp-connection-local-default-shell-profile)))
+ '(connection-local-profile-alist
+   '((tramp-connection-local-darwin-ps-profile
+      (tramp-process-attributes-ps-args "-acxww" "-o" "pid,uid,user,gid,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state=abcde" "-o" "ppid,pgid,sess,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etime,pcpu,pmem,args")
+      (tramp-process-attributes-ps-format
+       (pid . number)
+       (euid . number)
+       (user . string)
+       (egid . number)
+       (comm . 52)
+       (state . 5)
+       (ppid . number)
+       (pgrp . number)
+       (sess . number)
+       (ttname . string)
+       (tpgid . number)
+       (minflt . number)
+       (majflt . number)
+       (time . tramp-ps-time)
+       (pri . number)
+       (nice . number)
+       (vsize . number)
+       (rss . number)
+       (etime . tramp-ps-time)
+       (pcpu . number)
+       (pmem . number)
+       (args)))
+     (tramp-connection-local-busybox-ps-profile
+      (tramp-process-attributes-ps-args "-o" "pid,user,group,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "stat=abcde" "-o" "ppid,pgid,tty,time,nice,etime,args")
+      (tramp-process-attributes-ps-format
+       (pid . number)
+       (user . string)
+       (group . string)
+       (comm . 52)
+       (state . 5)
+       (ppid . number)
+       (pgrp . number)
+       (ttname . string)
+       (time . tramp-ps-time)
+       (nice . number)
+       (etime . tramp-ps-time)
+       (args)))
+     (tramp-connection-local-bsd-ps-profile
+      (tramp-process-attributes-ps-args "-acxww" "-o" "pid,euid,user,egid,egroup,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state,ppid,pgid,sid,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etimes,pcpu,pmem,args")
+      (tramp-process-attributes-ps-format
+       (pid . number)
+       (euid . number)
+       (user . string)
+       (egid . number)
+       (group . string)
+       (comm . 52)
+       (state . string)
+       (ppid . number)
+       (pgrp . number)
+       (sess . number)
+       (ttname . string)
+       (tpgid . number)
+       (minflt . number)
+       (majflt . number)
+       (time . tramp-ps-time)
+       (pri . number)
+       (nice . number)
+       (vsize . number)
+       (rss . number)
+       (etime . number)
+       (pcpu . number)
+       (pmem . number)
+       (args)))
+     (tramp-connection-local-default-shell-profile
+      (shell-file-name . "/bin/sh")
+      (shell-command-switch . "-c"))
+     (tramp-connection-local-default-system-profile
+      (path-separator . ":")
+      (null-device . "/dev/null"))))
+ '(format-all-formatters '(("Python" black) ("ledger" ledger-mode)) t)
+ '(package-selected-packages
+   '(nov org-noter-pdftools org-pdftools org-noter vterm org-roam-ui simple-httpd websocket emacsql-sqlite-builtin emacsql-sqlite-module awesome-tab modus-themes perspective yasnippet org-roam embark counsel rainbow-delimiters consult org-modern undo-tree evil-collection orderless vertico-posframe org-ai exec-path-from-shell 2048-game general all-the-icons format-all visual-fill-column djvu evil-escape marginalia doom-modeline which-key hydra no-littering)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
