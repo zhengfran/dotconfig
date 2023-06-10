@@ -1,7 +1,7 @@
-require("config_from_scratch.plugins-setup")
 require("config_from_scratch.core.options")
 require("config_from_scratch.core.keymaps")
 require("config_from_scratch.core.colorscheme")
+require("config_from_scratch.plugins-setup")
 require("config_from_scratch.plugins.comment")
 require("config_from_scratch.plugins.nvim-tree")
 require("config_from_scratch.plugins.lualine")
