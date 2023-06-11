@@ -33,8 +33,12 @@
   (exec-path-from-shell-initialize))
 
 (use-package no-littering)
-(setq auto-save-file-name-transforms
-	`((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+(setq backup-directory-alist `(("." . ,(expand-file-name "tmp/backups/" user-emacs-directory))))
+;; auto-save-mode doesn't create the path automatically!
+(make-directory (expand-file-name "tmp/auto-saves/" user-emacs-directory) t)
+
+(setq auto-save-list-file-prefix (expand-file-name "tmp/auto-saves/sessions/" user-emacs-directory)
+      auto-save-file-name-transforms `((".*" ,(expand-file-name "tmp/auto-saves/" user-emacs-directory) t)))
 
 (use-package evil
   :demand t
@@ -548,13 +552,13 @@
     "⭠ now ─────────────────────────────────────────────────")
   (with-eval-after-load 'org (global-org-modern-mode)))
 
-(defun zzc/org-mode-visual-fill ()
-  (setq visual-fill-column-width 80
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
+;; (defun zzc/org-mode-visual-fill ()
+;;   (setq visual-fill-column-width 80
+;;         visual-fill-column-center-text t)
+;;   (visual-fill-column-mode 1))
 
-(use-package visual-fill-column
-  :hook (org-mode . zzc/org-mode-visual-fill))
+;; (use-package visual-fill-column
+;;   :hook (org-mode . zzc/org-mode-visual-fill))
 
 (zzc/leader-keys
   "l"  '(:ignore t :which-key "line/link")
@@ -1009,9 +1013,8 @@ With a prefix ARG, remove start location."
      (tramp-connection-local-default-system-profile
       (path-separator . ":")
       (null-device . "/dev/null"))))
- '(format-all-formatters '(("Python" black) ("ledger" ledger-mode)) t)
  '(package-selected-packages
-   '(nov org-noter-pdftools org-pdftools org-noter vterm org-roam-ui simple-httpd websocket emacsql-sqlite-builtin emacsql-sqlite-module awesome-tab modus-themes perspective yasnippet org-roam embark counsel rainbow-delimiters consult org-modern undo-tree evil-collection orderless vertico-posframe org-ai exec-path-from-shell 2048-game general all-the-icons format-all visual-fill-column djvu evil-escape marginalia doom-modeline which-key hydra no-littering)))
+   '(awesome-tab no-littering exec-path-from-shell nov org-noter-pdftools emacsql-sqlite-module vertico-posframe org-roam-ui all-the-icons rainbow-delimiters which-key consult visual-fill-column evil-escape yasnippet doom-modeline org-modern hydra embark org-ai orderless perspective vterm format-all marginalia modus-themes general emacsql-sqlite-builtin undo-tree evil-collection)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
