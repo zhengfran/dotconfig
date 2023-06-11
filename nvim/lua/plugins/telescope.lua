@@ -3,9 +3,9 @@ return {
 	tag = "0.1.2",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
-		"nvim-telescope/telescope-fzf-native.nvim",
+		{"nvim-telescope/telescope-fzf-native.nvim", build = 'make'},
 		"tom-anders/telescope-vim-bookmarks.nvim",
-		"nvim-telescope/telescope-file-browser.nvim",
+		-- "nvim-telescope/telescope-file-browser.nvim",
 	},
 
 	config = function()
@@ -36,11 +36,11 @@ return {
 					case_mode = "smart_case", -- or "ignore_case" or "respect_case"
 					-- the default case_mode is "smart_case"
 				},
-				file_browser = {
-					theme = "ivy",
-					-- disables netrw and use telescope-file-browser in its place
-					hijack_netrw = true,
-				},
+				-- file_browser = {
+				-- 	theme = "ivy",
+				-- 	-- disables netrw and use telescope-file-browser in its place
+				-- 	hijack_netrw = true,
+				-- },
 			},
 		})
 		telescope.load_extension("fzf")
@@ -52,7 +52,7 @@ return {
 		vim.keymap.set("n", "<leader>fb", builtin.buffers, {})
 		vim.keymap.set("n", "<leader>fo", builtin.oldfiles, {})
 		vim.keymap.set("n", "<leader>fh", builtin.help_tags, {})
-		vim.keymap.set("n", "<leader>.", ":Telescope file_browser<CR>", {})
+		-- vim.keymap.set("n", "<leader>.", ":Telescope file_browser<CR>", {})
 		vim.keymap.set("n", "<leader>fm", ":Telescope vim_bookmarks all<CR>", {})
 	end,
 }
