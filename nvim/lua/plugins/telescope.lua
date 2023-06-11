@@ -6,6 +6,7 @@ return {
 		{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 		"nvim-telescope/telescope-project.nvim",
 		"tom-anders/telescope-vim-bookmarks.nvim",
+		"nvim-telescope/telescope-live-grep-args.nvim",
 		-- "nvim-telescope/telescope-file-browser.nvim",
 	},
 
@@ -13,6 +14,7 @@ return {
 		local telescope = require("telescope")
 		local actions = require("telescope.actions")
 		local project_actions = require("telescope._extensions.project.actions")
+        local lga_actions = require("telescope-live-grep-args.actions")
 		telescope.setup({
 			defaults = {
 				mappings = {
@@ -52,7 +54,17 @@ return {
 					-- 	-- Do anything you want in here. For example:
 					-- 	project_actions.change_working_directory(prompt_bufnr, false)
 					-- 	require("harpoon.ui").nav_file(1)
-                },      
+				},
+				live_grep_args = {
+					auto_quoting = true, -- enable/disable auto-quoting
+					-- define mappings, e.g.
+					mappings = { -- extend mappings
+						i = {
+							["<C-k>"] = lga_actions.quote_prompt(),
+							["<C-i>"] = lga_actions.quote_prompt({ postfix = " --iglob " }),
+						},
+					},
+				},
 				-- file_browser = {
 				-- 	theme = "ivy",
 				-- 	-- disables netrw and use telescope-file-browser in its place
@@ -63,10 +75,13 @@ return {
 		telescope.load_extension("fzf")
 		telescope.load_extension("vim_bookmarks")
 		telescope.load_extension("project")
+		telescope.load_extension("live_grep_args")
 		-- telescope.load_extension("file_browser")
 		local builtin = require("telescope.builtin")
 		vim.keymap.set("n", "<leader>ff", builtin.find_files, {})
-		vim.keymap.set("n", "<leader>fg", builtin.grep_string, {})
+		vim.keymap.set("n", "<leader>fg", builtin.live_grep, {})
+		vim.keymap.set("n", "<leader>fz", ":lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>" )
+		vim.keymap.set("n", "<leader>fw", builtin.grep_string, {})
 		vim.keymap.set("n", "<leader>fb", builtin.buffers, {})
 		vim.keymap.set("n", "<leader>fo", builtin.oldfiles, {})
 		vim.keymap.set("n", "<leader>fh", builtin.help_tags, {})
