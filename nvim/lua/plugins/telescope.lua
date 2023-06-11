@@ -3,7 +3,8 @@ return {
 	tag = "0.1.2",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
-		{"nvim-telescope/telescope-fzf-native.nvim", build = 'make'},
+		{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+		"nvim-telescope/telescope-project.nvim",
 		"tom-anders/telescope-vim-bookmarks.nvim",
 		-- "nvim-telescope/telescope-file-browser.nvim",
 	},
@@ -11,6 +12,7 @@ return {
 	config = function()
 		local telescope = require("telescope")
 		local actions = require("telescope.actions")
+		local project_actions = require("telescope._extensions.project.actions")
 		telescope.setup({
 			defaults = {
 				mappings = {
@@ -36,6 +38,21 @@ return {
 					case_mode = "smart_case", -- or "ignore_case" or "respect_case"
 					-- the default case_mode is "smart_case"
 				},
+				project = {
+					base_dirs = {
+						"~/dotconfig",
+					},
+					hidden_files = false, -- default: false
+					theme = "dropdown",
+					order_by = "asc",
+					search_by = "title",
+					sync_with_nvim_tree = true, -- default false
+					-- default for on_project_selected = find project files
+					-- on_project_selected = function(prompt_bufnr)
+					-- 	-- Do anything you want in here. For example:
+					-- 	project_actions.change_working_directory(prompt_bufnr, false)
+					-- 	require("harpoon.ui").nav_file(1)
+                },      
 				-- file_browser = {
 				-- 	theme = "ivy",
 				-- 	-- disables netrw and use telescope-file-browser in its place
@@ -45,14 +62,16 @@ return {
 		})
 		telescope.load_extension("fzf")
 		telescope.load_extension("vim_bookmarks")
-		telescope.load_extension("file_browser")
+		telescope.load_extension("project")
+		-- telescope.load_extension("file_browser")
 		local builtin = require("telescope.builtin")
 		vim.keymap.set("n", "<leader>ff", builtin.find_files, {})
-		vim.keymap.set("n", "<leader>fg", builtin.live_grep, {})
+		vim.keymap.set("n", "<leader>fg", builtin.grep_string, {})
 		vim.keymap.set("n", "<leader>fb", builtin.buffers, {})
 		vim.keymap.set("n", "<leader>fo", builtin.oldfiles, {})
 		vim.keymap.set("n", "<leader>fh", builtin.help_tags, {})
 		-- vim.keymap.set("n", "<leader>.", ":Telescope file_browser<CR>", {})
 		vim.keymap.set("n", "<leader>fm", ":Telescope vim_bookmarks all<CR>", {})
+		vim.keymap.set("n", "<C-p>", ":lua require'telescope'.extensions.project.project{}<CR>", {})
 	end,
 }
