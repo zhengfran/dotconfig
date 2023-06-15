@@ -566,68 +566,72 @@
   "ls" '(org-store-link :which-key "Generate Link"))
 
 (setq org-agenda-dir "~/Documents/org/notes/journal"
-      org-agenda-files (list org-agenda-dir))
+	org-agenda-files (list org-agenda-dir))
 
-(setq org-todo-keywords
-  '((sequence "TODO(t)" "ONGOING(o)" "|" "DONE(d!)")
-    (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c!)" "CANC(k@)")))
+  (setq org-todo-keywords
+    '((sequence "TODO(t)" "ONGOING(o)" "|" "DONE(d!)")
+      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c!)" "CANC(k@)")))
 
-;; Configure custom agenda views
-(setq org-agenda-custom-commands
- '(("d" "Dashboard"
-   ((agenda "" ((org-deadline-warning-days 7)))
-    (todo "ONGOING"
-      ((org-agenda-overriding-header "Next Tasks")))
-    (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+  ;; Configure custom agenda views
+  (setq org-agenda-custom-commands
+   '(("d" "Dashboard"
+     ((agenda "" ((org-deadline-warning-days 7)))
+      (todo "ONGOING"
+	((org-agenda-overriding-header "Next Tasks")))
+      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
 
-  ("n" "ONGOING Tasks"
-   ((todo "NEXT"
-      ((org-agenda-overriding-header "Next Tasks")))))
+    ("n" "ONGOING Tasks"
+     ((todo "NEXT"
+	((org-agenda-overriding-header "Next Tasks")))))
 
-  ("w" "Work Tasks" tags-todo "+work")
+    ("w" "Work Tasks" tags-todo "+work")
 
-  ;; Low-effort next actions
-  ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-   ((org-agenda-overriding-header "Low Effort Tasks")
-    (org-agenda-max-todos 20)
-    (org-agenda-files org-agenda-files)))
+    ;; Low-effort next actions
+    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+     ((org-agenda-overriding-header "Low Effort Tasks")
+      (org-agenda-max-todos 20)
+      (org-agenda-files org-agenda-files)))
 
-  ("W" "Workflow Status"
+    ("W" "Workflow Status"
 
-   ((todo "WAIT"
-          ((org-agenda-overriding-header "Waiting on External")
-           (org-agenda-files org-agenda-files)))
-    (todo "REVIEW"
-          ((org-agenda-overriding-header "In Review")
-           (org-agenda-files org-agenda-files)))
-    (todo "PLAN"
-          ((org-agenda-overriding-header "In Planning")
-           (org-agenda-todo-list-sublevels nil)
-           (org-agenda-files org-agenda-files)))
-    (todo "BACKLOG"
-          ((org-agenda-overriding-header "Project Backlog")
-           (org-agenda-todo-list-sublevels nil)
-           (org-agenda-files org-agenda-files)))
-    (todo "READY"
-          ((org-agenda-overriding-header "Ready for Work")
-           (org-agenda-files org-agenda-files)))
-    (todo "ACTIVE"
-          ((org-agenda-overriding-header "Active Projects")
-           (org-agenda-files org-agenda-files)))
-    (todo "COMPLETED"
-          ((org-agenda-overriding-header "Completed Projects")
-           (org-agenda-files org-agenda-files)))
-    (todo "CANC"
-          ((org-agenda-overriding-header "Cancelled Projects")
-           (org-agenda-files org-agenda-files)))))))
+     ((todo "WAIT"
+	    ((org-agenda-overriding-header "Waiting on External")
+	     (org-agenda-files org-agenda-files)))
+      (todo "REVIEW"
+	    ((org-agenda-overriding-header "In Review")
+	     (org-agenda-files org-agenda-files)))
+      (todo "PLAN"
+	    ((org-agenda-overriding-header "In Planning")
+	     (org-agenda-todo-list-sublevels nil)
+	     (org-agenda-files org-agenda-files)))
+      (todo "BACKLOG"
+	    ((org-agenda-overriding-header "Project Backlog")
+	     (org-agenda-todo-list-sublevels nil)
+	     (org-agenda-files org-agenda-files)))
+      (todo "READY"
+	    ((org-agenda-overriding-header "Ready for Work")
+	     (org-agenda-files org-agenda-files)))
+      (todo "ACTIVE"
+	    ((org-agenda-overriding-header "Active Projects")
+	     (org-agenda-files org-agenda-files)))
+      (todo "COMPLETED"
+	    ((org-agenda-overriding-header "Completed Projects")
+	     (org-agenda-files org-agenda-files)))
+      (todo "CANC"
+	    ((org-agenda-overriding-header "Cancelled Projects")
+	     (org-agenda-files org-agenda-files)))))))
 
-;; Do not display Done items in org-agenda
-(setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo '("DONE" "COMPLETED" "CANC")))
-;;key-binds
-(zzc/leader-keys
-  "n"  '(:ignore t :which-key "notes")
-  "na" '(org-agenda :which-key "org agenda")
-  "nt" '(org-todo :which-key "org todo"))
+  ;; Do not display Done items in org-agenda
+  (setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo '("DONE" "COMPLETED" "CANC")))
+  ;;key-binds
+  (zzc/leader-keys
+    "n"  '(:ignore t :which-key "notes")
+    "na" '(org-agenda :which-key "org agenda")
+    "nt" '(org-todo :which-key "org todo"))
+(add-hook 'org-agenda-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "k") 'org-agenda-previous-item)
+            (local-set-key (kbd "j") 'org-agenda-next-item)))
 
 ;;key-binds
 (zzc/leader-keys
@@ -641,8 +645,10 @@
 (org-babel-do-load-languages
   'org-babel-load-languages
   '((emacs-lisp . t)
+    (plantuml . t)
      (python . t)))
 (setq org-confirm-babel-evaluate nil)
+(add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
 
 (defun vulpea-project-files ()
     "Return a list of note files containing 'project' tag." ;
@@ -817,7 +823,7 @@
   "sc"  '(yas-new-snippet :which-key "Create new snippet")
   "si"  '(yas-insert-snippet :which-key "Insert snippet"))
 
-
+(setq org-plantuml-jar-path (expand-file-name "~/dotconfig/plantuml/plantuml-1.2023.9.jar"))
 
 ;;(straight-use-package
 ;; '(lsp-bridge :host github
@@ -932,92 +938,3 @@ With a prefix ARG, remove start location."
    browse-url-generic-program  "/mnt/c/Windows/System32/cmd.exe"
    browse-url-generic-args     '("/c" "start")
    browse-url-browser-function #'browse-url-generic))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(connection-local-criteria-alist
-   '(((:application tramp)
-      tramp-connection-local-default-system-profile tramp-connection-local-default-shell-profile)))
- '(connection-local-profile-alist
-   '((tramp-connection-local-darwin-ps-profile
-      (tramp-process-attributes-ps-args "-acxww" "-o" "pid,uid,user,gid,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state=abcde" "-o" "ppid,pgid,sess,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etime,pcpu,pmem,args")
-      (tramp-process-attributes-ps-format
-       (pid . number)
-       (euid . number)
-       (user . string)
-       (egid . number)
-       (comm . 52)
-       (state . 5)
-       (ppid . number)
-       (pgrp . number)
-       (sess . number)
-       (ttname . string)
-       (tpgid . number)
-       (minflt . number)
-       (majflt . number)
-       (time . tramp-ps-time)
-       (pri . number)
-       (nice . number)
-       (vsize . number)
-       (rss . number)
-       (etime . tramp-ps-time)
-       (pcpu . number)
-       (pmem . number)
-       (args)))
-     (tramp-connection-local-busybox-ps-profile
-      (tramp-process-attributes-ps-args "-o" "pid,user,group,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "stat=abcde" "-o" "ppid,pgid,tty,time,nice,etime,args")
-      (tramp-process-attributes-ps-format
-       (pid . number)
-       (user . string)
-       (group . string)
-       (comm . 52)
-       (state . 5)
-       (ppid . number)
-       (pgrp . number)
-       (ttname . string)
-       (time . tramp-ps-time)
-       (nice . number)
-       (etime . tramp-ps-time)
-       (args)))
-     (tramp-connection-local-bsd-ps-profile
-      (tramp-process-attributes-ps-args "-acxww" "-o" "pid,euid,user,egid,egroup,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state,ppid,pgid,sid,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etimes,pcpu,pmem,args")
-      (tramp-process-attributes-ps-format
-       (pid . number)
-       (euid . number)
-       (user . string)
-       (egid . number)
-       (group . string)
-       (comm . 52)
-       (state . string)
-       (ppid . number)
-       (pgrp . number)
-       (sess . number)
-       (ttname . string)
-       (tpgid . number)
-       (minflt . number)
-       (majflt . number)
-       (time . tramp-ps-time)
-       (pri . number)
-       (nice . number)
-       (vsize . number)
-       (rss . number)
-       (etime . number)
-       (pcpu . number)
-       (pmem . number)
-       (args)))
-     (tramp-connection-local-default-shell-profile
-      (shell-file-name . "/bin/sh")
-      (shell-command-switch . "-c"))
-     (tramp-connection-local-default-system-profile
-      (path-separator . ":")
-      (null-device . "/dev/null"))))
- '(package-selected-packages
-   '(awesome-tab no-littering exec-path-from-shell nov org-noter-pdftools emacsql-sqlite-module vertico-posframe org-roam-ui all-the-icons rainbow-delimiters which-key consult visual-fill-column evil-escape yasnippet doom-modeline org-modern hydra embark org-ai orderless perspective vterm format-all marginalia modus-themes general emacsql-sqlite-builtin undo-tree evil-collection)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
