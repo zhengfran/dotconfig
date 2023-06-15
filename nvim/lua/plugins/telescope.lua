@@ -29,6 +29,7 @@ return {
 				find_files = {
 					theme = "dropdown",
 					previewer = false,
+					hidden = true,
 					find_command = { "fd" },
 				},
 			},
