@@ -10,14 +10,14 @@ return {
         {"<leader>fr", "<cmd>lua vim.lsp.buf.format()<CR>"},
     },
 
-    config =  function() 
-        null_ls = require("null-ls")
+    config =  function()
+        local null_ls = require("null-ls")
         local formatting = null_ls.builtins.formatting
         -- local diagnostics = null_ls.builtins.diagnostics
-        
+
         -- to setup format on save
         -- local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
-        
+
         null_ls.setup({
         	sources = {
         		formatting.stylua,

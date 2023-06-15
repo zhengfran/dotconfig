@@ -4,8 +4,8 @@ return {
 	lazy = false,
 
 	config = function()
-		lualine = require("lualine")
-		lualine_nightfly = require("lualine.themes.nightfly")
+		local lualine = require("lualine")
+		local lualine_nightfly = require("lualine.themes.nightfly")
 		local new_colors = {
 			blue = "#65D1FF",
 			green = "#3EFFDC",
