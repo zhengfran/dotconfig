@@ -48,8 +48,8 @@ return {
 			lazygit:toggle()
 		end
 	end,
-    
-    keys = { 
+
+    keys = {
         {"<leader>tt", "<cmd>exe v:count1 . 'ToggleTerm'<CR>"}, --open toggle term 
         {"<leader>tg", "<cmd>lua _LAZYGIT_TOGGLE()<CR>"}, --open lazy git
     },
