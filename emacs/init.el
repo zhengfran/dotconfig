@@ -560,6 +560,8 @@
 ;; (use-package visual-fill-column
 ;;   :hook (org-mode . zzc/org-mode-visual-fill))
 
+(setq org-indent-indentation-per-level 4)
+(org-indent-mode 1)
 (zzc/leader-keys
   "l"  '(:ignore t :which-key "line/link")
   "li" '(org-insert-link :which-key "Inser Link")
