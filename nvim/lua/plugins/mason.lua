@@ -31,6 +31,7 @@ return {
 			ensure_installed = {
 				"stylua", -- lua formatter
 				"clang_format", -- c/cpp formatter
+				"rustfmt", -- rust formatter
 			},
 			-- auto-install configured formatters & linters (with null-ls)
 			automafic_installation = true,
