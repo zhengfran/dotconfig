@@ -30,7 +30,7 @@ return {
 			keymap.set("n", "[d", "<cmd>Lspsaga diagnostic_jump_prev<CR>", opts) -- jump to previous diagnostic in buffer
 			keymap.set("n", "]d", "<cmd>Lspsaga diagnostic_jump_next<CR>", opts) -- jump to next diagnostic in buffer
 			keymap.set("n", "K", "<cmd>Lspsaga hover_doc<CR>", opts) -- show documentation for what is under cursor
-			keymap.set("n", "<leader>o", "<cmd>LSoutlineToggle<CR>", opts) -- see outline on right hand side
+			keymap.set("n", "<leader>o", "<cmd>Lspsaga outline<CR>", opts) -- see outline on right hand side
 		end
 
 		-- used to enable autocompletion (assign to every lsp server config)
@@ -48,6 +48,10 @@ return {
 			capabilities = capabilities,
 			on_attach = on_attach,
 		})
+		lspconfig["rust_analyzer"].setup({
+			capabilities = capabilities,
+            on_attach = on_attach,
+        })
 		lspconfig["lua_ls"].setup({
 			capabilities = capabilities,
 			on_attach = on_attach,
