@@ -25,7 +25,7 @@
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 (require 'use-package)
-(setq use-package-always-ensure t)
+;;(setq use-package-always-ensure t)
 
 ;; make sure shell PATH is same as emacs PATH 
 (use-package exec-path-from-shell)
@@ -327,22 +327,22 @@
   "=c" '((lambda () (interactive) (find-file "~/dotconfig/emacs/config.org")) :which-key "open config file"))
 
 (use-package format-all 
-   :hook
-   (
-    (python-mode . format-all-mode)
-    (emacs-lisp-mode . format-all-mode)
-    (ledger-mode . format-all-mode)
-    (format-all-mode-hook . format-all-ensure-formatter)
-    )
-   :config
-   (custom-set-variables
-    '(format-all-formatters (quote (("Python" black) ("ledger" ledger-mode))))
-    )
-   )
-;; (use-package doom-format
-;;   :after format-all
-;;   :load-path "~/emacs-scratch/lisp/format")
-;;   (setq +format-with-lsp nil)
+  :hook
+  (
+   (python-mode . format-all-mode)
+   (emacs-lisp-mode . format-all-mode)
+   (ledger-mode . format-all-mode)
+   (format-all-mode-hook . format-all-ensure-formatter)
+  )
+  :config
+  (custom-set-variables
+   '(format-all-formatters (quote (("Python" black) ("ledger" ledger-mode))))
+  )
+)
+  ;; (use-package doom-format
+  ;;   :after format-all
+  ;;   :load-path "~/emacs-scratch/lisp/format")
+  ;;   (setq +format-with-lsp nil)
 
 (setq inhibit-startup-message t)
 (scroll-bar-mode -1) ;;disable visusal scroll bar
@@ -386,65 +386,15 @@
 (zzc/leader-keys
   "ll" '(doom/toggle-line-numbers :which-key "toggle line numbers"))
 
-(defvar meomacs-font-size 16
-    "Current font size.")
+(defun centaur-setup-fonts ()
+  (set-face-attribute 'default nil :font (font-spec :family "Fira Code" :size 16))
+  (set-fontset-font t 'unicode (font-spec :family "Noto Color Emoji" :size 14))
+  (set-fontset-font t '(#x2ff0 . #x9ffc) (font-spec :family "Sarasa Mono Slab SC" :size 18 :weight 'bold))
+)
 
-(defvar meomacs-fonts '((default . "MesloLGS NF")
-    (cjk . "Unifont")
-    (symbol . "Unifont")
-    (fixed . "MesloLGS NF")
-    (fixed-serif . "Dejavu Serif")
-    (variable . "Cantarell")
-    (wide . "MesloLGS NF")
-    (tall . "MesloLGS NF"))
-    "Fonts to use.")
-(defun meomacs--get-font-family (key)
-   (let ((font (alist-get key meomacs-fonts)))
-     (if (string-empty-p font)
-	 (alist-get 'default meomacs-fonts)
-       font)))
-
-(defun meomacs-load-default-font ()
-    "Load default font configuration."
-    (let ((default-font (format "%s-%s"
-				(meomacs--get-font-family 'default)
-				meomacs-font-size)))
-      (add-to-list 'default-frame-alist (cons 'font default-font))))
-
-(defun meomacs-load-face-font ()
-    "Load face font configuration."
-    (let ((variable-font (meomacs--get-font-family 'variable))
-	  (fixed-font (meomacs--get-font-family 'fixed))
-	  (fixed-serif-font (meomacs--get-font-family 'fixed-serif)))
-      (set-face-attribute 'variable-pitch nil :family variable-font)
-      (set-face-attribute 'fixed-pitch nil :family fixed-font)
-      (set-face-attribute 'fixed-pitch-serif nil :family fixed-serif-font)))
-
-(defun meomacs-load-charset-font (&optional font)
-    "Load charset font configuration."
-    (let ((default-font (or font (format "%s-%s"
-					 (meomacs--get-font-family 'default)
-					 meomacs-font-size)))
-	  (cjk-font (meomacs--get-font-family 'cjk))
-	  (symbol-font (meomacs--get-font-family 'symbol)))
-      (set-frame-font default-font)
-      (let ((fontset (create-fontset-from-ascii-font default-font)))
-	;; Fonts for charsets
-	(dolist (charset '(kana han hangul cjk-misc bopomofo))
-	  (set-fontset-font fontset charset cjk-font))
-	(set-fontset-font fontset 'symbol symbol-font)
-	;; Apply fontset
-	(set-frame-parameter nil 'font fontset)
-	(add-to-list 'default-frame-alist (cons 'font fontset)))))
-
-  (meomacs-load-default-font)
-  (meomacs-load-face-font)
-
-  ;; Run after startup
-  (add-hook 'after-init-hook
-	    (lambda ()
-	      (when window-system
-		(meomacs-load-charset-font))))
+(centaur-setup-fonts)
+(add-hook 'window-setup-hook #'centaur-setup-fonts)
+(add-hook 'server-after-make-frame-hook #'centaur-setup-fonts)
 
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
@@ -460,12 +410,17 @@
 	modus-themes-org-blocks  'tinted-background
 	modus-themes-region '(bg-only))
   (setq modus-themes-headings
-	'((1 . (rainbow overline background 1.3))
-	  (2 . (rainbow overline background 1.2))
-	  (3 . (rainbow bold 1.1))
+	'((1 . (rainbow background 1.5))
+	  (2 . (rainbow background 1.4))
+	  (3 . (rainbow bold 1.3))
 	  (t . (semilight 1.05))))
 
   (setq modus-themes-scale-headings t)
+  (setq modus-themes-org-agenda
+      '((header-block . (variable-pitch scale-title))
+        (header-date . (grayscale bold-today))
+        (scheduled . uniform)
+        (habit . simplified)))
 
   ;; Maybe define some palette overrides, such as by using our presets
    (setq modus-themes-common-palette-overrides
@@ -476,54 +431,6 @@
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
-
-(use-package awesome-tab
-    :config
-    (awesome-tab-mode t))
-(defhydra awesome-fast-switch (:hint nil)
-  "
- ^^^^Fast Move             ^^^^Tab                    ^^Search            ^^Misc
--^^^^--------------------+-^^^^---------------------+-^^----------------+-^^---------------------------
-   ^_k_^   prev group    | _C-a_^^     select first | _b_ search buffer | _C-k_   kill buffer
- _h_   _l_  switch tab   | _C-e_^^     select last  | _g_ search group  | _C-S-k_ kill others in group
-   ^_j_^   next group    | _C-j_^^     ace jump     | ^^                | ^^
- ^^0 ~ 9^^ select window | _C-h_/_C-l_ move current | ^^                | ^^
--^^^^--------------------+-^^^^---------------------+-^^----------------+-^^---------------------------
-"
-  ("h" awesome-tab-backward-tab)
-  ("j" awesome-tab-forward-group)
-  ("k" awesome-tab-backward-group)
-  ("l" awesome-tab-forward-tab)
-  ("0" my-select-window)
-  ("1" my-select-window)
-  ("2" my-select-window)
-  ("3" my-select-window)
-  ("4" my-select-window)
-  ("5" my-select-window)
-  ("6" my-select-window)
-  ("7" my-select-window)
-  ("8" my-select-window)
-  ("9" my-select-window)
-  ("C-a" awesome-tab-select-beg-tab)
-  ("C-e" awesome-tab-select-end-tab)
-  ("C-j" awesome-tab-ace-jump)
-  ("C-h" awesome-tab-move-current-tab-to-left)
-  ("C-l" awesome-tab-move-current-tab-to-right)
-  ("C-k" kill-current-buffer)
-  ("C-S-k" awesome-tab-kill-other-buffers-in-current-group)
-  ("q" nil "quit"))
-
-(zzc/leader-keys
-  "tt" '(awesome-fast-switch/body :which-key "tab switch")
-  "tj" '(awesome-tab-forward-group :which-key "forward tab group")
-  "tk" '(awesome-tab-backward-group :which-key "backward tab group")
-  "tl" '(awesome-tab-forward-tab :which-key "backward tab group")
-  "th" '(awesome-tab-backward-tab :which-key "backward tab group")
-  "tg" '(awesome-tab-ace-jump :which-key "tab ace-jump")
-  "tc" '(:ignore t :which-key "close tabs")
-  "tco" '(awesome-tab-kill-other-buffers-in-current-group :which-key "close all other tabs in current group")
-  "tca" '(awesome-tab-kill-other-buffers-in-current-group :which-key "close all tabs in current group")
-  )
 
 (use-package org
   :config
@@ -572,7 +479,7 @@
 
   (setq org-todo-keywords
     '((sequence "TODO(t)" "ONGOING(o)" "|" "DONE(d!)")
-      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c!)" "CANC(k@)")))
+      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "|" "COMPLETED(c!)" "CANC(k@)")))
 
   ;; Configure custom agenda views
   (setq org-agenda-custom-commands
@@ -585,7 +492,7 @@
     ("n" "ONGOING Tasks"
      ((todo "NEXT"
 	((org-agenda-overriding-header "Next Tasks")))))
-
+    
     ("w" "Work Tasks" tags-todo "+work")
 
     ;; Low-effort next actions
@@ -634,6 +541,16 @@
 	  (lambda ()
 	    (local-set-key (kbd "k") 'org-agenda-previous-item)
             (local-set-key (kbd "j") 'org-agenda-next-item)))
+;; save all org files after change todo
+(defmacro η (fnc)
+  "Return function that ignores its arguments and invokes FNC."
+  `(lambda (&rest _rest)
+     (funcall ,fnc)))
+(advice-add 'org-deadline       :after (η #'org-save-all-org-buffers))
+(advice-add 'org-schedule       :after (η #'org-save-all-org-buffers))
+(advice-add 'org-store-log-note :after (η #'org-save-all-org-buffers))
+(advice-add 'org-todo           :after (η #'org-save-all-org-buffers))
+(advice-add 'org-priority       :after (η #'org-save-all-org-buffers))
 
 ;;key-binds
 (zzc/leader-keys
@@ -708,14 +625,14 @@
       :unnarrowed t)))
 (org-roam-dailies-capture-templates
    '(("d" "Journal" plain 
-      "* Tasks\n\n%?\n\n* Flashes\n\n* Summary\n\n"
+      "* 流水帐%?\n\n* Memorable Points\n** Good Stuff\n** Bad Stuff\n"
       :if-new (file+head "%<%Y%m%d>.org" "#+title: %<%Y%m%d>\n#+filetags: daily\n#+startup: overview"))))
 
   :bind (:map org-mode-map
 	 ("C-M-q" . completion-at-point))
   :config
-  (org-roam-setup)
-  (require 'org-roam-dailies) ;; Ensure the keymap is available
+  (setq org-id-link-to-org-use-id t)
+  (org-roam-setup) ;; Ensure the keymap is available
   (org-roam-db-autosync-mode))
 
 (zzc/leader-keys
@@ -764,6 +681,7 @@
 (setq org-src-fontify-natively t
     org-src-tab-acts-natively t
     org-confirm-babel-evaluate nil
+    org-src-preserve-indentation nil
     org-edit-src-content-indentation 0)
 
 ;; Automatically tangle our Emacs.org config file when we save it
