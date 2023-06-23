@@ -32,6 +32,7 @@ return {
 				"stylua", -- lua formatter
 				"clang_format", -- c/cpp formatter
 				"rustfmt", -- rust formatter
+				"jq", -- json formatter
 			},
 			-- auto-install configured formatters & linters (with null-ls)
 			automafic_installation = true,
