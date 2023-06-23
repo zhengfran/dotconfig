@@ -14,7 +14,7 @@ return {
 		local telescope = require("telescope")
 		local actions = require("telescope.actions")
 		-- local project_actions = require("telescope._extensions.project.actions")
-        local lga_actions = require("telescope-live-grep-args.actions")
+		local lga_actions = require("telescope-live-grep-args.actions")
 		telescope.setup({
 			defaults = {
 				mappings = {
@@ -24,13 +24,21 @@ return {
 						["C-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
 					},
 				},
+				ripgrep_arguments = {
+					"rg",
+					"--hidden",
+					"--no-heading",
+					"--with-filename",
+					"--line-number",
+					"--column",
+					"--smart-case",
+				},
 			},
 			pickers = {
 				find_files = {
 					theme = "dropdown",
 					previewer = false,
 					hidden = true,
-					find_command = { "fd" },
 				},
 			},
 			extensions = {
@@ -81,7 +89,7 @@ return {
 		local builtin = require("telescope.builtin")
 		vim.keymap.set("n", "<leader>ff", builtin.find_files, {})
 		vim.keymap.set("n", "<leader>fg", builtin.live_grep, {})
-		vim.keymap.set("n", "<leader>fz", ":lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>" )
+		vim.keymap.set("n", "<leader>fz", ":lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>")
 		vim.keymap.set("n", "<leader>fw", builtin.grep_string, {})
 		vim.keymap.set("n", "<leader>fb", builtin.buffers, {})
 		vim.keymap.set("n", "<leader>fo", builtin.oldfiles, {})
