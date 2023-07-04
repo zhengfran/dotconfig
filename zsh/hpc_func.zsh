@@ -8,7 +8,24 @@ mebxw() {
     repo init -u git@github-vni.geo.conti.de:bs-g-nd-ptf-hpc-gen2/hpc_gen2.git -b 1.0-dev -g default,ebxelor,face_ez1_b2.0
     repo sync -d
     repo forall -c 'git lfs pull'
+    cp ~/tooling/config/.netrc .
+    echo "export ARTIFACTORY_REMOTE=https://eu.artifactory.conti.de/artifactory" > build.sh
+    echo "/workdir/ebxelor/config/conan/continental/hpc/setup.sh" >> build.sh
+    echo "/workdir/ebxelor/config/valeria/continental/hpc/run.sh --variant face_ez1_b2.0" >> build.sh
+    chmod +x build.sh
 }
+
+#patch cmake file for ebxelor workspace
+pebcm() {
+    find "$(pwd -P)/ebxelor/pkg/continental/hpc/hpc_spm_client/hpc_spm_client" -name "CMakeLists.txt" -type f -writable -exec sh -c 'echo "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)" >> {}' \;
+    find "$(pwd -P)/ebxelor/pkg/continental/hpc/hpc_adaptive_emmc_scrub/hpc_adaptive_emmc_scrub" -name "CMakeLists.txt" -type f -writable -exec sh -c 'echo "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)" >> {}' \;
+    find "$(pwd -P)/ebxelor/pkg/eb_adg/workspace/ara-corbos-AdaptiveCore-deliveries" -name "CMakeLists.txt" -type f -writable -exec sh -c 'echo "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)" >> {}' \;
+}
+# path compile_commands.json file for ebxelor workspace
+pebjs() {
+    find "$(pwd -P)/ebxelor" -name "CMakeLists.txt" -type f -writable -exec sh -c 'echo "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)" >> {}' \;
+}
+
 penv() {
     find . -name "setenv.sh" -exec sed -i "s#e/Code/CDD_code/tresos_s33g#$(pwd)/tresos_s32g#" {} +
     find . -name "setenv.sh" -exec sed -i "s#e:/Code/CDD_code/tresos_s32g#$(pwd)/tresos_s32g#" {} +
