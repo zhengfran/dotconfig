@@ -858,3 +858,32 @@ With a prefix ARG, remove start location."
    browse-url-generic-program  "/mnt/c/Windows/System32/cmd.exe"
    browse-url-generic-args     '("/c" "start")
    browse-url-browser-function #'browse-url-generic))
+
+(defun my-yank-image-from-win-clipboard-through-powershell()
+  "to simplify the logic, use c:/Users/Public as temporary directoy, then move it into current directoy
+
+Anyway, if need to modify the file name, please DONT delete or modify file extension \".png\",
+otherwise this function don't work and don't know the reason
+"
+  (interactive)
+  (let* ((powershell "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe")
+         (file-name (format "%s" (read-from-minibuffer "Img Name:" (format-time-string "screenshot_%Y%m%d_%H%M%S.png"))))
+         ;; (file-path-powershell (concat "c:/Users/\$env:USERNAME/" file-name))
+         (file-path-wsl (concat "./images/" file-name)))
+    (if (file-exists-p "./images")
+        (ignore)
+      (make-directory "./images"))
+    ;; (shell-command (concat powershell " -command \"(Get-Clipboard -Format Image).Save(\\\"C:/Users/\\$env:USERNAME/" file-name "\\\")\""))
+    (shell-command (concat powershell " -command \"(Get-Clipboard -Format Image).Save(\\\"C:/Users/Public/" file-name "\\\")\""))
+    (rename-file (concat "/mnt/c/Users/Public/" file-name) file-path-wsl)
+    (format "%s" file-path-wsl)
+    ))
+
+(defun my-yank-image-link-into-org-from-wsl ()
+  "call `my-yank-image-from-win-clipboard-through-powershell' and insert image file link with org-mode format"
+  (interactive)
+  (let* ((file-path (my-yank-image-from-win-clipboard-through-powershell))
+         (file-link (format "[[%s]]" file-path))
+         )
+    (insert file-link)
+    ))
