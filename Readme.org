@@ -34,9 +34,14 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 ln -s ~/dotconfig/tmux/.tmux.conf ~/.tmux.conf
 tmux source-file ~/.tmux.conf
  #+end_src
+ Use prefix+I to install tpm plugins
 
 * NeoVim
 Abandoned as of 2023 Jun 02 17:55:38 Fri +08 . 
+Repicked up on 2023 Dec 30 16:16:45 Sat +08 .
+** Dependencies
+- Python and npm for lsp
+
 * Emacs
 ** Build emacs 29 from source
 #+begin_src shell
