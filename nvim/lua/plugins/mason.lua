@@ -27,15 +27,17 @@ return {
             automatic_installation = true, -- not the same as ensure_installed
         })
 
-        require("mason-null-ls").setup({
-            -- list of formatters & linters for mason to install
-            ensure_installed = {
-                "stylua", -- lua formatter
-                "clang_format", -- c/cpp formatter
-                "jq", -- json formatter
-            },
-            -- auto-install configured formatters & linters (with null-ls)
-            automafic_installation = true,
-        })
-    end,
+		require("mason-null-ls").setup({
+			-- list of formatters & linters for mason to install
+			ensure_installed = {
+				"stylua", -- lua formatter
+				"clang_format", -- c/cpp formatter
+				"rustfmt", -- rust formatter
+				"jq", -- json formatter
+				"cmakelang", -- cmake formatter
+			},
+			-- auto-install configured formatters & linters (with null-ls)
+			automafic_installation = true,
+		})
+	end,
 }
