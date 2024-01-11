@@ -23,8 +23,6 @@ return {
 				"cpp",
 				"json",
 				"yaml",
-				"xml",
-				"groovy",
 				"markdown",
 				"markdown_inline",
 				"bash",
