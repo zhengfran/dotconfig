@@ -5,7 +5,7 @@ return {
 		"williamboman/mason.nvim",
 		"williamboman/mason-lspconfig.nvim",
 		"glepnir/lspsaga.nvim",
-        "hrsh7th/cmp-nvim-lsp",
+		"hrsh7th/cmp-nvim-lsp",
 	},
 	event = { "BufReadPost", "BufNewFile" },
 	cmd = { "LspInfo", "LspInstall", "LspUninstall" },
@@ -30,7 +30,7 @@ return {
 			keymap.set("n", "[d", "<cmd>Lspsaga diagnostic_jump_prev<CR>", opts) -- jump to previous diagnostic in buffer
 			keymap.set("n", "]d", "<cmd>Lspsaga diagnostic_jump_next<CR>", opts) -- jump to next diagnostic in buffer
 			keymap.set("n", "K", "<cmd>Lspsaga hover_doc<CR>", opts) -- show documentation for what is under cursor
-			keymap.set("n", "<leader>o", "<cmd>Lspsaga outline<CR>", opts) -- see outline on right hand side
+			keymap.set("n", "<leader>ol", "<cmd>Lspsaga outline<CR>", opts) -- see outline on right hand side
 		end
 
 		-- used to enable autocompletion (assign to every lsp server config)
@@ -43,27 +43,27 @@ return {
 			local hl = "DiagnosticSign" .. type
 			vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
 		end
-        local lspconfig = require("lspconfig")
-		-- lspconfig["clangd"].setup({
-		-- 	capabilities = capabilities,
-		-- 	on_attach = on_attach,
-		-- })
+		local lspconfig = require("lspconfig")
+		lspconfig["clangd"].setup({
+			capabilities = capabilities,
+			on_attach = on_attach,
+		})
 		lspconfig["rust_analyzer"].setup({
 			capabilities = capabilities,
-            on_attach = on_attach,
-        })
+			on_attach = on_attach,
+		})
 		lspconfig["jsonls"].setup({
 			capabilities = capabilities,
-            on_attach = on_attach,
-        })
+			on_attach = on_attach,
+		})
 		lspconfig["dockerls"].setup({
 			capabilities = capabilities,
-            on_attach = on_attach,
-        })
+			on_attach = on_attach,
+		})
 		lspconfig["cmake"].setup({
 			capabilities = capabilities,
-            on_attach = on_attach,
-        })
+			on_attach = on_attach,
+		})
 		lspconfig["lua_ls"].setup({
 			capabilities = capabilities,
 			on_attach = on_attach,
