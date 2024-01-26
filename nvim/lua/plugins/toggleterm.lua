@@ -49,8 +49,9 @@ return {
 		end
 	end,
 
-    keys = {
-        {"<leader>tt", "<cmd>exe v:count1 . 'ToggleTerm'<CR>"}, --open toggle term 
-        {"<leader>tg", "<cmd>lua _LAZYGIT_TOGGLE()<CR>"}, --open lazy git
-    },
+	keys = {
+		{ "<leader>tt", "<cmd>exe v:count1 . 'ToggleTerm'<CR>" }, --open toggle term
+		{ "<leader>tg", "<cmd>lua _LAZYGIT_TOGGLE()<CR>" }, --open lazy git
+	},
+	vim.keymap.set("t", "<esc>", [[<C-\><C-n>]], {}),
 }
