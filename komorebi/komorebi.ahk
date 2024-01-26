@@ -25,6 +25,11 @@ init(){
   Run "komorebic active-window-border enable"
   Run "komorebic active-window-border-colour 66 165 245 --window-kind single"
 
+  RunWait('komorebic.exe identify-border-overflow-application exe "OUTLOOK.EXE"', , "Hide")
+  RunWait('komorebic.exe identify-layered-application exe "OUTLOOK.EXE"', , "Hide")
+  ; If you have disabled minimize/close to tray for this application, you can delete/comment out the next line
+  RunWait('komorebic.exe identify-tray-application exe "OUTLOOK.EXE"', , "Hide")
+
   ;; From
   ;; https://github.com/LGUG2Z/komorebi/blob/master/komorebi.sample.ahk
   ; Always float IntelliJ popups, matching on class
@@ -39,6 +44,7 @@ init(){
   ; Always float Calculator app, matching on window title
   Run "komorebic float-rule title Calculator", , "Hide"
   Run "komorebic float-rule exe 1Password.exe", , "Hide"
+  Run "komorebic float-rule exe OfficeTools64", , "Hide"
 
   ;; For BandZip annoying updater
   Run "komorebic float-rule exe Updater.exe", ,"Hide"
@@ -46,17 +52,19 @@ init(){
   ;; No tiling for Settings
   Run "komorebic float-rule title Settings", ,"Hide"
 
-  ;; IDM can't not be handle properly 
-  ;; I don't like it tiling anyway. So I just comment it
-  ;; Run("komorebic manage-rule exe IDMan.exe",,"Hide")
   run("komorebic ensure-workspaces 0 " . workspacenumber, ,"hide")
 
   ; set the padding to all the workspaces
   for num in numbers{
-    runwait("komorebic workspace-padding 0 " . num . " 8",,"hide")
-    RunWait("komorebic container-padding 0 " . num . " 5",,"Hide")
+    Runwait("komorebic workspace-padding 0 " . num . "0",,"hide")
+    RunWait("komorebic container-padding 0 " . num . "0",,"Hide")
+    Runwait("komorebic workspace-padding 1 " . num . "0",,"hide")
+    RunWait("komorebic container-padding 1 " . num . "0",,"Hide")
+    Runwait("komorebic workspace-padding 2 " . num . "0",,"hide")
+    RunWait("komorebic container-padding 2 " . num . "0",,"Hide")
   }
 
+  Run("komorebic start",,"Hide")
   ;run yasb
   Run("powershell D:\Tools\yasb\yasb\yasb.ps1",,"Hide")
 }
