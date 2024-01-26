@@ -39,12 +39,20 @@ return {
 			},
 			-- change folder arrow icons
 			renderer = {
+				full_name = true,
+				group_empty = true,
+				special_files = {},
+				symlink_destination = false,
+				indent_markers = {
+					enable = true,
+				},
 				icons = {
-					glyphs = {
-						folder = {
-							arrow_closed = "", -- arrow when folder is closed
-							arrow_open = "", -- arrow when folder is open
-						},
+					git_placement = "signcolumn",
+					show = {
+						file = true,
+						folder = true,
+						folder_arrow = true,
+						git = true,
 					},
 				},
 			},
@@ -65,7 +73,6 @@ return {
 	keys = {
 		--nvim-tree
 		{ "<leader>op", ":NvimTreeToggle<CR>" },
-		{ "<leader>oc", ":NvimTreeCollapse<CR>" },
 		{ "<leader>of", ":NvimTreeFindFile<CR>" },
 	},
 }
