@@ -36,11 +36,11 @@ tmux source-file ~/.tmux.conf
  #+end_src
  Use prefix+I to install tpm plugins
 
-* NeoVim
+* Neovim
 Abandoned as of 2023 Jun 02 17:55:38 Fri +08 . 
 Repicked up on 2023 Dec 30 16:16:45 Sat +08 .
 ** Dependencies
-- Python and npm for lsp
+- Python and npm for lsp and treesitter
 
 * Emacs
 ** Build emacs 29 from source
@@ -62,3 +62,9 @@ ln -s ~/dotconfig/emacs/init.el ~/.emacs.d/init.el
 ln -s ~/Nextcloud/org ~/Documents/org
 #+end_src
 Most emacs package I use will be automatically downloaded, but below packages needs mannual configuration:
+
+* Tiling Windows manager
+** Windows - komorebi
+Besides komorebi, yasb is used to number the workspaces for quick switching
+
+** Mac - yabai
