@@ -43,19 +43,19 @@ opt.iskeyword:append("_")
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", -- latest stable release
-    lazypath,
-  })
+	vim.fn.system({
+		"git",
+		"clone",
+		"--filter=blob:none",
+		"https://github.com/folke/lazy.nvim.git",
+		"--branch=stable", -- latest stable release
+		lazypath,
+	})
 end
 vim.opt.rtp:prepend(lazypath)
 
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
 
 --general keymaps
 vim.keymap.set("i", "fd", "<ESC>")
@@ -66,5 +66,4 @@ vim.keymap.set("n", "<leader>nh", ":nohl<CR>")
 -- x does not copy character into register
 vim.keymap.set("n", "x", '"_x')
 
-require ('lazy').setup('plugins')
-
+require("lazy").setup("plugins")
