@@ -44,10 +44,14 @@ return {
 			vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
 		end
 		local lspconfig = require("lspconfig")
-		-- lspconfig["clangd"].setup({
-		-- 	capabilities = capabilities,
-		-- 	on_attach = on_attach,
-		-- })
+		lspconfig["clangd"].setup({
+			capabilities = capabilities,
+			on_attach = on_attach,
+			cmd = {
+				"clangd",
+				"--offset-encoding=utf-16",
+			},
+		})
 		lspconfig["rust_analyzer"].setup({
 			capabilities = capabilities,
 			on_attach = on_attach,
