@@ -13,6 +13,25 @@ return {
 	config = function()
 		local keymap = vim.keymap -- for conciseness
 
+		-- Command to toggle inline diagnostics
+		vim.api.nvim_create_user_command("DiagnosticsToggleVirtualText", function()
+			local current_value = vim.diagnostic.config().virtual_text
+			if current_value then
+				vim.diagnostic.config({ virtual_text = false })
+			else
+				vim.diagnostic.config({ virtual_text = true })
+			end
+		end, {})
+
+		-- Command to toggle diagnostics
+		vim.api.nvim_create_user_command("DiagnosticsToggle", function()
+			local current_value = vim.diagnostic.is_disabled()
+			if current_value then
+				vim.diagnostic.enable()
+			else
+				vim.diagnostic.disable()
+			end
+		end, {})
 		-- enable keybinds only for when lsp server available
 		local on_attach = function(client, bufnr)
 			-- keybind options
@@ -31,6 +50,7 @@ return {
 			keymap.set("n", "]d", "<cmd>Lspsaga diagnostic_jump_next<CR>", opts) -- jump to next diagnostic in buffer
 			keymap.set("n", "K", "<cmd>Lspsaga hover_doc<CR>", opts) -- show documentation for what is under cursor
 			keymap.set("n", "<leader>ol", "<cmd>Lspsaga outline<CR>", opts) -- see outline on right hand side
+			keymap.set("n", "<leader>dt", ":DiagnosticsToggle<CR>", opts) -- see outline on right hand side
 		end
 
 		-- used to enable autocompletion (assign to every lsp server config)
