@@ -6,19 +6,19 @@ return {
 	},
 	event = "BufEnter",
 
-	keys = {
-		{ "<M-h>", ":BufferLineCyclePrev<CR>" },
-		{ "<M-l>", ":BufferLineCycleNext<CR>" },
-		{ "<M-1>", ":BufferLineGoToBuffer 1<CR>" },
-		{ "<M-2>", ":BufferLineGoToBuffer 2<CR>" },
-		{ "<M-3>", ":BufferLineGoToBuffer 3<CR>" },
-		{ "<M-4>", ":BufferLineGoToBuffer 4<CR>" },
-		{ "<M-5>", ":BufferLineGoToBuffer 5<CR>" },
-		{ "<M-6>", ":BufferLineGoToBuffer 6<CR>" },
-		{ "<M-7>", ":BufferLineGoToBuffer 7<CR>" },
-		{ "<M-8>", ":BufferLineGoToBuffer 8<CR>" },
-		{ "<M-9>", ":BufferLineGoToBuffer 9<CR>" },
-	},
+	-- keys = {
+	-- 	{ "<M-h>", ":BufferLineCyclePrev<CR>" },
+	-- 	{ "<M-l>", ":BufferLineCycleNext<CR>" },
+	-- 	{ "<M-1>", ":BufferLineGoToBuffer 1<CR>" },
+	-- 	{ "<M-2>", ":BufferLineGoToBuffer 2<CR>" },
+	-- 	{ "<M-3>", ":BufferLineGoToBuffer 3<CR>" },
+	-- 	{ "<M-4>", ":BufferLineGoToBuffer 4<CR>" },
+	-- 	{ "<M-5>", ":BufferLineGoToBuffer 5<CR>" },
+	-- 	{ "<M-6>", ":BufferLineGoToBuffer 6<CR>" },
+	-- 	{ "<M-7>", ":BufferLineGoToBuffer 7<CR>" },
+	-- 	{ "<M-8>", ":BufferLineGoToBuffer 8<CR>" },
+	-- 	{ "<M-9>", ":BufferLineGoToBuffer 9<CR>" },
+	-- },
 
 	config = function()
 		require("bufferline").setup({
@@ -39,5 +39,17 @@ return {
 				},
 			},
 		})
+		vim.keymap.set("n", "<leader>th", ":BufferLineCyclePrev<CR>", {})
+		vim.keymap.set("n", "<leader>tl", ":BufferLineCycleNext<CR>", {})
+		vim.keymap.set("n", "<leader>to", ":BufferLineCloseOthers<CR>", {})
+		vim.keymap.set("n", "<leader>t1", ":BufferLineGoToBuffer 1<CR>", {})
+		vim.keymap.set("n", "<leader>t2", ":BufferLineGoToBuffer 2<CR>", {})
+		vim.keymap.set("n", "<leader>t3", ":BufferLineGoToBuffer 3<CR>", {})
+		vim.keymap.set("n", "<leader>t4", ":BufferLineGoToBuffer 4<CR>", {})
+		vim.keymap.set("n", "<leader>t5", ":BufferLineGoToBuffer 5<CR>", {})
+		vim.keymap.set("n", "<leader>t6", ":BufferLineGoToBuffer 6<CR>", {})
+		vim.keymap.set("n", "<leader>t7", ":BufferLineGoToBuffer 7<CR>", {})
+		vim.keymap.set("n", "<leader>t8", ":BufferLineGoToBuffer 8<CR>", {})
+		vim.keymap.set("n", "<leader>t9", ":BufferLineGoToBuffer 9<CR>", {})
 	end,
 }
