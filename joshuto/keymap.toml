@@ -45,8 +45,8 @@ keymap = [
   { keys = ["page_down"], commands = ["cursor_move_page_down"] },
   { keys = ["ctrl+u"], commands = ["cursor_move_page_up 0.5"] },
   { keys = ["ctrl+d"], commands = ["cursor_move_page_down 0.5"] },
-  { keys = ["ctrl+b"], commands = ["cursor_move_page_up"] },
-  { keys = ["ctrl+f"], commands = ["cursor_move_page_down"] },
+  # { keys = ["ctrl+b"], commands = ["cursor_move_page_up"] },
+  # { keys = ["ctrl+f"], commands = ["cursor_move_page_down"] },
 
   # vim-like keybindings
   { keys = ["j"], commands = ["cursor_move_down"] },
@@ -88,7 +88,7 @@ keymap = [
   { keys = ["f", "t"], commands = [":touch "] },
 
   { keys = [" "], commands = ["select --toggle=true"] },
-  { keys = ["t"], commands = ["select --all=true --toggle=true"] },
+  # { keys = ["t"], commands = ["select --all=true --toggle=true"] },
   { keys = ["V"], commands = ["toggle_visual"] },
 
   { keys = ["w"], commands = ["show_tasks --exit-key=w"] },
@@ -131,9 +131,10 @@ keymap = [
   { keys = ["g", "d"], commands = ["cd ~/Downloads"] },
   { keys = ["g", "f", "f" ], command = "cd ~/.config" },
   { keys = ["g", "f", "n" ], command = "cd ~/.config/nvim" },
-  { keys = ["g", "f", "z" ], command = "cd ~/.config/zsh" },
+  # { keys = ["g", "f", "z" ], command = "cd ~/.config/zsh" },
   { keys = ["g", "f", "j" ], command = "cd ~/.config/joshuto" },
-  { keys = ["g", "f", "l" ], command = "cd ~/.config/jesseduffield/lazygit" },
+  # { keys = ["g", "f", "l" ], command = "cd ~/.config/jesseduffield/lazygit" },
+  { keys = ["g", "p"], commands = ["cd ~/projects"] },
   { keys = ["g", "e"], commands = ["cd /etc"] },
   { keys = ["g", "h"], commands = ["cd ~/"] },
   { keys = ["?"], commands = ["help"] },
