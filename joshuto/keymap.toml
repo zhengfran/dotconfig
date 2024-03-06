@@ -99,7 +99,8 @@ keymap = [
   { keys = [";"], commands = [":"] },
 
   { keys = ["'"], commands = [":shell"] },
-  { keys = ["S"], commands = [":shell zsh "] },
+  { keys = ["S"], commands = [":shell zsh"] },
+  { keys = ["e","v"], commands = [":shell nvim %s"] },
   { keys = [ "ctrl+g" ], command = "shell lazygit" },
   { keys = ["m", "k"], commands = [":mkdir "] },
   { keys = ["c", "w"], commands = [":rename "] },
