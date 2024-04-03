@@ -3,6 +3,7 @@ return {
 	version = "*",
 	dependencies = {
 		"nvim-tree/nvim-web-devicons",
+		"famiu/bufdelete.nvim",
 	},
 	event = "BufEnter",
 
@@ -37,6 +38,7 @@ return {
 						text_align = "left",
 					},
 				},
+				close_command = require("bufdelete").bufdelete,
 			},
 		})
 		vim.keymap.set("n", "<leader>th", ":BufferLineCyclePrev<CR>", {})
@@ -51,5 +53,7 @@ return {
 		vim.keymap.set("n", "<leader>t7", ":BufferLineGoToBuffer 7<CR>", {})
 		vim.keymap.set("n", "<leader>t8", ":BufferLineGoToBuffer 8<CR>", {})
 		vim.keymap.set("n", "<leader>t9", ":BufferLineGoToBuffer 9<CR>", {})
+		vim.keymap.set("n", "<leader>bd", ":Bdelete<CR>", {})
+		vim.keymap.set("n", "<leader>bw", ":Bwipeout<CR>", {})
 	end,
 }
