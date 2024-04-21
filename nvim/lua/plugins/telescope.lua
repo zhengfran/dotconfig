@@ -17,6 +17,9 @@ return {
 		local lga_actions = require("telescope-live-grep-args.actions")
 		telescope.setup({
 			defaults = {
+				layout_config = {
+					vertical = { width = 0.8 },
+				},
 				mappings = {
 					n = {
 						["<C-x>"] = require("telescope.actions").delete_buffer,
@@ -41,7 +44,7 @@ return {
 			pickers = {
 				find_files = {
 					theme = "dropdown",
-					previewer = false,
+					previewer = true,
 					hidden = true,
 				},
 			},
