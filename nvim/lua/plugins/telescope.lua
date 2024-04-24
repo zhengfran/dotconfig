@@ -93,13 +93,20 @@ return {
 		telescope.load_extension("project")
 		telescope.load_extension("live_grep_args")
 		telescope.load_extension("harpoon")
+		telescope.load_extension("egrepify")
 		-- telescope.load_extension("file_browser")
 		local builtin = require("telescope.builtin")
-		vim.keymap.set("n", "<leader>ff", builtin.find_files, {})
-		vim.keymap.set("n", "<leader>fg", builtin.live_grep, {})
+		local custom_picker = require("scripts.custom_telescope")
+		local visible_path = require("scripts.visible-path")
+		vim.keymap.set("n", "<leader>ff", custom_picker.project_files, {})
+		vim.keymap.set(
+			"n",
+			"<leader>fg",
+			":lua require('scripts.custom_telescope').live_grep_in_folder({ respect_gitignore = true })<CR>"
+		)
 		vim.keymap.set("n", "<leader>fz", ":lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>")
 		vim.keymap.set("n", "<leader>fw", builtin.grep_string, {})
-		vim.keymap.set("n", "<leader>fb", builtin.buffers, {})
+		vim.keymap.set("n", "<leader>fb", visible_path.prettyBuffersPicker)
 		vim.keymap.set("n", "<leader>fo", builtin.oldfiles, {})
 		vim.keymap.set("n", "<leader>fh", ":Telescope harpoon marks<CR>", {})
 		-- vim.keymap.set("n", "<leader>.", ":Telescope file_browser<CR>", {})
