@@ -9,3 +9,7 @@ ag3() {
 ag4() {
     ask_gpt --model "gpt-4-turbo-preview"
 }
+
+bark() {
+    wget "https://api.day.app/mupUWyEzXJpFVvXQpneELX/$1"
+}
