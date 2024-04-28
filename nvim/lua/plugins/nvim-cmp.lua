@@ -6,13 +6,13 @@ return {
 		"hrsh7th/cmp-path",
 		"L3MON4D3/LuaSnip",
 		"saadparwaiz1/cmp_luasnip",
-		"rafamadriz/friendly-snippets",
+		-- "rafamadriz/friendly-snippets",
 	},
 
 	event = "InsertEnter",
 
 	config = function()
-		require("luasnip.loaders.from_vscode").lazy_load()
+		-- require("luasnip.loaders.from_vscode").lazy_load()
 		local cmp = require("cmp")
 		local luasnip = require("luasnip")
 		local lspkind = require("lspkind")
