@@ -3,8 +3,16 @@ return {
 		"L3MON4D3/LuaSnip",
 		config = function()
 			require("luasnip").config.set_config({
+				history = true,
 				enable_autosnippets = true,
 				store_selection_keys = "`",
+				ext_opts = {
+					[require("luasnip.util.types").choiceNode] = {
+						active = {
+							virt_text = { { "●", "GruvboxOrange" } },
+						},
+					},
+				},
 			})
 			require("luasnip.loaders.from_lua").load({ paths = "~/.config/nvim/LuaSnip" })
 			local auto_expand = require("luasnip").expand_auto
@@ -14,12 +22,12 @@ return {
 			end
 			-- local types = require("luasnip.util.types")
 			-- require("luasnip").config.setup({
-			--   ext_opts = {
-			--     [types.choiceNode] = {
-			--       active = {
-			--         virt_text = { { "●", "GruvboxOrange" } },
-			--       },
+			-- ext_opts = {
+			--   [types.choiceNode] = {
+			--    active = {
+			--       virt_text = { { "●", "GruvboxOrange" } },
 			--     },
+			-- },
 			--     [types.insertNode] = {
 			--       active = {
 			--         virt_text = { { "●", "GruvboxBlue" } },
@@ -31,7 +39,7 @@ return {
 		keys = function()
 			return {
 				{
-					"<tab>",
+					"fj",
 					function()
 						return require("luasnip").expand_or_locally_jumpable() and "<Plug>luasnip-jump-next"
 					end,
@@ -40,26 +48,26 @@ return {
 					mode = "i",
 				},
 				{
-					"<tab>",
+					"fj",
 					function()
 						return require("luasnip").jump(1)
 					end,
 					mode = "s",
 				},
 				{
-					"<s-tab>",
+					"fk",
 					function()
 						require("luasnip").jump(-1)
 					end,
 					mode = { "i", "s" },
 				},
 				{
-					"<c-n>",
+					"<c-j>",
 					"<Plug>luasnip-next-choice",
 					mode = { "i", "s" },
 				},
 				{
-					"<c-p>",
+					"<c-k>",
 					"<Plug>luasnip-prev-choice",
 					mode = { "i", "s" },
 				},
