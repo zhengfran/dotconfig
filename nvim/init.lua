@@ -38,6 +38,7 @@ opt.splitbelow = true
 --disable swapfile and backup
 opt.swapfile = false
 opt.backup = false
+opt.showmode = false
 --make "-" part of a word
 opt.iskeyword:append("_")
 
