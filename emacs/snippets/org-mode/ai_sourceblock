@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: org-ai 
-# key: <ai 
-# --
-#+begin_ai
-$0
-#+end_ai
