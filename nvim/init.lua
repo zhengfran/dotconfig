@@ -1,79 +1,19 @@
-local opt = vim.opt --for conciseness
-
--- line numbers
-opt.relativenumber = true
-opt.number = true
-
--- tabs & indentation
-opt.tabstop = 4
-opt.shiftwidth = 4
-opt.expandtab = true
-opt.autoindent = true
-
--- line wrapping
-opt.wrap = true
-
--- search settings
-opt.ignorecase = true
-opt.smartcase = true
-
--- cursor line
-opt.cursorline = true
-
--- appearance
-opt.termguicolors = true
-opt.background = "dark"
-opt.signcolumn = "yes"
-
--- backspace
-opt.backspace = "indent,eol,start"
-
---clipboard
-opt.clipboard:append("unnamedplus")
-
---split windows
-opt.splitright = true
-opt.splitbelow = true
-
---disable swapfile and backup
-opt.swapfile = false
-opt.backup = false
-opt.showmode = false
---make "-" part of a word
-opt.iskeyword:append("_")
-
--- highlight on yank
-vim.api.nvim_create_autocmd("TextYankPost", {
-	desc = "Highlight when yanking (copying) text",
-	group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
-	callback = function()
-		vim.highlight.on_yank()
-	end,
-})
-
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-	vim.fn.system({
-		"git",
-		"clone",
-		"--filter=blob:none",
-		"https://github.com/folke/lazy.nvim.git",
-		"--branch=stable", -- latest stable release
-		lazypath,
-	})
+-- This file simply bootstraps the installation of Lazy.nvim and then calls other files for execution
+-- This file doesn't necessarily need to be touched, BE CAUTIOUS editing this file and proceed at your own risk.
+local lazypath = vim.env.LAZY or vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
+if not (vim.env.LAZY or (vim.uv or vim.loop).fs_stat(lazypath)) then
+  -- stylua: ignore
+  vim.fn.system({ "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath })
 end
 vim.opt.rtp:prepend(lazypath)
 
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
+-- validate that lazy is available
+if not pcall(require, "lazy") then
+  -- stylua: ignore
+  vim.api.nvim_echo({ { ("Unable to load lazy from: %s\n"):format(lazypath), "ErrorMsg" }, { "Press any key to exit...", "MoreMsg" } }, true, {})
+  vim.fn.getchar()
+  vim.cmd.quit()
+end
 
---general keymaps
-vim.keymap.set("i", "fd", "<ESC>")
-
--- remove search highlight
-vim.keymap.set("n", "<leader>nh", ":nohl<CR>")
-
--- x does not copy character into register
-vim.keymap.set("n", "x", '"_x')
-
-require("lazy").setup("plugins")
+require "lazy_setup"
+require "polish"
