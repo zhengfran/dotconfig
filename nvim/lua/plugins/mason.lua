@@ -1,42 +1,42 @@
+-- Customize Mason plugins
+
+---@type LazySpec
 return {
-	-- lsp servers , linters, and formatters
-	"williamboman/mason.nvim",
-
-	dependencies = {
-		"williamboman/mason-lspconfig.nvim",
-		"jayp0521/mason-null-ls.nvim", -- bridges gap b/w mason & null-ls
-		"nvimtools/none-ls.nvim", -- bridges gap b/w mason & null-ls
-	},
-
-	lazy = false,
-
-	config = function()
-		require("mason").setup()
-		require("mason-lspconfig").setup({
-			-- list of servers for mason to install
-			ensure_installed = {
-				"clangd",
-				"lua_ls",
-				"jsonls",
-				"dockerls",
-				"rust_analyzer",
-				"pyright",
-				"cmake",
-			},
-			-- auto-install configured servers (with lspconfig)
-			automatic_installation = true, -- not the same as ensure_installed
-		})
-
-		require("mason-null-ls").setup({
-			-- list of formatters & linters for mason to install
-			ensure_installed = {
-				"stylua", -- lua formatter
-				"clang_format", -- c/cpp formatter
-				"jq", -- json formatter
-				"cmakelang", -- cmake formatter
-			},
-			-- auto-install configured formatters & linters (with null-ls)
-			automafic_installation = true,
-		})
-	end,
+  -- use mason-lspconfig to configure LSP installations
+  {
+    "williamboman/mason-lspconfig.nvim",
+    -- overrides `require("mason-lspconfig").setup(...)`
+    opts = {
+      ensure_installed = {
+        "lua_ls",
+        "pyright",
+        "rust_analyzer",
+        "clangd",
+        -- add more arguments for adding more language servers
+      },
+      PATH = "append",
+    },
+  },
+  -- use mason-null-ls to configure Formatters/Linter installation for null-ls sources
+  {
+    "jay-babu/mason-null-ls.nvim",
+    -- overrides `require("mason-null-ls").setup(...)`
+    opts = {
+      ensure_installed = {
+        "stylua",
+        "black", --python Formatter
+        -- add more arguments for adding more null-ls sources
+      },
+    },
+  },
+  {
+    "jay-babu/mason-nvim-dap.nvim",
+    -- overrides `require("mason-nvim-dap").setup(...)`
+    opts = {
+      ensure_installed = {
+        "python",
+        -- add more arguments for adding more debuggers
+      },
+    },
+  },
 }
