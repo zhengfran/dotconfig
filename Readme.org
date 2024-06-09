@@ -22,6 +22,7 @@ ln -s ~/dotconfig/zsh/zshrc ~/.zshrc
 source ~/.zshrc
 #+end_src
 By right the p10k configuration menu will popup, go through it should make it work.
+
 * TMUX
 Version must be greater than 3.3, if package manager version is lower than than, can try to compile latest from source.
  #+begin_src shell
@@ -42,29 +43,6 @@ Repicked up on 2023 Dec 30 16:16:45 Sat +08 .
 ** Dependencies
 - Python and npm for lsp and treesitter
 
-* Emacs
-** Build emacs 29 from source
-#+begin_src shell
-# clone source code
-git clone --depth=1 --branch emacs-29 git://git.savannah.gnu.org/emacs.git
-
-# install tools to compile
-sudo apt install -y autoconf autogen automake gcc libgccjit0 libgccjit-9-dev libjansson4 libjansson-dev gnutls-bin build-essential software-properties-common libgtk-3-dev libgnutls28-dev libtiff5-dev libgif-dev libjpeg-dev libpng-dev libxpm-dev libncurses-dev texinfo imagemagick libmagickwand-dev libsqlite3-dev elpa-pdf-tools cmake libvterm-dev libtool-bin
-
-#compile and install
-./autogen.sh && ./configure --with-native-compilation=aot --with-json --with-sqlite3 --with-tree-sitter --with-gnutls --with-imagemagick --with-pgtk
-make -j$(proc)
-sudo make install
-
-# create symbolic links
-ln -s ~/dotconfig/emacs/init.el ~/.emacs.d/init.el
-#for org agenda files and roam files
-ln -s ~/Nextcloud/org ~/Documents/org
-#+end_src
-Most emacs package I use will be automatically downloaded, but below packages needs mannual configuration:
-
 * Tiling Windows manager
-** Windows - komorebi
-Besides komorebi, yasb is used to number the workspaces for quick switching
 
 ** Mac - yabai
