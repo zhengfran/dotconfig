@@ -1,3 +1,4 @@
+## HPC RELATED
 mcaw() {
     repo init -u git@github-vni.geo.conti.de:uidw7283/hpc_gen2_CAR_win32.git -b 1.0-dev-CAR-win32 -g CAR_win32 --depth=1
     repo sync -d
@@ -56,4 +57,19 @@ function hpc_start_corbos_studio()
     # script is to be called from the workspace-root folder
     # usually located somewhere here: '.conan/data/eb_adg/0.24.0/swp/face_ez1_b2.0/package/45aef8be63955fea583a5341b6675843434dca71/eb/tools/studio/EB_corbos_Studio-2022_R03_07_00-Linux_x86_64/'
     $(find . -name EB_corbos_Studio) &
+}
+
+## IIP RELATED
+#QNX DOCKER
+qnx32d() {
+    docker run -it --rm \
+   -u $(id -u):$(id -g) \
+   -e USER_NAME=$(id -un) \
+   -e USER=$(id -un) \
+   -e GROUP_NAME=$(id -gn) \
+   -e HOME \
+   -v $HOME:$HOME \
+   -v /srv:/srv \
+   -w $PWD \
+   i-st-pd-docker-v.eu.artifactory.conti.de/oe:devenv
 }

@@ -4,7 +4,10 @@ format = """
 [](color_orange)\
 $os\
 $username\
+$hostname\
+$container\
 [](bg:color_yellow fg:color_orange)\
+$shell\
 $directory\
 [](fg:color_yellow bg:color_aqua)\
 $git_branch\
@@ -70,7 +73,26 @@ RedHatEnterprise = "󱄛"
 show_always = true
 style_user = "bg:color_orange fg:color_fg0"
 style_root = "bg:color_orange fg:color_fg0"
+disabled = false
 format = '[ $user ]($style)'
+
+[hostname]
+ssh_only = false
+style = "bg:color_orange fg:color_fg0"
+format = '[ $hostname ]($style)'
+disabled = false
+
+[container]
+style = "bg:color_orange fg:color_fg0"
+format = '[$symbol \[$name\]]($style)'
+disabled = false
+
+[shell]
+disabled = false
+powershell_indicator = '_'
+bash_indicator = 'bash'
+format= '[$indicator]($style)'
+style = "fg:color_fg0 bg:color_yellow"
 
 [directory]
 style = "fg:color_fg0 bg:color_yellow"
