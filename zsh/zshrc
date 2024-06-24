@@ -8,7 +8,7 @@ source $ZSH/oh-my-zsh.sh
 source ~/dotconfig/zsh/zsh_functions/aliases.zsh
 source ~/dotconfig/zsh/zsh_functions/env.zsh
 source ~/dotconfig/zsh/zsh_functions/general_func.zsh
-source ~/dotconfig/zsh/zsh_functions/hpc_func.zsh
+source ~/dotconfig/zsh/zsh_functions/work_func.zsh
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
