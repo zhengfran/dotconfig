@@ -25,7 +25,7 @@ return {
       ensure_installed = {
         "stylua",
         "black", --python Formatter
-        "rustfmt", --Rust Formatter
+        "latexindent", --latex Formatter
         -- add more arguments for adding more null-ls sources
       },
     },
@@ -35,7 +35,7 @@ return {
     -- overrides `require("mason-nvim-dap").setup(...)`
     opts = {
       ensure_installed = {
-        "python",
+        -- "python",
         -- add more arguments for adding more debuggers
       },
     },
