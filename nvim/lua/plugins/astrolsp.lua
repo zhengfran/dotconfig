@@ -24,7 +24,7 @@ return {
           "lua",
           "python",
           "rust",
-          "latex",
+          "tex",
         },
         ignore_filetypes = { -- disable format on save for specified filetypes
           -- "python",
@@ -41,7 +41,7 @@ return {
     },
     -- enable servers that you already have installed without mason
     servers = {
-      -- "pyright"
+      -- "latexindent",
     },
     -- customize language server configuration options passed to `lspconfig`
     ---@diagnostic disable: missing-fields

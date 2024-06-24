@@ -12,6 +12,7 @@ return {
         "pyright",
         "rust_analyzer",
         "clangd",
+        "texlab",
         -- add more arguments for adding more language servers
       },
       PATH = "append",
@@ -25,7 +26,6 @@ return {
       ensure_installed = {
         "stylua",
         "black", --python Formatter
-        "latexindent", --latex Formatter
         -- add more arguments for adding more null-ls sources
       },
     },
