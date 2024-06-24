@@ -12,6 +12,5 @@ return {
   { import = "astrocommunity.motion.nvim-surround" },
   { import = "astrocommunity.motion.leap-nvim" },
   { import = "astrocommunity.recipes.neovide" },
-  { import = "astrocommunity.markdown-and-latex.vimtex" },
   -- import/override with your plugins folder
 }
