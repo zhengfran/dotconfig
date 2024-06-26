@@ -5,12 +5,11 @@ plugins=(git z zsh-autosuggestions zsh-syntax-highlighting web-search)
 
 source $ZSH/oh-my-zsh.sh
 
-source ~/dotconfig/zsh/zsh_functions/aliases.zsh
-source ~/dotconfig/zsh/zsh_functions/env.zsh
-source ~/dotconfig/zsh/zsh_functions/general_func.zsh
-source ~/dotconfig/zsh/zsh_functions/work_func.zsh
+export ZSH_AUTOSUGGEST_USE_ASYNC=1
+export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ -f ~/.bashrc ] && source ~/.bashrc
 
 #use starship
 eval "$(starship init zsh)"
