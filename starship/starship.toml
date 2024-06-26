@@ -27,6 +27,7 @@ $docker_context\
 $conda\
 [](fg:color_bg3 bg:color_bg1)\
 $time\
+$cmd_duration\
 [ ](fg:color_bg1)\
 $line_break$character"""
 
@@ -187,3 +188,8 @@ vimcmd_symbol = '[](bold fg:color_green)'
 vimcmd_replace_one_symbol = '[](bold fg:color_purple)'
 vimcmd_replace_symbol = '[](bold fg:color_purple)'
 vimcmd_visual_symbol = '[](bold fg:color_yellow)'
+
+[cmd_duration]
+min_time = 2000
+style = "bg:color_bg1"
+format = '[[ took $duration ](fg:color_fg0 bg:color_bg1)]($style)'
