@@ -50,7 +50,7 @@ rcaw() {
     cd ..; done
 }
 
-function hpc_start_corbos_studio()
+hpc_start_corbos_studio()
 {
     export LM_LICENSE_FILE=30124@ls_rb_eb_ww_1.conti.de
     # find . -name EB_corbos_Studio
@@ -72,4 +72,9 @@ qnx32d() {
    -v /srv:/srv \
    -w $PWD \
    i-st-pd-docker-v.eu.artifactory.conti.de/oe:devenv
+}
+
+qnx32bs() {
+  ./meta-distro-common/scripts/setup_buildenv.py -d base-qnx -b ./workdir -m qnx7paccar-b2
+  source poky/oe-init-build-env ./workdir
 }
