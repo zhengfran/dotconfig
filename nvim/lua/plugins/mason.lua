@@ -25,7 +25,7 @@ return {
     opts = {
       ensure_installed = {
         "stylua",
-        "black", --python Formatter
+        -- "black", --python Formatter
         -- add more arguments for adding more null-ls sources
       },
     },
