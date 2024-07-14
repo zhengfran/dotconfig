@@ -1,11 +1,38 @@
 return {
   "max397574/better-escape.nvim",
-  -- enabled = true,
+  enabled = true,
   config = function()
     require("better_escape").setup {
-      mapping = { "fd", "jk" }, -- a table with mappings to use
-      clear_empty_lines = false, -- clear line after escaping if there is only whitespace
-      keys = "<Esc>",
+      timeout = vim.o.timeoutlen,
+      default_mappings = false,
+      mappings = {
+        i = {
+          f = {
+            -- These can all also be functions
+            d = "<Esc>",
+          },
+        },
+        c = {
+          f = {
+            d = "<Esc>",
+          },
+        },
+        t = {
+          f = {
+            d = "<Esc>",
+          },
+        },
+        v = {
+          f = {
+            d = "<Esc>",
+          },
+        },
+        s = {
+          f = {
+            d = "<Esc>",
+          },
+        },
+      },
     }
   end,
 }
