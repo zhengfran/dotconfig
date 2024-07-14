@@ -38,10 +38,6 @@ if [ -f ~/dotconfig/bash/general.sh ]; then
     source ~/dotconfig/bash/general.sh
 fi
 
-if [ -f ~/dotconfig/bash/python.sh ]; then
-    source ~/dotconfig/bash/python.sh
-fi
-
 if [ -f ~/dotconfig/bash/work_func.sh ]; then
     source ~/dotconfig/bash/work_func.sh
 fi
