@@ -47,3 +47,4 @@ if [ -f ~/dotconfig/bash/work_func.sh ]; then
 fi
 
 eval "$(starship init bash)"
+. "$HOME/.cargo/env"
