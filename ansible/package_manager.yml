@@ -34,3 +34,9 @@
           mode: '775'
       - name: Run Installer Script
         ansible.builtin.shell: NONINTERACTIVE=1 /tmp/brew_install.sh
+      - name: Ensure Homebrew is added to PATH in .bashrc
+        lineinfile:
+          path: "{{ ansible_env.HOME }}/.bashrc"
+          line: 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"'
+          create: yes
+        when: ansible_system != "Windows"
