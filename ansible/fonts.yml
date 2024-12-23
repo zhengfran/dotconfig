@@ -1,0 +1,20 @@
+- name: Ensure a specific font is installed
+  hosts: localhost
+  tasks:
+    - name: Install fonts in Mac
+      shell: brew tap homebrew/cask-fonts && brew install --cask font-meslo-lg-nerd-font
+      when: ansible_system == "Darwin"
+    - name: Install font in Linux
+      shell: >
+        wget -P ~/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/FiraMono.zip \
+        && wget -P ~/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/FiraCode.zip \
+        && wget -P ~/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/Meslo.zip \
+        && cd ~/.local/share/fonts \
+        && unzip -o FiraMono.zip \
+        && unzip -o FiraCode.zip \
+        && unzip -o Meslo.zip \
+        && rm FiraMono.zip \
+        && rm FiraCode.zip \
+        && rm Meslo.zip \
+        && fc-cache -fv
+      when: ansible_system == "Linux"

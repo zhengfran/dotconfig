@@ -2,12 +2,17 @@ local wezterm = require("wezterm")
 local gpu_adapters = require("utils.gpu_adapter")
 local colors = require("colors.custom")
 
+-- Try to pick the best GPU adapter, fallback to nil if not found
+local preferred_gpu = gpu_adapters:pick_best()
 return {
 	animation_fps = 60,
 	max_fps = 60,
-	front_end = "WebGpu",
-	webgpu_power_preference = "HighPerformance",
-	webgpu_preferred_adapter = gpu_adapters:pick_best(),
+        -- Fallback mechanism for the front_end
+        front_end = preferred_gpu and "WebGpu" or "Software",
+        
+        -- WebGPU settings if a preferred GPU is found
+        webgpu_power_preference = "HighPerformance",
+        webgpu_preferred_adapter = preferred_gpu,
 
 	-- color scheme
 	colors = colors,
