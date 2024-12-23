@@ -24,6 +24,3 @@ if ($host.Name -eq 'ConsoleHost')
     Import-Module PSReadLine
     Set-PSReadLineOption -EditMode Emacs
 }
-# starship
-Invoke-Expression (&starship init powershell)
-$ENV:STARSHIP_CONFIG = "$HOME\dotconfig\starship\starship.toml"
