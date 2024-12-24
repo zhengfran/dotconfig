@@ -104,19 +104,19 @@ return {
 			},
 		},
 		keys = {
-			-- {
-			-- 	"<ESC>",
-			-- 	mode = { "n" },
-			-- 	function()
-			-- 		require("flash").jump({
-			-- 			remote_op = {
-			-- 				restore = true,
-			-- 				motion = true,
-			-- 			},
-			-- 		})
-			-- 	end,
-			-- 	desc = "Flash",
-			-- },
+			{
+				"<ESC>",
+				mode = { "n" },
+				function()
+					require("flash").jump({
+						remote_op = {
+							restore = true,
+							motion = true,
+						},
+					})
+				end,
+				desc = "Flash",
+			},
 			{
 				"tt",
 				mode = { "n", "o", "x" },
@@ -125,14 +125,14 @@ return {
 				end,
 				desc = "Flash Treesitter",
 			},
-			-- {
-			-- 	"r",
-			-- 	mode = "o",
-			-- 	function()
-			-- 		require("flash").remote()
-			-- 	end,
-			-- 	desc = "Remote Flash",
-			-- },
+			{
+				"r",
+				mode = "o",
+				function()
+					require("flash").remote()
+				end,
+				desc = "Remote Flash",
+			},
 			{
 				"/",
 				mode = { "o", "x" },
