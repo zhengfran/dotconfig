@@ -38,18 +38,18 @@ return {
 				},
 				fzf = {
 					["esc"]        = "abort",
-					["ctrl-h"]     = "unix-line-discard",
-					["ctrl-k"]     = "half-page-down",
-					["ctrl-b"]     = "half-page-up",
-					["ctrl-n"]     = "beginning-of-line",
+					["ctrl-l"]     = "unix-line-discard",
+					["ctrl-d"]     = "half-page-down",
+					["ctrl-u"]     = "half-page-up",
+					["ctrl-h"]     = "beginning-of-line",
 					["ctrl-a"]     = "end-of-line",
 					["alt-a"]      = "toggle-all",
 					["f3"]         = "toggle-preview-wrap",
 					["f4"]         = "toggle-preview",
 					["shift-down"] = "preview-page-down",
 					["shift-up"]   = "preview-page-up",
-					["ctrl-p"]     = "down",
-					["ctrl-n"]     = "up",
+					["ctrl-k"]     = "down",
+					["ctrl-j"]     = "up",
 				},
 			},
 			previewers = {
@@ -107,3 +107,4 @@ return {
 	end
 
 }
+

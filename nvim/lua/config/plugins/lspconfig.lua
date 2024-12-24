@@ -239,8 +239,8 @@ M.config = {
 				javascript = true,
 				typescript = true,
 				typescriptreact = true,
-				c = true,
-				cpp = true,
+				c = false,
+				cpp = false,
 				objc = true,
 				objcpp = true,
 				dockerfile = true,
@@ -354,3 +354,4 @@ F.configureKeybinds = function()
 end
 
 return M
+
