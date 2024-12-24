@@ -35,6 +35,7 @@ require("lazy").setup({
 	require("config.plugins.nvim-tree"),
 	require("config.plugins.colorscheme"),
 	require("config.plugins.window-management"),
+	require("config.plugins.winbar"),
 	-- GIT
 	require("config.plugins.git"),
 	-- LSP and treesitter
@@ -65,7 +66,6 @@ require("lazy").setup({
 	--	require("config.plugins.undo"),
 	--	require("config.plugins.ft"),
 	--	require("config.plugins.fun"),
-	--	require("config.plugins.winbar"),
 	--	require("config.plugins.tex"),
 	require("config.plugins.yazi"),
 	{ "dstein64/vim-startuptime" },
