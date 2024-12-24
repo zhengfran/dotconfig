@@ -102,13 +102,13 @@ M.config = {
 					mappings = {
 						i = {
 							["<C-h>"] = "which_key",
-							["<C-p>"] = "move_selection_previous",
-							["<C-n>"] = "move_selection_next",
+							["<C-k>"] = "move_selection_previous",
+							["<C-j>"] = "move_selection_next",
 							["<C-u>"] = "preview_scrolling_up",
 							["<C-d>"] = "preview_scrolling_down",
 							["<esc>"] = "close",
-							["<C-j>"] = require('telescope.actions').cycle_history_next,
-							["<C-k>"] = require('telescope.actions').cycle_history_prev,
+							["<C-n>"] = require('telescope.actions').cycle_history_next,
+							["<C-p>"] = require('telescope.actions').cycle_history_prev,
 						}
 					},
 					color_devicons = true,
@@ -195,3 +195,4 @@ M.config = {
 }
 
 return M
+
