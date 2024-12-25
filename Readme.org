@@ -1,5 +1,5 @@
 * Introduction
-This file provides a set of configurations for the tools I used most often in my daily work and development.
+This file provides a set of configurations for the tools I used in my daily work and development.
 
 
 ** Terminal
@@ -46,12 +46,10 @@ tmux source-file ~/.tmux.conf
 *** Terminal App
 **** wezterm
 
-** Editor
+** TUI Apps
 *** Neovim
-Abandoned as of Jun 02 17:55:38 2023
-Repicked up on Dec 30 16:16:45 2023
-*** Emacs
-Picked up on Jul 14 20:17:42 2024
+*** Yazi
+
 
 ** Tiling Windows manager
-*** Mac - yabai
+*** aerospace
