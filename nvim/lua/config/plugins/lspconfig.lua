@@ -61,23 +61,13 @@ M.config = {
 			require('mason').setup({})
 			require('mason-lspconfig').setup({
 				ensure_installed = {
-					"biome",
-					"cssls",
-					'ts_ls',
-					'eslint',
-					'gopls',
 					'jsonls',
-					'html',
 					'clangd',
 					'dockerls',
 					'ansiblels',
-					'terraformls',
 					'texlab',
 					'pyright',
 					'yamlls',
-					'tailwindcss',
-					'taplo',
-					"prismals",
 				}
 			})
 
@@ -230,24 +220,15 @@ M.config = {
 			F.configureKeybinds()
 
 			local format_on_save_filetypes = {
-				dart = true,
 				json = true,
 				go = true,
 				lua = true,
 				html = true,
-				css = true,
-				javascript = true,
-				typescript = true,
-				typescriptreact = true,
 				c = false,
 				cpp = false,
-				objc = true,
-				objcpp = true,
 				dockerfile = true,
-				terraform = false,
 				tex = true,
 				toml = true,
-				prisma = true,
 			}
 
 			vim.api.nvim_create_autocmd("BufWritePre", {
@@ -267,11 +248,11 @@ M.config = {
 F.configureDocAndSignature = function()
 	vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
 		vim.lsp.handlers.signature_help, {
-			-- silent = true,
-			focusable = false,
-			border = "rounded",
-			zindex = 60,
-		}
+		-- silent = true,
+		focusable = false,
+		border = "rounded",
+		zindex = 60,
+	}
 	)
 	local group = vim.api.nvim_create_augroup("lsp_diagnostics_hold", { clear = true })
 	vim.api.nvim_create_autocmd({ "CursorHold" }, {
@@ -354,4 +335,3 @@ F.configureKeybinds = function()
 end
 
 return M
-
