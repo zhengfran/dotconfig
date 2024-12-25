@@ -17,6 +17,8 @@ export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 
 [ -f ~/.commonprofile ] && source ~/.commonprofile
 
+#brew
+eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
 # workaround to use system python first
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:$PATH"
 
@@ -86,3 +88,6 @@ eval $(thefuck --alias fk)
 eval "$(zoxide init zsh)"
 
 alias cd="z"
+
+# open files using windows app in wsl
+alias xdg-open=open-windows-file
