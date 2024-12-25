@@ -85,14 +85,6 @@ keymap = [
 	{ on = "z",         run = "plugin zoxide",               desc = "Jump to a directory via zoxide" },
 	{ on = "Z",         run = "plugin fzf",                  desc = "Jump to a file/directory via fzf" },
 
-	# Linemode
-	{ on = [ "m", "s" ], run = "linemode size",        desc = "Linemode: size" },
-	{ on = [ "m", "p" ], run = "linemode permissions", desc = "Linemode: permissions" },
-	{ on = [ "m", "b" ], run = "linemode btime",       desc = "Linemode: btime" },
-	{ on = [ "m", "m" ], run = "linemode mtime",       desc = "Linemode: mtime" },
-	{ on = [ "m", "o" ], run = "linemode owner",       desc = "Linemode: owner" },
-	{ on = [ "m", "n" ], run = "linemode none",        desc = "Linemode: none" },
-
 	# Copy
 	{ on = [ "c", "c" ], run = "copy path",             desc = "Copy the file path" },
 	{ on = [ "c", "d" ], run = "copy dirname",          desc = "Copy the directory path" },
@@ -129,6 +121,7 @@ keymap = [
 	{ on = [ "g", "d" ],       run = "cd ~/Downloads",   desc = "Goto ~/Downloads" },
 	{ on = [ "g", "<Space>" ], run = "cd --interactive", desc = "Jump interactively" },
 
+    { on = "<C-g>", run = "shell --confirm --block lazygit", desc = "Lazygit" },
 	# Tabs
 	{ on = "t", run = "tab_create --current", desc = "Create a new tab with CWD" },
 
@@ -156,30 +149,13 @@ keymap = [
 	{ on = "<F1>", run = "help", desc = "Open help" },
 ]
 
-[[manager.prepend_keymap]]
-on = [ "m" ]
-run = "plugin bookmarks --args=save"
-desc = "Save current position as a bookmark"
-
-[[manager.prepend_keymap]]
-on = [ "'" ]
-run = "plugin bookmarks --args=jump"
-desc = "Jump to a bookmark"
-
-[[manager.prepend_keymap]]
-on = [ "b", "d" ]
-run = "plugin bookmarks --args=delete"
-desc = "Delete a bookmark"
-
-[[manager.prepend_keymap]]
-on = [ "b", "D" ]
-run = "plugin bookmarks --args=delete_all"
-desc = "Delete all bookmarks"
-
-[[manager.prepend_keymap]]
-on   = "!"
-run  = 'shell "$SHELL" --block'
-desc = "Open shell here"
+prepend_keymap = [
+  { on = "S", run = 'shell "$SHELL" --block --confirm' },
+  { on = "m", run = "plugin bookmarks --args=save",  desc = "Save current position as a bookmark"},
+  { on = "'", run = "plugin bookmarks --args=jump",  desc = "Jump to a bookmark"},
+  { on = ["b","d"], run = "plugin bookmarks --args=delete",  desc = "Delete a bookmark"},
+  { on = ["b","D"], run = "plugin bookmarks --args=delete_all",  desc = "Delet all bookmarks"},
+]
 
 [tasks]
 
