@@ -49,6 +49,7 @@ require("lazy").setup({
 	require("config.plugins.telescope").config,
 	require("config.plugins.fzf"),
 	require("config.plugins.yank"),
+	require("config.plugins.tmux"),
 	-- Edit
 	require("config.plugins.comment"),
 	require("config.plugins.surround"),
