@@ -17,6 +17,11 @@ export LANG=en_US.UTF-8
 export EDITOR=nvim
 export TERM=screen-256color-bce
 
+# wsl related
+open-windows-file() {
+	powershell.exe start "$(wslpath -w "$1")"
+}
+
 # work related (continental)
 ## HPC RELATED
 mcaw() {
