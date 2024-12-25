@@ -105,7 +105,7 @@ return {
 		},
 		keys = {
 			{
-				"<ESC>",
+				"ju",
 				mode = { "n" },
 				function()
 					require("flash").jump({
