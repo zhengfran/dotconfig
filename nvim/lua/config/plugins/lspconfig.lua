@@ -118,19 +118,9 @@ M.config = {
 			require("config.lsp.lua").setup(lspconfig, lsp)
 			require("config.lsp.json").setup(lspconfig, lsp)
 
-			require 'lspconfig'.html.setup {}
 			require 'lspconfig'.pyright.setup {}
-			require 'lspconfig'.tailwindcss.setup {}
-
-			require 'lspconfig'.ts_ls.setup {}
-			require 'lspconfig'.biome.setup {}
-			require 'lspconfig'.cssls.setup {}
-
-			require 'lspconfig'.taplo.setup {}
-
 			require 'lspconfig'.ansiblels.setup {}
 
-			require 'lspconfig'.terraformls.setup {}
 			vim.api.nvim_create_autocmd({ "BufWritePre" }, {
 				pattern = { "*.tf", "*.tfvars", "*.lua" },
 				callback = function()
