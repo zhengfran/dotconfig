@@ -1,3 +1,5 @@
 **/plugin/packer_compiled.lua
 *.~undo-tree~
 **/tmp/
+**/.vscode
+**/bookmark
