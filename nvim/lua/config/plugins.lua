@@ -36,6 +36,7 @@ require("lazy").setup({
 	require("config.plugins.colorscheme"),
 	require("config.plugins.window-management"),
 	require("config.plugins.winbar"),
+	require("config.plugins.which-key"),
 	-- GIT
 	require("config.plugins.git"),
 	-- LSP and treesitter
@@ -53,6 +54,8 @@ require("lazy").setup({
 	-- Edit
 	require("config.plugins.comment"),
 	require("config.plugins.surround"),
+	--Tex
+	require("config.plugins.tex"),
 	--	require("config.plugins.notify"),
 	--	require("config.plugins.editor"),
 	--	require("config.plugins.scrollbar"),
