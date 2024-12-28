@@ -87,7 +87,10 @@ eval $(thefuck --alias fk)
 # ---- Zoxide (better cd) ----
 eval "$(zoxide init zsh)"
 
-alias cd="z"
-
-# open files using windows app in wsl
-alias xdg-open=open-windows-file
+# WSL
+if is_wsl; then
+  # WSL-specific configurations
+	set_display
+	# open files using windows app in wsl
+	alias xdg-open=open-windows-file
+fi
