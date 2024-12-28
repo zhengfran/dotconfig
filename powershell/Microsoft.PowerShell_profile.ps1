@@ -36,4 +36,4 @@ function y {
 }
 
 # for komorebic
-$Env:KOMOREBI_CONFIG_HOME = 'C:\Users\LGUG2Z\.config\komorebi'
+$Env:KOMOREBI_CONFIG_HOME = Join-Path -Path $HOME -ChildPath '.config\komorebi'
