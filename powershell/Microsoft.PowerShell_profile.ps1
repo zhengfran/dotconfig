@@ -34,3 +34,6 @@ function y {
     }
     Remove-Item -Path $tmp
 }
+
+# for komorebic
+$Env:KOMOREBI_CONFIG_HOME = 'C:\Users\LGUG2Z\.config\komorebi'
