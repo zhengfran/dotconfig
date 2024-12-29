@@ -37,3 +37,6 @@ function y {
 
 # for komorebic
 $Env:KOMOREBI_CONFIG_HOME = Join-Path -Path $HOME -ChildPath '.config\komorebi'
+
+#zoxide init
+Invoke-Expression (& { (zoxide init powershell | Out-String) })
