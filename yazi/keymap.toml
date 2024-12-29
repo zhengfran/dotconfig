@@ -151,9 +151,9 @@ keymap = [
 
 prepend_keymap = [
   { on = "S", run = 'shell "$SHELL" --block --confirm' },
-  { on = ["'","m",], run = "plugin yamb --args=save", desc = "Add bookmark" },
-  { on = ["'","'",], run = "plugin yamb --args=jump_by_fzf", desc = "Jump bookmark by fzf" },
-  { on = ["'","d",], run = "plugin yamb --args=delete_by_key", desc = "Delete bookmark by key" },
+  { on = ["m","s",], run = "plugin yamb --args=save", desc = "Add bookmark" },
+  { on = ["m","m",], run = "plugin yamb --args=jump_by_fzf", desc = "Jump bookmark by fzf" },
+  { on = ["m","d",], run = "plugin yamb --args=delete_by_key", desc = "Delete bookmark by key" },
   { on = ["c","a",], run = "plugin compress", desc = "Archive selected files" },
   { on = [ "m" ],    run = "plugin relative-motions",desc = "Trigger a new relative motion"}
 ]
@@ -181,7 +181,6 @@ keymap = [
 ]
 
 [spot]
-
 keymap = [
 	{ on = "<Esc>", run = "close", desc = "Close the spot" },
 	{ on = "<C-[>", run = "close", desc = "Close the spot" },
