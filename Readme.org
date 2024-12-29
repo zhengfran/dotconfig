@@ -46,10 +46,44 @@ tmux source-file ~/.tmux.conf
 *** Terminal App
 **** wezterm
 
+** CLI tools
+*** Zoxide
+ #+begin_src powershell
+ scoop install zoxide
+ #+end_src
+
 ** TUI Apps
 *** Neovim
 *** Yazi
+1.
+2. create symbolic link for yazi config
+https://github.com/ajeetdsouza/zoxide
+ mklink /D "C:\Users\uie41442\AppData\Roaming\yazi\config" "C:\Users\uie41442\dotconfig\yazi"
+ #+end_src
+
 
 
 ** Tiling Windows manager
 *** aerospace
+*** komorebi (Windows) 
+1. use scoop to install komorebi and ahk
+https://github.com/ajeetdsouza/zoxide
+ scoop install komorebi autohotkey
+ #+end_src
+2. specify komori home directory in Powershell
+ #+begin_src powershell
+ $Env:KOMOREBI_CONFIG_HOME = Join-Path -Path $HOME -ChildPath '.config\komorebi'
+ #+end_src
+3. create symbolic link for config folder
+4. autorun 
+
+** Status bar
+*** yasb (windows)
+1. install yasb
+ #+begin_src powershell
+ winget install --id AmN.yasb
+ #+end_src
+2. create symbolic link for yazi config
+ #+begin_src powershell
+ mklink /D "C:\Users\uie41442\.config\yasb\" "C:\Users\uie41442\dotconfig\yazi"
+ #+end_src
