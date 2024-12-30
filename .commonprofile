@@ -34,8 +34,8 @@ set_display() {
   
   # If Windows IP address is found, set DISPLAY
   if [[ -n "$windows_ip" ]]; then
-    export DISPLAY="${windows_ip}:0.0"
-    echo "DISPLAY set to ${DISPLAY}"
+    export DISPLAY="${windows_ip}:0"
+    # echo "DISPLAY set to ${DISPLAY}"
   else
     echo "Failed to retrieve Windows IP address. DISPLAY not set."
   fi
