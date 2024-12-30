@@ -19,8 +19,8 @@ M.config = {
 					use_diagnostic_signs = true,
 					action_keys = {
 						close = "<esc>",
-						previous = "u",
-						next = "e"
+						previous = "k",
+						next = "j"
 					},
 				},
 			},
@@ -107,8 +107,8 @@ M.config = {
 
 			lsp.format_on_save({
 				format_opts = {
-					-- async = false,
-					-- timeout_ms = 10000,
+					async = false,
+					timeout_ms = 10000,
 				},
 			})
 
@@ -238,11 +238,11 @@ M.config = {
 F.configureDocAndSignature = function()
 	vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
 		vim.lsp.handlers.signature_help, {
-		-- silent = true,
-		focusable = false,
-		border = "rounded",
-		zindex = 60,
-	}
+			-- silent = true,
+			focusable = false,
+			border = "rounded",
+			zindex = 60,
+		}
 	)
 	local group = vim.api.nvim_create_augroup("lsp_diagnostics_hold", { clear = true })
 	vim.api.nvim_create_autocmd({ "CursorHold" }, {

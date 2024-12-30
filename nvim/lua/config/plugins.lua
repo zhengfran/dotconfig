@@ -44,6 +44,7 @@ require("lazy").setup({
 	require("config.plugins.autocomplete").config,
 	require("config.plugins.debugger"),
 	require("config.plugins.treesitter"),
+	require("config.plugins.trouble"),
 	require("config.plugins.snippets"),
 	-- Navigation
 	require("config.plugins.flash"),
@@ -55,8 +56,9 @@ require("lazy").setup({
 	require("config.plugins.comment"),
 	require("config.plugins.surround"),
 	require("config.plugins.multi-cursor"),
-	--Tex
+	-- Languages
 	require("config.plugins.tex"),
+	require("config.plugins.rust"),
 	--	require("config.plugins.notify"),
 	--	require("config.plugins.editor"),
 	--	require("config.plugins.scrollbar"),
