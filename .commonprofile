@@ -17,6 +17,9 @@ export LANG=en_US.UTF-8
 export EDITOR=nvim
 export TERM=screen-256color-bce
 
+# add path
+export PATH="$HOME/.cargo/bin/:$PATH"
+
 # wsl related
 # check if it is wsl
 is_wsl() {
