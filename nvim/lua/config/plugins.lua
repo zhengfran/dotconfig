@@ -54,15 +54,14 @@ require("lazy").setup({
 	-- Edit
 	require("config.plugins.comment"),
 	require("config.plugins.surround"),
+	require("config.plugins.multi-cursor"),
 	--Tex
 	require("config.plugins.tex"),
 	--	require("config.plugins.notify"),
 	--	require("config.plugins.editor"),
 	--	require("config.plugins.scrollbar"),
-	--	require("config.plugins.tabline"),
 	--	require("config.plugins.project"),
 	--	require("config.plugins.wilder"),
-	--	require("config.plugins.multi-cursor"),
 	--	require("config.plugins.copilot"),
 	--	require("config.plugins.markdown"),
 	--	-- require("config.plugins.indent"),
@@ -70,7 +69,6 @@ require("lazy").setup({
 	--	require("config.plugins.undo"),
 	--	require("config.plugins.ft"),
 	--	require("config.plugins.fun"),
-	--	require("config.plugins.tex"),
 	require("config.plugins.yazi"),
 	{ "dstein64/vim-startuptime" },
 })
