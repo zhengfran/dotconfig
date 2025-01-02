@@ -1,7 +1,6 @@
 # aliases
 alias c='clear'
 alias q='exit'
-alias l='ls -la'
 alias lg='lazygit'
 alias nv='nvim'
 alias ta='tmux a'
