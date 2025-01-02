@@ -119,6 +119,15 @@ M.config = {
 			require("config.lsp.json").setup(lspconfig, lsp)
 
 			require 'lspconfig'.pyright.setup {}
+			require 'lspconfig'.rust_analyzer.setup {
+				settings = {
+					["rust-analyzer"] = {
+						checkOnSave = {
+							command = "clippy", -- You can set this to "clippy" for linting only or "false" to completely disable it
+						},
+					},
+				},
+			}
 			require 'lspconfig'.ansiblels.setup {}
 
 			vim.api.nvim_create_autocmd({ "BufWritePre" }, {
@@ -219,6 +228,7 @@ M.config = {
 				dockerfile = true,
 				tex = true,
 				toml = true,
+				rust = true,
 			}
 
 			vim.api.nvim_create_autocmd("BufWritePre", {
