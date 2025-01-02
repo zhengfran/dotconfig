@@ -43,6 +43,9 @@ vim.o.colorcolumn = '100'
 vim.o.updatetime = 100
 vim.o.virtualedit = 'block'
 
+-- Use system clipboard
+vim.opt.clipboard = 'unnamedplus'
+
 vim.cmd([[
 silent !mkdir -p $HOME/.config/nvim/tmp/backup
 silent !mkdir -p $HOME/.config/nvim/tmp/undo
@@ -69,3 +72,4 @@ augroup END
 tnoremap <C-N> <C-\><C-N>
 tnoremap <C-O> <C-\><C-N><C-O>
 ]])
+

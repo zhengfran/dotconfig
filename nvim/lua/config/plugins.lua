@@ -36,6 +36,7 @@ require("lazy").setup({
 	require("config.plugins.colorscheme"),
 	require("config.plugins.window-management"),
 	require("config.plugins.winbar"),
+	require("config.plugins.noice"),
 	require("config.plugins.which-key"),
 	-- GIT
 	require("config.plugins.git"),
@@ -58,7 +59,7 @@ require("lazy").setup({
 	require("config.plugins.multi-cursor"),
 	-- Languages
 	require("config.plugins.tex"),
-	require("config.plugins.rust"),
+	-- require("config.plugins.rust"),
 	--	require("config.plugins.notify"),
 	--	require("config.plugins.editor"),
 	--	require("config.plugins.scrollbar"),
