@@ -60,7 +60,8 @@ require("lazy").setup({
 	-- Languages
 	require("config.plugins.tex"),
 	-- require("config.plugins.rust"),
-	--	require("config.plugins.notify"),
+	-- AI
+	require("config.plugins.ai"),
 	--	require("config.plugins.editor"),
 	--	require("config.plugins.scrollbar"),
 	--	require("config.plugins.project"),
