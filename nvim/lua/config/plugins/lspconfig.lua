@@ -62,6 +62,7 @@ M.config = {
 			require('mason-lspconfig').setup({
 				ensure_installed = {
 					'jsonls',
+					'lua_ls',
 					'clangd',
 					'dockerls',
 					'ansiblels',
