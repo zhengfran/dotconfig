@@ -37,6 +37,7 @@ require("lazy").setup({
 	require("config.plugins.window-management"),
 	require("config.plugins.winbar"),
 	require("config.plugins.noice"),
+	require("config.plugins.notify"),
 	require("config.plugins.which-key"),
 	-- GIT
 	require("config.plugins.git"),
