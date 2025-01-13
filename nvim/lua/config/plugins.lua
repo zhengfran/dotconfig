@@ -55,6 +55,7 @@ require("lazy").setup({
 	require("config.plugins.yank"),
 	require("config.plugins.tmux"),
 	-- Edit
+	require("config.plugins.align"),
 	require("config.plugins.comment"),
 	require("config.plugins.surround"),
 	require("config.plugins.multi-cursor"),
