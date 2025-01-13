@@ -2412,10 +2412,10 @@
     ]
   },
   "conti-location-news": {
-    "ignore": [
+    "ignore": [ 
       {
         "kind": "Exe",
-        "id": "LocBewsClientTool.exe",
+        "id": "LocNewsClientTool.exe",
         "matching_strategy": "Equals"
       }
     ]
