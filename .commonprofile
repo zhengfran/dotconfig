@@ -1,24 +1,24 @@
 # aliases
-alias c='clear'
-alias q='exit'
-alias lg='lazygit'
-alias nv='nvim'
-alias ta='tmux a'
-alias rl='source ~/.zshrc'
-alias bshconf='nvim $HOME/dotconfig/bash'
-alias zshconf='nvim $HOME/dotconfig/zsh'
-alias tmuxconfig='nvim $HOME/dotconfig/tmux'
-alias bark='wget --no-check-certificate "https://api.day.app/mupUWyEzXJpFVvXQpneELX/DONE"'
+alias c          = 'clear'
+alias q          = 'exit'
+alias lg         = 'lazygit'
+alias nv         = 'nvim'
+alias ta         = 'tmux a'
+alias rl         = 'source ~/.zshrc'
+alias bshconf    = 'nvim $HOME/dotconfig/bash'
+alias zshconf    = 'nvim $HOME/dotconfig/zsh'
+alias tmuxconfig = 'nvim $HOME/dotconfig/tmux'
+alias bark       = 'wget --no-check-certificate "https://api.day.app/mupUWyEzXJpFVvXQpneELX/DONE"'
 
 # environmental variables
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export EDITOR=nvim
-export TERM=screen-256color-bce
+export LC_ALL    = en_US.UTF-8
+export LANG      = en_US.UTF-8
+export EDITOR    = nvim
+export TERM      = screen-256color-bce
 
 # add path
-export PATH="$HOME/.local/bin/:$PATH"
-export PATH="$HOME/.cargo/bin/:$PATH"
+export PATH      = "$HOME/.local/bin/:$PATH"
+export PATH      = "$HOME/.cargo/bin/:$PATH"
 
 # wsl related
 # check if it is wsl
@@ -108,6 +108,20 @@ hpc_start_corbos_studio()
     # script is to be called from the workspace-root folder
     # usually located somewhere here: '.conan/data/eb_adg/0.24.0/swp/face_ez1_b2.0/package/45aef8be63955fea583a5341b6675843434dca71/eb/tools/studio/EB_corbos_Studio-2022_R03_07_00-Linux_x86_64/'
     $(find . -name EB_corbos_Studio) &
+}
+
+# Linux RELATED
+linux_buildd() {
+    docker run -it --rm \
+   -u $(id -u):$(id -g) \
+   -e USER_NAME=$(id -un) \
+   -e USER=$(id -un) \
+   -e GROUP_NAME=$(id -gn) \
+   -e HOME \
+   -v $HOME:$HOME \
+   -v /srv:/srv \
+   -w $PWD \
+   linux-build-env
 }
 
 ## IIP RELATED
