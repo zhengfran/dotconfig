@@ -1,24 +1,24 @@
 # aliases
-alias c          = 'clear'
-alias q          = 'exit'
-alias lg         = 'lazygit'
-alias nv         = 'nvim'
-alias ta         = 'tmux a'
-alias rl         = 'source ~/.zshrc'
-alias bshconf    = 'nvim $HOME/dotconfig/bash'
-alias zshconf    = 'nvim $HOME/dotconfig/zsh'
-alias tmuxconfig = 'nvim $HOME/dotconfig/tmux'
-alias bark       = 'wget --no-check-certificate "https://api.day.app/mupUWyEzXJpFVvXQpneELX/DONE"'
+alias c='clear'
+alias q='exit'
+alias lg='lazygit'
+alias nv='nvim'
+alias ta='tmux a'
+alias rl='source ~/.zshrc'
+alias bshconf='nvim $HOME/dotconfig/bash'
+alias zshconf='nvim $HOME/dotconfig/zsh'
+alias tmuxconfig='nvim $HOME/dotconfig/tmux'
+alias bark='wget --no-check-certificate "https://api.day.app/mupUWyEzXJpFVvXQpneELX/DONE"'
 
 # environmental variables
-export LC_ALL    = en_US.UTF-8
-export LANG      = en_US.UTF-8
-export EDITOR    = nvim
-export TERM      = screen-256color-bce
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export EDITOR=nvim
+export TERM=screen-256color-bce
 
 # add path
-export PATH      = "$HOME/.local/bin/:$PATH"
-export PATH      = "$HOME/.cargo/bin/:$PATH"
+export PATH="$HOME/.local/bin/:$PATH"
+export PATH="$HOME/.cargo/bin/:$PATH"
 
 # wsl related
 # check if it is wsl
