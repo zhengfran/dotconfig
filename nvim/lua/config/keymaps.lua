@@ -20,7 +20,7 @@ local nmappings = {
 	{ from = "<c-y>",         to = "<ESC>A {}<ESC>i<CR><ESC>ko",                                          mode = mode_i },
 	{ from = "\\v",           to = "v$h", },
 	{ from = "<c-a>",         to = "<ESC>A",                                                              mode = mode_i },
-	{ from = "kj",            to = "<ESC>",                                                               mode = mode_i },
+	{ from = "fd",            to = "<ESC>",                                                               mode = mode_i },
 
 	-- Tab management
 	{ from = "to",            to = "<cmd>tabnew<CR>", },
