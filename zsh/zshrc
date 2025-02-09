@@ -17,10 +17,15 @@ export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 
 [ -f ~/.commonprofile ] && source ~/.commonprofile
 
-#brew
-eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-# workaround to use system python first
-export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:$PATH"
+
+if [[ "$(uname)" == "Linux" ]]; then
+    # Linux-specific configuration
+	  eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+elif [[ "$(uname)" == "Darwin" ]]; then
+    # macOS-specific configuration
+		# use /opt/brew/bin first on my mac(m1)
+	  export PATH="/opt/homebrew/bin:$PATH"
+fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
