@@ -1,0 +1,14 @@
+Host github.com
+  Hostname ssh.github.com
+  Port 443
+  User git
+  IdentityFile ~/.ssh/id_rsa_github.pub
+  IdentitiesOnly yes
+
+Host wetp715x.we.de.conti.de
+  Port 29418
+  Identityfile ~/.ssh/id_rsa
+  User uie41442
+  PubkeyAcceptedKeyTypes +ssh-rsa
+  HostkeyAlgorithms +ssh-rsa
+
