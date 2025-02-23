@@ -37,6 +37,75 @@ function y {
 
 # for komorebic
 $Env:KOMOREBI_CONFIG_HOME = Join-Path -Path $HOME -ChildPath '.config\komorebi'
+function Start-OrSwitch-KomorebiWorkspace {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$ProcessName,
+
+        [Parameter(Mandatory=$false)]
+        [int]$MonitorId = $null
+    )
+
+    # Get the current state of komorebi
+    $state = komorebic state | ConvertFrom-Json
+    
+    # Variables to store workspace and monitor info
+    $workspaceId = $null
+    $monitorId = $null
+
+    # Loop through monitors and workspaces to find the running process
+    foreach ($monitor in $state.monitors.elements) {
+        foreach ($workspace in $monitor.workspaces.elements) {
+            Write-Host "$workspace"
+            foreach ($container in $workspace.containers.elements) {
+                foreach ($window in $container.windows.elements) {
+                    if ($window.exe -ieq $ProcessName) {
+                        
+                        $workspaceId = $workspace.name
+                        $monitorId = $monitor.id
+                        break
+                    }
+                }
+                if ($workspaceId -ne $null) { break }
+            }
+            if ($workspaceId -ne $null) { break }
+        }
+        if ($workspaceId -ne $null) { break }
+    }
+
+    Write-Host "$workspaceId"
+    if ($workspaceId -ne $null) {
+        Write-Host "$ProcessName is already running on Workspace $workspaceId on Monitor $monitorId."
+        Write-Host "Switching to workspace $workspaceId on Monitor $monitorId..."
+        
+        # Focus the monitor first, then the workspace
+        komorebic focus-monitor $monitorId
+        Start-Sleep -Milliseconds 300
+        komorebic focus-workspace $workspaceId
+    }
+    else {
+        Write-Host "$ProcessName is not running. Starting a new instance..."
+        
+        # If MonitorId is provided, focus that monitor
+        if ($MonitorId -ne $null) {
+            Write-Host "Focusing on Monitor $MonitorId..."
+            komorebic focus-monitor $MonitorId
+            Start-Sleep -Milliseconds 300
+        }
+        else {
+            Write-Host "No MonitorId provided. Using the currently focused monitor."
+        }
+
+        # Cycle to the next workspace on the focused monitor
+        komorebic new-workspace
+        
+        # Start the process in the new workspace on the specified or focused monitor
+        Start-Process $ProcessName
+        Write-Host "New instance of $ProcessName started in the new workspace."
+    }
+}
+
+
 
 #zoxide init
 Invoke-Expression (& { (zoxide init powershell | Out-String) })
