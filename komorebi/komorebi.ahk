@@ -66,3 +66,30 @@ Komorebic(cmd) {
 !+6::Komorebic("move-to-workspace 5")
 !+7::Komorebic("move-to-workspace 6")
 !+8::Komorebic("move-to-workspace 7")
+
+^+!#a:: {
+    if !ProcessExist("Noi.exe") {
+        Run("Noi.exe")
+    }
+    Komorebic("focus-named-workspace AI")
+}
+
+^+!#k:: {
+    if !ProcessExist("TickTick.exe") {
+        Run("TickTick.exe")
+    }
+    Komorebic("focus-named-workspace time")
+}
+
+^+!#w:: {
+    if !ProcessExist("wezterm-gui.exe") {
+        Run("wezterm-gui.exe")
+    }
+    Komorebic("focus-named-workspace terminal")
+}
+
+^+!#n:: {
+    if !ProcessExist("NotepadNext.exe") {
+        Run("NotepadNext.exe")
+    }
+}
