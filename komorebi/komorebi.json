@@ -40,12 +40,7 @@
             "layout": "BSP",
             "initial_workspace_rules":[
               {
-              "id": "msedge",
-              "kind": "Exe",
-              "matching_strategy": "StartsWith"
-              },
-              {
-                "id": "Arc.exe",
+                "id": "zen.exe",
                 "kind": "Exe",
                 "matching_strategy": "Equals"
               }
