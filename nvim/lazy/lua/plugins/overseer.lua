@@ -53,11 +53,13 @@ return {
     overseer.register_template({
       name = "Run Compiled C/C++ File",
       builder = function()
+        local file_dir = vim.fn.expand("%:p:h") -- Get the directory of the file
         local output = vim.fn.expand("%:p:r") -- Get the compiled executable path
 
         return {
           name = "Run: " .. vim.fn.expand("%:t:r"), -- Task name based on executable
           cmd = { output }, -- Fixed execution path
+          cwd = file_dir, -- ✅ Run in the same directory as the C/C++ file
           components = {
             { "on_output_quickfix", mode = "errors", open = true }, -- ✅ Use loclist instead of quickfix
             "default",
