@@ -1,16 +1,16 @@
-local wezterm = require("wezterm")
-local platform = require("utils.platform")()
 local backdrops = require("utils.backdrops")
+local platform = require("utils.platform")()
+local wezterm = require("wezterm")
 local act = wezterm.action
 
 local mod = {}
 
 if platform.is_mac then
-	mod.SUPER = "SUPER"
-	mod.SUPER_REV = "SUPER|CTRL"
+  mod.SUPER = "SUPER"
+  mod.SUPER_REV = "SUPER|CTRL"
 elseif platform.is_win or platform.is_linux then
-	mod.SUPER = "ALT" -- to not conflict with Windows key shortcuts
-	mod.SUPER_REV = "ALT|CTRL"
+  mod.SUPER = "ALT" -- to not conflict with Windows key shortcuts
+  mod.SUPER_REV = "ALT|CTRL"
 end
 
 -- stylua: ignore
@@ -68,6 +68,15 @@ local keys = {
    { key = ']',          mods = mod.SUPER,     action = act.ActivateTabRelative(1) },
    { key = '[',          mods = mod.SUPER_REV, action = act.MoveTabRelative(-1) },
    { key = ']',          mods = mod.SUPER_REV, action = act.MoveTabRelative(1) },
+   { key = '1',          mods = mod.SUPER,     action = act.ActivateTab(0) },
+   { key = '2',          mods = mod.SUPER,     action = act.ActivateTab(1) },
+   { key = '3',          mods = mod.SUPER,     action = act.ActivateTab(2) },
+   { key = '4',          mods = mod.SUPER,     action = act.ActivateTab(3) },
+   { key = '5',          mods = mod.SUPER,     action = act.ActivateTab(4) },
+   { key = '6',          mods = mod.SUPER,     action = act.ActivateTab(5) },
+   { key = '7',          mods = mod.SUPER,     action = act.ActivateTab(6) },
+   { key = '8',          mods = mod.SUPER,     action = act.ActivateTab(7) },
+   { key = '9',          mods = mod.SUPER,     action = act.ActivateTab(8) },
 
    -- window --
    -- spawn windows
@@ -181,18 +190,18 @@ local key_tables = {
 }
 
 local mouse_bindings = {
-	-- Ctrl-click will open the link under the mouse cursor
-	{
-		event = { Up = { streak = 1, button = "Left" } },
-		mods = "CTRL",
-		action = act.OpenLinkAtMouseCursor,
-	},
+  -- Ctrl-click will open the link under the mouse cursor
+  {
+    event = { Up = { streak = 1, button = "Left" } },
+    mods = "CTRL",
+    action = act.OpenLinkAtMouseCursor,
+  },
 }
 
 return {
-	disable_default_key_bindings = true,
-	leader = { key = "Space", mods = mod.SUPER_REV },
-	keys = keys,
-	key_tables = key_tables,
-	mouse_bindings = mouse_bindings,
+  disable_default_key_bindings = true,
+  leader = { key = "b", mods = mod.SUPER },
+  keys = keys,
+  key_tables = key_tables,
+  mouse_bindings = mouse_bindings,
 }
