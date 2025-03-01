@@ -2416,6 +2416,16 @@
       }
     ]
   },
+  "rdp":{
+    "ignore": [
+      {
+      "kind": "Title",
+      "id": "Remote Desktop Connection",
+      "matching_strategy": "EndsWith"
+      }
+    ]
+    
+  },
   "conti-location-news": {
     "ignore": [
       {
