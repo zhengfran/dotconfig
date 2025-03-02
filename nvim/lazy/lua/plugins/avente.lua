@@ -110,6 +110,7 @@ return {
       },
     },
     highlights = {
+      -- stylua: ignore
       ---@type AvanteConflictHighlights
       diff = {
         current = "DiffText",
