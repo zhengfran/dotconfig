@@ -25,7 +25,7 @@ return {
     wk.add({
       { "<leader>r", group = "run" },
     })
-    -- Task to build a single C/C++ file
+    -- Task to build a single c/cpp file
     overseer.register_template({
       name = "Build Current C/C++ File",
       builder = function()
@@ -38,7 +38,7 @@ return {
           cmd = { compiler },
           args = { file, "-o", output, "-g", "-Wall", "-Wextra" },
           components = {
-            { "on_output_quickfix", mode = "errors", open = true }, -- ✅ Use loclist instead of quickfix
+            { "on_output_quickfix", mode = "errors", open = true },
             "default",
           },
           metadata = { output_file = output }, -- Store output file path
@@ -49,11 +49,11 @@ return {
       },
     })
 
-    -- Task to run the compiled executable
+    -- Task to run the compiled c/cpp executable
     overseer.register_template({
       name = "Run Compiled C/C++ File",
       builder = function()
-        local file_dir = vim.fn.expand("%:p:h") -- Get the directory of the file
+        local file_dir = vim.fn.expand("%:p:h")
         local output = vim.fn.expand("%:p:r") -- Get the compiled executable path
 
         return {
@@ -61,9 +61,10 @@ return {
           cmd = { output }, -- Fixed execution path
           cwd = file_dir, -- ✅ Run in the same directory as the C/C++ file
           components = {
-            { "on_output_quickfix", mode = "errors", open = true }, -- ✅ Use loclist instead of quickfix
+            { "on_output_quickfix", mode = "errors", open = true },
             "default",
           },
+          dependencies = { "Build Current C/C++ File" },
         }
       end,
       condition = {
