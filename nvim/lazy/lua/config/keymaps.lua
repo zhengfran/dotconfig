@@ -10,6 +10,7 @@ local nmappings = {
   { from = "<c-q>", to = "<C-o>:q<CR>", mode = mode_i },
   { from = "jj", to = "<Esc>", mode = mode_i },
   { from = "<c-q>", to = "<Esc>:q<CR>", mode = mode_v },
+  { from = "<leader>qf", to = "<cmd>cclose<CR>", mode = mode_n },
 }
 
 for _, mapping in ipairs(nmappings) do
