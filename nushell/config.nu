@@ -17,16 +17,6 @@
 # You can remove these comments if you want or leave
 # them for future reference.
 
-def --env y [...args] {
-	let tmp = (mktemp -t "yazi-cwd.XXXXXX")
-	yazi ...$args --cwd-file $tmp
-	let cwd = (open $tmp)
-	if $cwd != "" and $cwd != $env.PWD {
-		cd $cwd
-	}
-	rm -fp $tmp
-}
-
 $env.config.keybindings = [
   {
     name: reload_config
@@ -39,14 +29,38 @@ $env.config.keybindings = [
     }
   }
 ]
+if $nu.os-info.name == "windows" {
+  export-env {
+    $env.KOMOREBI_CONFIG_HOME = $"($env.USERPROFILE)\\.config\\komorebi"
+  }
+} else {
+}
 
-$env.KOMOREBI_CONFIG_HOME = $"($env.USERPROFILE)\\.config\\komorebi"
 $env.config.edit_mode = "vi"
 $env.config.shell_integration.osc133 = false
+$env.config.buffer_editor = "nvim"
+$env.config.history = {
+  file_format: sqlite
+  max_size: 1_000_000
+  sync_on_enter: true
+  isolation: true
+}
 
 alias cl = clear
 alias ll = ls -l
 
+def rk [] {
+   komorebic stop --ahk
+   komorebic start --ahk
+}
 
-
+def --env y [...args] {
+	let tmp = (mktemp -t "yazi-cwd.XXXXXX")
+	yazi ...$args --cwd-file $tmp
+	let cwd = (open $tmp)
+	if $cwd != "" and $cwd != $env.PWD {
+		cd $cwd
+	}
+	rm -fp $tmp
+}
 
