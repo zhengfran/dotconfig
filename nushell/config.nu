@@ -26,3 +26,27 @@ def --env y [...args] {
 	}
 	rm -fp $tmp
 }
+
+$env.config.keybindings = [
+  {
+    name: reload_config
+    modifier: control
+    keycode: char_l
+    mode: [emacs vi_normal vi_insert]
+    event: {
+      send: executehostcommand
+      cmd: $"source '($nu.env-path)'; source '($nu.config-path)'"
+    }
+  }
+]
+
+$env.KOMOREBI_CONFIG_HOME = $"($env.USERPROFILE)\\.config\\komorebi"
+$env.config.edit_mode = "vi"
+$env.config.shell_integration.osc133 = false
+
+alias cl = clear
+alias ll = ls -l
+
+
+
+
