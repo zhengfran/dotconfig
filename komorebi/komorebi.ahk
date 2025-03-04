@@ -36,7 +36,7 @@ Komorebic(cmd) {
 !+_::Komorebic("resize-axis vertical decrease")
 
 ; Manipulate windows
-!t::Komorebic("toggle-float")
+; !t::Komorebic("toggle-float")
 !f::Komorebic("toggle-monocle")
 
 ; Window manager options
@@ -66,10 +66,17 @@ Komorebic(cmd) {
 !+6::Komorebic("move-to-workspace 5")
 !+7::Komorebic("move-to-workspace 6")
 !+8::Komorebic("move-to-workspace 7")
+!+a::Komorebic("focus-named-workspace AI")
++!c::Komorebic("focus-named-workspace code")
++!m::Komorebic("focus-named-workspace time")
++!t::Komorebic("focus-named-workspace terminal")
++!b::Komorebic("focus-named-workspace Browser")
++!o::Komorebic("focus-named-workspace office")
++!n::Komorebic("focus-named-workspace notes")
 
 ^+!#a::Komorebic("focus-named-workspace AI")
 ^+!#c::Komorebic("focus-named-workspace code")
-^+!#k::Komorebic("focus-named-workspace time")
+^+!#m::Komorebic("focus-named-workspace time")
 ^+!#t::Komorebic("focus-named-workspace terminal")
 ^+!#b::Komorebic("focus-named-workspace Browser")
 ^+!#o::Komorebic("focus-named-workspace office")

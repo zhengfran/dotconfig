@@ -40,7 +40,7 @@
             "layout": "BSP",
             "initial_workspace_rules":[
               {
-                "id": "zen.exe",
+                "id": "Arc.exe",
                 "kind": "Exe",
                 "matching_strategy": "Equals"
               }
