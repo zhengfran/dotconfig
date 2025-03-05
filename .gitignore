@@ -6,3 +6,5 @@
 **/yasb.log
 **/.DS_Store
 **/history*
+/yazi/flavors/
+/yazi/plugins/
