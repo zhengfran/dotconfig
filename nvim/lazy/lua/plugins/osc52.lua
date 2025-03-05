@@ -1,6 +1,6 @@
 return {
   "ojroques/vim-oscyank",
   config = function()
-    vim.keymap.set("v", "<leader>cy", "<Plug>OSCYankVisual")
+    vim.keymap.set("v", "<leader>oo", "<Plug>OSCYankVisual")
   end,
 }
