@@ -57,7 +57,7 @@ return {
           {
             name = "Config",
             matcher = function(buf)
-              return buf.name:match("%.json$") or buf.name:match("%.toml$") or buf.name.match("%.conf")
+              return buf.name:match("%.json$") or buf.name:match("%.toml$") or buf.name:match("%.conf$")
             end,
           },
           {
