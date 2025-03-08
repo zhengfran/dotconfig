@@ -36,6 +36,14 @@ if $nu.os-info.name == "windows" {
 } else {
 }
 
+open ~/.netrc | lines | each { |line|
+    if $line =~ '^\s*(\S+)\s*=\s*(\S+)\s*$' {
+        let key = $line | get 0 | split column '=' | str trim
+        let value = $line | get 1 | split column '=' | str trim
+        load-env {$key: $value}
+    }
+}
+
 $env.config.edit_mode = "vi"
 $env.config.shell_integration.osc133 = false
 $env.config.buffer_editor = "nvim"
@@ -48,6 +56,7 @@ $env.config.history = {
 
 alias cl = clear
 alias ll = ls -l
+alias lg = lazygit
 
 def rk [] {
    komorebic stop --ahk
