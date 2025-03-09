@@ -11,5 +11,3 @@ HISTFILESIZE=2000
 
 [ -f ~/.commonprofile ] && source ~/.commonprofile
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-exec nu
