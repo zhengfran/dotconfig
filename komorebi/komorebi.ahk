@@ -44,8 +44,8 @@ Komorebic(cmd) {
 !p::Komorebic("toggle-pause")
 
 ; Layouts
-!x::Komorebic("flip-layout horizontal")
-!y::Komorebic("flip-layout vertical")
+!+x::Komorebic("flip-layout horizontal")
+!+y::Komorebic("flip-layout vertical")
 
 ; Workspaces
 ^+!#1::Komorebic("focus-workspace 0")
