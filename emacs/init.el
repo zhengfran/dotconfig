@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t; -*-
 ;;show show errors
-(setq warning-minimum-level :warning)
-(setq debug-on-error t)
+(setq warning-minimum-level :error)
+;(setq debug-on-error t)
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 
@@ -24,11 +24,6 @@
 (defvar native-comp-deferred-compilation-deny-list nil)
 
 (defvar bootstrap-version)
-;; ?? Emacs 29 ??? native-compile ??????? bug
-(unless (version<= emacs-version "28.2")
-  (setq straight-repository-branch "develop"))
-(setq straight-check-for-modifications '(check-on-save find-when-checking))
-
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
       (bootstrap-version 6))
@@ -40,16 +35,19 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
+;; Ensure use-package is installed
 (straight-use-package 'use-package)
-(setq straight-use-package-by-default t)
-(setq use-package-always-defer t)
 
+;; Automatically use straight.el with use-package
+(setq straight-use-package-by-default t)
+(setq use-package-always-ensure t)
 ;; make sure shell PATH is same as emacs PATH 
-(use-package exec-path-from-shell)
+(use-package exec-path-from-shell
+  :config
 (setq shell-file-name "/bin/bash")
 (setq exec-path-from-shell-arguments '("-l"))
 (when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
+  (exec-path-from-shell-initialize)))
 
 (use-package esup
   :config
@@ -123,6 +121,7 @@
 (setq global-auto-revert-non-file-buffers t)
 
 (use-package evil
+  :ensure t
   :demand t
   :bind (("<escape>" . keyboard-escape-quit))
   :init
@@ -140,17 +139,21 @@
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal))
 (use-package evil-collection
+  :ensure t
   :after evil
   :config
   (evil-collection-init))
 (use-package evil-commentary
+  :ensure t
   :after evil
   :init (evil-commentary-mode))
 (use-package evil-surround
+  :ensure t
   :after evil
   :config
   (global-evil-surround-mode 1))
 (use-package undo-tree
+  :ensure t
   :after evil
   :diminish
   :config
@@ -159,10 +162,11 @@
 (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
 
 (use-package evil-escape
+  :ensure t
   :init (evil-escape-mode)
   :after evil
   :config
-  (setq evil-escape-key-sequence "fd")
+  (setq evil-escape-key-sequence "jj")
   (setq evil-escape-delay 0.3))
 
 (use-package evil-org
@@ -188,12 +192,15 @@
   (setq which-key-idle-delay 1))
 
 (use-package general
+  :ensure t
+  :demand t
   :config
   (general-create-definer zzc/leader-keys
-    :keymaps '(normal insert visual emacs)
+    :states '(normal insert visual emacs)
     :prefix "SPC"
-    :global-prefix "M-SPC"))
-
+    :global-prefix "C-SPC"))
+(require 'general)
+(message "leader-keys are defined %s" (fboundp 'zzc/leader-keys))
 (defun minibuffer-next-line ()
   "Move to the next line in the minibuffer history."
   (interactive)
@@ -280,6 +287,8 @@
   (setq project-vc-extra-root-markers '(".project" "*.csproj")))
 
 (use-package perspective
+  :ensure t
+  :demand t
   :bind
   ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
   :custom
@@ -293,15 +302,15 @@
   :init
   (persp-mode))
 
-(zzc/leader-keys
-  "b"  '(:ignore t :which-key "buffer")
-  "bp"  '(switch-to-prev-buffer :which-key "previous buffer")
-  "bn"  '(switch-to-next-buffer :which-key "next buffer")
-  "bb"  '(switch-to-buffer :which-key "list buffers")
-  "bB"  '(ibuffer-list-buffers :which-key "list ibuffers")
-  "bk"  '(kill-current-buffer :which-key "kill current buffer")
-  "bs"  '(save-buffer :which-key "save buffer")
-)
+;(zzc/leader-keys
+;  "b"  '(:ignore t :which-key "buffer")
+;  "bp"  '(switch-to-prev-buffer :which-key "previous buffer")
+;  "bn"  '(switch-to-next-buffer :which-key "next buffer")
+;  "bb"  '(switch-to-buffer :which-key "list buffers")
+;  "bB"  '(ibuffer-list-buffers :which-key "list ibuffers")
+;  "bk"  '(kill-current-buffer :which-key "kill current buffer")
+;  "bs"  '(save-buffer :which-key "save buffer")
+;)
 
 (winner-mode 1)
 
@@ -806,11 +815,11 @@
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
-(use-package org-modern-indent
-  :straight (:host github :repo "jdtsmith/org-modern-indent")
-  :config
-  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
-
+;(use-package org-modern-indent
+;  :straight (:host github :repo "jdtsmith/org-modern-indent")
+;  :config
+;  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+;
 (use-package org-modern 
   :custom
   (org-modern-hide-stars nil) 
@@ -1346,4 +1355,4 @@ _d_: date        ^ ^              ^ ^
 ;; (zzc/leader-keys
 ;;   "t"  '(:ignore t :which-key "toggle")
 ;;   "tl"  '(ee-lazygit :which-key "lazygit")
-;; )
+; )
