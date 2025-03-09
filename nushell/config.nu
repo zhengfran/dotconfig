@@ -34,16 +34,13 @@ if $nu.os-info.name == "windows" {
     $env.KOMOREBI_CONFIG_HOME = $"($env.USERPROFILE)\\.config\\komorebi"
   }
 } else {
+  export-env { 
+    let wip = $"(open /etc/resolv.conf | lines | find 'nameserver' | split row ' ' | get 1):0.0"
+    $env.DISPLAY = $wip
+  }
 }
 
-open ~/.netrc | lines | each { |line|
-    if $line =~ '^\s*(\S+)\s*=\s*(\S+)\s*$' {
-        let key = $line | get 0 | split column '=' | str trim
-        let value = $line | get 1 | split column '=' | str trim
-        load-env {$key: $value}
-    }
-}
-
+open ~/.netrc | from toml | load-env
 $env.config.edit_mode = "vi"
 $env.config.shell_integration.osc133 = false
 $env.config.buffer_editor = "nvim"
