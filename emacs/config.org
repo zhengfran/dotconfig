@@ -1,36 +1,27 @@
 #+AUTHOR: Zheng Zhicheng(ZZC)
-
 #+DESCRIPTION: Just another Emacs config from scratch
-
 #+STARTUP: overview
 
-#+PROPERTY: header-args:emacs-lisp :tangle ~/.config/efs/init.el
-
+#+PROPERTY: header-args:emacs-lisp :tangle ~/dotconfig/emacs/init.el
 
 * Startup
 
 #+begin_src emacs-lisp
-
   ;; -*- lexical-binding: t; -*-
   ;;show show errors
   (setq warning-minimum-level :error)
-  
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-
   ;;disable bell
-
   (setq visible-bell 1)
-
   ;; The default is 800 kilobytes.  Measured in bytes.
-
   (setq gc-cons-threshold (* 50 1000 1000))
 
   ;; Profile emacs startup
   (add-hook 'emacs-startup-hook
-	(lambda ()
-	(message "*** Emacs loaded in %s seconds with %d garbage collections."
-	(emacs-init-time "%.2f")
-	    gcs-done)))
+  	  (lambda ()
+  	    (message "*** Emacs loaded in %s seconds with %d garbage collections."
+  		     (emacs-init-time "%.2f")
+  		     gcs-done)))
 
   (defvar native-comp-deferred-compilation-deny-list nil)
 
@@ -40,142 +31,111 @@
 * Package Management
 ** Straight
 #+begin_src emacs-lisp
-(defvar bootstrap-version)
-;; ?? Emacs 29 ??? native-compile ??????? bug
-(unless (version<= emacs-version "28.2")
-  (setq straight-repository-branch "develop"))
-(setq straight-check-for-modifications '(check-on-save find-when-checking))
+  (defvar bootstrap-version)
+  ;; ?? Emacs 29 ??? native-compile ??????? bug
+  (unless (version<= emacs-version "28.2")
+    (setq straight-repository-branch "develop"))
+  (setq straight-check-for-modifications '(check-on-save find-when-checking))
 
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-(straight-use-package 'use-package)
-(setq straight-use-package-by-default t)
-(setq use-package-always-defer t)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 6))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+  (straight-use-package 'use-package)
+  (setq straight-use-package-by-default t)
+  (setq use-package-always-ensure t)
 #+end_src
 
 ** Package path
 
 #+begin_src emacs-lisp
-;; make sure shell PATH is same as emacs PATH 
-(use-package exec-path-from-shell)
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
+  ;; make sure shell PATH is same as emacs PATH 
+  (use-package exec-path-from-shell
+    :config
+    (setq shell-file-name "/bin/bash")
+    (setq exec-path-from-shell-arguments '("-l"))
+    (when (memq window-system '(mac ns x))
+      (exec-path-from-shell-initialize)))
 #+end_src
-
 
 ** Starup Profiling
 #+BEGIN_SRC emacs-lisp
-(use-package esup
-  :config
-  (setq esup-depth 0))
+  (use-package esup
+    :config
+    (setq esup-depth 0))
 #+END_SRC
 
 
 * Path
 #+BEGIN_SRC emacs-lisp
-(setq efs_dir "~/.config/efs" ; emacs from scratch config location
-      org_notes_dir "~/Documents/Notes" ; org notes location
-      zot_bib "~/Nutstore/1/Nutstore/Zotero-Library/Main.bib"; Zotero .bib 文件
-      zot_pdf "~/Nutstore/1/Nutstore/Zotero-Library" ; Zotero 同步文件
-      org_notes "~/Documents/notes/ref/") ; org-roam 文献笔记目录
-  
-(unless (file-exists-p efs_dir) (setq efs_dir nil))
-(unless (file-exists-p org_notes_dir) (setq org_notes_dir nil))
-(unless (file-exists-p zot_bib) (setq zot_bib nil))
-(unless (file-exists-p zot_pdf) (setq zot_pdf nil))
-(unless (file-exists-p org_notes) (setq org_notes nil)) ; 防止文件不存在报错
+  (setq org_notes_dir "~/Documents/org/notes" ; org notes location
+        zot_bib "~/Nutstore/1/Nutstore/Zotero-Library/Main.bib"; Zotero .bib 文件
+        zot_pdf "~/Nutstore/1/Nutstore/Zotero-Library" ; Zotero 同步文件
+        org_notes "~/Documents/org/notes/ref/") ; org-roam 文献笔记目录
+
+  (unless (file-exists-p org_notes_dir) (setq org_notes_dir nil))
+  (unless (file-exists-p zot_bib) (setq zot_bib nil))
+  (unless (file-exists-p zot_pdf) (setq zot_pdf nil))
+  (unless (file-exists-p org_notes) (setq org_notes nil)) ; 防止文件不存在报错
 #+END_SRC
 
 
 * System related
-
 ** Detect System
 #+begin_src emacs-lisp
-
-(setq my/is-windows (eq system-type 'windows-nt)) ; Windows 
-(setq my/is-linux (eq system-type 'gnu/linux)) ; Linux
-(setq my/is-mac (eq system-type 'darwin)) ; mac
-(setq my/is-WSL
-      (if (and (eq system-type 'gnu/linux)
-               (string-match-p "Microsoft" (shell-command-to-string "uname -r")))
-          t
-        nil)) ; WSL
-(setq my/is-terminal (not window-system)) ;GUI
-
+  (setq my/is-windows (eq system-type 'windows-nt)) ; Windows 
+  (setq my/is-linux (eq system-type 'gnu/linux)) ; Linux
+  (setq my/is-mac (eq system-type 'darwin)) ; mac
+  (setq my/is-WSL
+        (if (and (eq system-type 'gnu/linux)
+                 (string-match-p "Microsoft" (shell-command-to-string "uname -r")))
+            t
+          nil)) ; WSL
+  (setq my/is-terminal (not window-system)) ;GUI
 #+end_src
-
 
 ** WSL
 
 *** Browse url
 
 #+begin_src emacs-lisp
-
-(when (and (eq system-type 'gnu/linux)
-
-           (string-match
-
-            "Linux.*Microsoft.*Linux"
-
-            (shell-command-to-string "uname -a")))
-
-  (setq
-
-   browse-url-generic-program  "/mnt/c/Windows/System32/cmd.exe"
-
-   browse-url-generic-args     '("/c" "start")
-
-   browse-url-browser-function #'browse-url-generic))
+  (when (and (eq system-type 'gnu/linux)
+             (string-match
+              "Linux.*Microsoft.*Linux"
+              (shell-command-to-string "uname -a")))
+    (setq
+     browse-url-generic-program  "/mnt/c/Windows/System32/cmd.exe"
+     browse-url-generic-args     '("/c" "start")
+     browse-url-browser-function #'browse-url-generic))
 
 #+end_src
-
-
-
-* Temp files, recent files and save history
-
-#+begin_src emacs-lisp
-  (use-package no-littering)
-  (setq backup-directory-alist `(("." . ,(expand-file-name "tmp/backups/" user-emacs-directory))))
-  ;; auto-save-mode doesn't create the path automatically!
-  (make-directory (expand-file-name "tmp/auto-saves/" user-emacs-directory) t)
-  (setq auto-save-list-file-prefix (expand-file-name "tmp/auto-saves/sessions/" user-emacs-directory)
-        auto-save-file-name-transforms `((".*" ,(expand-file-name "tmp/auto-saves/" user-emacs-directory) t)))
-
-  (use-package recentf
-    :after no-littering
-    :demand t 
-    :custom
-    (recentf-exclude '(no-littering-var-directory
-                       no-littering-etc-directory)) ; ??????
-    (recentf-max-menu-items 25)
-    (recentf-max-saved-items 25)
-    :bind ("C-x C-r" . 'recentf-open-files)
-    :config
-    (recentf-mode 1))
-  ;;save history
-  (use-package savehist
-    :init
-    (savehist-mode))
-  ;; save last visited pla
-  (save-place-mode 1)
-  ;;revert buffers when the underlying file has  
-  (global-auto-revert-mode 1)
-  ;; Revert Dired and other buffers
-  (setq global-auto-revert-non-file-buffers t)
-#+end_src
-
-
 
 * Key Binding
+** Which-key 
+#+begin_src emacs-lisp
+  (use-package which-key
+    :init (which-key-mode)
+    :diminish which-key-mode
+    :config
+    (setq which-key-idle-delay 1))
+#+end_src
+
+** General
+#+begin_src emacs-lisp
+  (use-package general
+    :config
+    (general-create-definer zzc/leader-keys
+      :states '(normal insert visual emacs)
+      :prefix "SPC"
+      :global-prefix "C-SPC"))
+#+end_src
 
 ** EVIL
 #+begin_src emacs-lisp
@@ -191,11 +151,12 @@
     :config
     (evil-mode 1)
     (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-          ;; Use visual line motions even outside of visual-line-mode buffers
+    ;; Use visual line motions even outside of visual-line-mode buffers
     (evil-global-set-key 'motion "j" 'evil-next-visual-line)
     (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))
+    
   (use-package evil-collection
     :after evil
     :config
@@ -219,7 +180,7 @@
     :init (evil-escape-mode)
     :after evil
     :config
-    (setq evil-escape-key-sequence "fd")
+    (setq evil-escape-key-sequence "jj")
     (setq evil-escape-delay 0.3))
 
   (use-package evil-org
@@ -236,104 +197,61 @@
   ;; save file very time after quit inder mode
   (add-hook 'evil-insert-state-exit-hook
             (lambda ()
-  	    (call-interactively #'save-buffer)))
+              (call-interactively #'save-buffer)))
 
 #+end_src
-
-
-** Which-key 
-#+begin_src emacs-lisp
-(use-package which-key
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 1))
-#+end_src
-
-
-** General
-
-#+begin_src emacs-lisp
-(use-package general
-  :config
-  (general-create-definer zzc/leader-keys
-    :keymaps '(normal insert visual emacs)
-    :prefix "SPC"
-    :global-prefix "M-SPC"))
-#+end_src
-
 
 ** Minibuffer
 #+BEGIN_SRC emacs-lisp
-(defun minibuffer-next-line ()
-  "Move to the next line in the minibuffer history."
-  (interactive)
-  (if (eq last-command 'next-history-element)
-      (next-history-element 1)
-    (next-history-element 0)))
+  (defun minibuffer-next-line ()
+    "Move to the next line in the minibuffer history."
+    (interactive)
+    (if (eq last-command 'next-history-element)
+        (next-history-element 1)
+      (next-history-element 0)))
 
-(defun minibuffer-previous-line ()
-  "Move to the previous line in the minibuffer history."
-  (interactive)
-  (if (eq last-command 'previous-history-element)
-      (previous-history-element 1)
-    (previous-history-element 0)))
+  (defun minibuffer-previous-line ()
+    "Move to the previous line in the minibuffer history."
+    (interactive)
+    (if (eq last-command 'previous-history-element)
+        (previous-history-element 1)
+      (previous-history-element 0)))
 
-(define-key minibuffer-local-map (kbd "C-j") 'minibuffer-next-line)
-(define-key minibuffer-local-map (kbd "C-k") 'minibuffer-previous-line)
+  (define-key minibuffer-local-map (kbd "C-j") 'minibuffer-next-line)
+  (define-key minibuffer-local-map (kbd "C-k") 'minibuffer-previous-line)
 #+END_SRC
+
 
 
 * Buffer & Window
-
 ** Where to open new buffer
 
 #+BEGIN_SRC emacs-lisp
-
-(setq
-
- display-buffer-alist
-
- '(("^\\*[Hh]elp"                            ;正则匹配buffer name
-
-    (display-buffer-reuse-window
-
-     ;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些alist
-
-     display-buffer-in-side-window)
-
-    (side . right)                        ;参数alist从这里开始。这个side会被display-buffer-in-side-window使用
-
-    (window-width . 0.5)                     ;emacs会自动把这个设置到window-parameter里
-
-    (window-height . 0.33)                   ;同上
-
-    (slot . 1)                               ;这个会被display-buffer-in-side-window使用，控制window位置
-
-    (reusable-frames . visible)              ;这个参数看第三个链接的display-buffer
-
-    (haha . whatever)                        ;当然随你放什么
-
-    (window-parameters                       ;emacs 26及以上会自动把下面的设置到window-parameter里
-
-     (select . t)                            ;自定义的param
-
-     (quit . t)                              ;同上
-
-     (popup . t)                             ;同上
-
-     (mode-line-format . none)               ;emacs version > 25， none会隐藏mode line，nil会显示...
-
-     (no-other-window . t)                   ;随你设置其他的window-parameter，看文档
-
-     ))))
+  (setq
+   display-buffer-alist
+   '(("^\\*[Hh]elp"                            ;正则匹配buffer name
+      (display-buffer-reuse-window
+  					;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些alist
+       display-buffer-in-side-window)
+      (side . right)                        ;参数alist从这里开始。这个side会被display-buffer-in-side-window使用
+      (window-width . 0.5)                     ;emacs会自动把这个设置到window-parameter里
+      (window-height . 0.33)                   ;同上
+      (slot . 1)                               ;这个会被display-buffer-in-side-window使用，控制window位置
+      (reusable-frames . visible)              ;这个参数看第三个链接的display-buffer
+      (haha . whatever)                        ;当然随你放什么
+      (window-parameters                       ;emacs 26及以上会自动把下面的设置到window-parameter里
+       (select . t)                            ;自定义的param
+       (quit . t)                              ;同上
+       (popup . t)                             ;同上
+       (mode-line-format . none)               ;emacs version > 25， none会隐藏mode line，nil会显示...
+       (no-other-window . t)                   ;随你设置其他的window-parameter，看文档
+       ))))
 
 #+END_SRC
 
-
 ** Focus on new split
 #+BEGIN_SRC emacs-lisp
-    (defun split-window-right-and-focus ()
+  (defun split-window-right-and-focus ()
     "Split the window vertically and move focus to the new one."
     (interactive)
     (split-window-right)
@@ -344,173 +262,129 @@
     (interactive)
     (split-window-below)
     (other-window 1))
-  
-    (defadvice split-window-right (after split-window-right-and-focus activate)
-      (other-window 1))
 
-    (defadvice split-window-below (after split-window-below-and-focus activate)
-      (other-window 1))
+  (defadvice split-window-right (after split-window-right-and-focus activate)
+    (other-window 1))
+
+  (defadvice split-window-below (after split-window-below-and-focus activate)
+    (other-window 1))
 #+END_SRC
-
 
 ** Project
 
 #+BEGIN_SRC emacs-lisp
-
-(use-package project
-
-  ;; Cannot use :hook because 'project-find-functions does not end in -hook
-
-  ;; Cannot use :init (must use :config) because otherwise
-
-  ;; project-find-functions is not yet initialized.
-
-  :config
-
-  (setq project-vc-extra-root-markers '(".project" "*.csproj")))
+  (use-package project
+    ;; Cannot use :hook because 'project-find-functions does not end in -hook
+    ;; Cannot use :init (must use :config) because otherwise
+    ;; project-find-functions is not yet initialized.
+    :config
+    (setq project-vc-extra-root-markers '(".project" "*.csproj")))
 
 #+END_SRC
-
 
 ** Perspective
 
 #+BEGIN_SRC emacs-lisp
-
-(use-package perspective
-  :bind
-  ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
-  :custom
-  (persp-mode-prefix-key (kbd "C-c p"))  ; pick your own prefix key here
-  :config
-  (setq persp-state-default-file (expand-file-name ".persp-save" user-emacs-directory))
-  ;; Automatically save perspectives when Emacs quits
-  (add-hook 'kill-emacs-hook #'persp-state-save)
-  ;; Automatically load perspectives at startup
-  ;; (add-hook 'emacs-startup-hook #'persp-state-load)
-  :init
-  (persp-mode))
+  (use-package perspective
+    :bind
+    ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
+    :custom
+    (persp-mode-prefix-key (kbd "C-c p"))  ; pick your own prefix key here
+    :config
+    (setq persp-state-default-file (expand-file-name ".persp-save" user-emacs-directory))
+    ;; Automatically save perspectives when Emacs quits
+    (add-hook 'kill-emacs-hook #'persp-state-save)
+    ;; Automatically load perspectives at startup
+    ;; (add-hook 'emacs-startup-hook #'persp-state-load)
+    :init
+    (persp-mode))
 
 #+END_SRC
-
 
 ** Key mapping
 
 #+begin_src emacs-lisp
-(zzc/leader-keys
-  "b"  '(:ignore t :which-key "buffer")
-  "bp"  '(switch-to-prev-buffer :which-key "previous buffer")
-  "bn"  '(switch-to-next-buffer :which-key "next buffer")
-  "bb"  '(switch-to-buffer :which-key "list buffers")
-  "bB"  '(ibuffer-list-buffers :which-key "list ibuffers")
-  "bk"  '(kill-current-buffer :which-key "kill current buffer")
-  "bs"  '(save-buffer :which-key "save buffer")
-)
+  (zzc/leader-keys
+    "b"  '(:ignore t :which-key "buffer")
+    "bp"  '(switch-to-prev-buffer :which-key "previous buffer")
+    "bn"  '(switch-to-next-buffer :which-key "next buffer")
+    "bb"  '(switch-to-buffer :which-key "list buffers")
+    "bB"  '(ibuffer-list-buffers :which-key "list ibuffers")
+    "bd"  '(kill-current-buffer :which-key "kill current buffer")
+    "bs"  '(save-buffer :which-key "save buffer")
+    )
 #+end_src
-
-
-
 
 ** Winner mode
 
 #+begin_src emacs-lisp
-
-(winner-mode 1)
-
-(global-set-key (kbd "C-c u") 'winner-undo)
-
-(global-set-key (kbd "C-c r") 'winner-redo)
+  (winner-mode 1)
+  (global-set-key (kbd "C-c u") 'winner-undo)
+  (global-set-key (kbd "C-c r") 'winner-redo)
 
 #+end_src
-
 
 ** Windows number
 #+BEGIN_SRC emacs-lisp
   (use-package winum
-  :ensure t
-  :config
-  (winum-mode))
-  
+    :ensure t
+    :config
+    (winum-mode))
 #+END_SRC
-
 
 ** Maxmize window toggle
 
 #+BEGIN_SRC emacs-lisp
-
-(defvar toggle-one-window-window-configuration nil
-
-  "The window configuration use for `toggle-one-window'.")
-
-(defun toggle-one-window ()
-
-  "Toggle between window layout and one window."
-
-  (interactive)
-
-  (if (equal (length (cl-remove-if #'window-dedicated-p (window-list))) 1)
-
-      (if toggle-one-window-window-configuration
-
-          (progn
-
-            (set-window-configuration toggle-one-window-window-configuration)
-
-            (setq toggle-one-window-window-configuration nil))
-
-        (message "No other windows exist."))
-
-    (setq toggle-one-window-window-configuration (current-window-configuration))
-
-    (delete-other-windows)))
-
-(general-define-key
- :prefix "C-c"
- "m" 'toggle-one-window)
+  (defvar toggle-one-window-window-configuration nil
+    "The window configuration use for `toggle-one-window'.")
+  (defun toggle-one-window ()
+    "Toggle between window layout and one window."
+    (interactive)
+    (if (equal (length (cl-remove-if #'window-dedicated-p (window-list))) 1)
+        (if toggle-one-window-window-configuration
+            (progn
+              (set-window-configuration toggle-one-window-window-configuration)
+              (setq toggle-one-window-window-configuration nil))
+          (message "No other windows exist."))
+      (setq toggle-one-window-window-configuration (current-window-configuration))
+      (delete-other-windows)))
+  (general-define-key
+   :prefix "C-c"
+   "m" 'toggle-one-window)
 
 #+END_SRC
 
 
-
 * File
-
 ** Bookmarks
 #+begin_src emacs-lisp
-;; save bookmark on change
-(setq bookmark-save-flag 1)
-(require 'bookmark)
-(list-bookmarks)
-(switch-to-buffer "*Bookmark List*")
-;; set bookmark file to sync across difference device
-(setq bookmark-default-file "~/.config/efs/bookmarks")
-(zzc/leader-keys
-  "bm"  '(:ignore t :which-key "bookmark")"bmm"  '(bookmark-set :which-key "Add current file/dir to bookmark")
-  "bml"  '(list-bookmarks :which-key "Open Bookmark List"))
+    ;; save bookmark on change
+    (setq bookmark-save-flag 1)
+    (require 'bookmark)
+    ;; set bookmark file to sync across difference device
+    (setq bookmark-default-file "~/.config/emacs/bookmarks")
+    (zzc/leader-keys
+      "bm"  '(:ignore t :which-key "bookmark")
+      "bmm"  '(bookmark-set :which-key "Add current file/dir to bookmark")
+      "bml"  '(list-bookmarks :which-key "Open Bookmark List"))
 
 #+end_src
-
 
 ** Open specific file 
 
 #+begin_src emacs-lisp
-
   (zzc/leader-keys
-
     "="  '(:ignore t :which-key "open")
-
     "=h" '((lambda () (interactive) (find-file "~/Documents/notes/20241004160632-habit_tracking.org")) :which-key "open habit.org")
-
-    "=c" '((lambda () (interactive) (find-file "~/.config/efs/config.org")) :which-key "open config file"))
-
+    "=c" '((lambda () (interactive) (find-file "~/.config/emacs/config.org")) :which-key "open config file"))
 #+end_src
-
 
 ** Key mapping
 #+begin_src emacs-lisp
-(zzc/leader-keys
-  "."  '(find-file :which-key "find file")
-)
+  (zzc/leader-keys
+    "."  '(find-file :which-key "find file")
+    )
 #+end_src
-
 
 ** Treemacs
 #+BEGIN_SRC emacs-lisp
@@ -621,305 +495,241 @@
     :after (treemacs)
     :ensure t
     :config (treemacs-set-scope-type 'Tabs))
-(defun treemacs-adjust-width-to-fit ()
-  "Adjust Treemacs window width to fit the longest filename."
-  (let ((max-length (apply 'max
-                           (mapcar 'string-width
-                                   (treemacs--get-children-of (treemacs-current-root)))))
-        (treemacs-default-width 30)) ;; Default width if there are no entries
-    (treemacs-resize-to-width (max 30 (+ 5 max-length))))) ;; Add 5 to accommodate icons
+  (defun treemacs-adjust-width-to-fit ()
+    "Adjust Treemacs window width to fit the longest filename."
+    (let ((max-length (apply 'max
+                             (mapcar 'string-width
+                                     (treemacs--get-children-of (treemacs-current-root)))))
+          (treemacs-default-width 30)) ;; Default width if there are no entries
+      (treemacs-resize-to-width (max 30 (+ 5 max-length))))) ;; Add 5 to accommodate icons
 
-;; Hook into window selection to auto-adjust width
-(add-hook 'treemacs-select-window-hook 'treemacs-adjust-width-to-fit)
+  ;; Hook into window selection to auto-adjust width
+  (add-hook 'treemacs-select-window-hook 'treemacs-adjust-width-to-fit)
 #+END_SRC
 
 
 
 * Completion System
-
 ** Company Mode
 #+BEGIN_SRC emacs-lisp
-(use-package company
-  :hook ((org-mode LaTeX-mode prog-mode) . company-mode)
-  :custom
-  (company-minimum-prefix-length 4)
-  (company-idle-delay 0.3)
-  (company-tootip-idle-delay 0.5)
-  (company-tooltip-offset-display 'line)
-  (company-tooltip-align-annotation t)
-  (company-show-quick-access t)
-  (company-backends
-   '((company-capf :with company-dabbrev-code company-keywords)
-     (company-dabbrev)
-     (company-ispell)
-     (company-files)))
-  (company-dabbrev-ignore-case nil) 
-  (company-dabbrev-downcase nil)
-  (company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance))
-  (company-show-quick-access 'left)
-  :bind
-  (:map company-active-map 
-        ("M-/" . company-complete)
-        ("<tab>" . company-indent-or-complete-common)
-        ("C-c C-/" . company-other-backend))
-  :config
-  (set-face-attribute 'company-tooltip nil :inherit 'fixed-pitch))
+  (use-package company
+    :hook ((org-mode LaTeX-mode prog-mode) . company-mode)
+    :custom
+    (company-minimum-prefix-length 4)
+    (company-idle-delay 0.3)
+    (company-tootip-idle-delay 0.5)
+    (company-tooltip-offset-display 'line)
+    (company-tooltip-align-annotation t)
+    (company-show-quick-access t)
+    (company-backends
+     '((company-capf :with company-dabbrev-code company-keywords)
+       (company-dabbrev)
+       (company-ispell)
+       (company-files)))
+    (company-dabbrev-ignore-case nil) 
+    (company-dabbrev-downcase nil)
+    (company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance))
+    (company-show-quick-access 'left)
+    :bind
+    (:map company-active-map 
+          ("M-/" . company-complete)
+          ("<tab>" . company-indent-or-complete-common)
+          ("C-c C-/" . company-other-backend))
+    :config
+    (set-face-attribute 'company-tooltip nil :inherit 'fixed-pitch))
 #+END_SRC
-
-
 
 ** Vertico
 #+BEGIN_SRC emacs-lisp
-(defun my/minibuffer-backward-kill (arg)
-  "When minibuffer is completing a file name delete up to parent
-  folder, otherwise delete a word"
-  (interactive "p")
-  (if minibuffer-completing-file-name
-      ;; Borrowed from https://github.com/raxod502/selectrum/issues/498#issuecomment-803283608
-      (if (string-match-p "/." (minibuffer-contents))
-          (zap-up-to-char (- arg) ?/)
-        (delete-minibuffer-contents))
-    (delete-word (- arg))))
-(setq completion-ignore-case 't) ; minibuffer ignore case
-(use-package vertico
-  :defer 1
-  :custom
-  (verticle-cycle t)
-  :config
-  (vertico-mode)
-  :bind (:map minibuffer-local-map
-              ("M-h" .  my/minibuffer-backward-kill)))
-(use-package vertico-posframe
-  :init
-  (vertico-posframe-mode)
-  :config
-  (setq vertico-posframe-poshandler 'posframe-poshandler-point-window-center)
-)
+  (defun my/minibuffer-backward-kill (arg)
+    "When minibuffer is completing a file name delete up to parent
+    folder, otherwise delete a word"
+    (interactive "p")
+    (if minibuffer-completing-file-name
+        ;; Borrowed from https://github.com/raxod502/selectrum/issues/498#issuecomment-803283608
+        (if (string-match-p "/." (minibuffer-contents))
+            (zap-up-to-char (- arg) ?/)
+          (delete-minibuffer-contents))
+      (delete-word (- arg))))
+  (setq completion-ignore-case 't) ; minibuffer ignore case
+  (use-package vertico
+    :defer 1
+    :custom
+    (verticle-cycle t)
+    :config
+    (vertico-mode)
+    :bind (:map minibuffer-local-map
+                ("M-h" .  my/minibuffer-backward-kill)))
+  (use-package vertico-posframe
+    :init
+    (vertico-posframe-mode)
+    :config
+    (setq vertico-posframe-poshandler 'posframe-poshandler-point-window-center)
+    )
 #+END_SRC
-
 
 ** Marginalia
 #+BEGIN_SRC emacs-lisp
-(use-package marginalia
-  ;; Either bind `marginalia-cycle' globally or only in the minibuffer
-  :bind (("M-A" . marginalia-cycle)
-         :map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
-  :defer 1
-  :config
-  (marginalia-mode))
+  (use-package marginalia
+    ;; Either bind `marginalia-cycle' globally or only in the minibuffer
+    :bind (("M-A" . marginalia-cycle)
+           :map minibuffer-local-map
+           ("M-A" . marginalia-cycle))
+    :defer 1
+    :config
+    (marginalia-mode))
 #+END_SRC
-
 
 ** Orderless
 #+BEGIN_SRC emacs-lisp
-(use-package orderless
-  :defer 1
-  :custom
-  (completion-styles '(orderless basic))
-  (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles partial-completion)))))
+  (use-package orderless
+    :defer 1
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-defaults nil)
+    (completion-category-overrides '((file (styles partial-completion)))))
 #+END_SRC
-
 
 ** emark and corfu
 
 #+BEGIN_SRC emacs-lisp
-(use-package embark
-  :bind
-  ( "C-;" . 'embark-act))
-(use-package consult
-  :bind
-  ( "C-s" . 'consult-line))
-
-(use-package embark-consult)
+  (use-package embark
+    :bind
+    ( "C-;" . 'embark-act))
+  (use-package consult)
+  (use-package embark-consult)
+  (zzc/leader-keys
+    "sb" '(consult-line :which-key "search line"))
 #+END_SRC
 
 ** hydra 
 
 #+begin_src emacs-lisp
-(use-package hydra)
-(defhydra hydra-text-scale (:timeout 4)
-  "scale text"
-  ("j" text-scale-increase "in")
-  ("k" text-scale-decrease "out")
-  ("q" nil "finished" :exit t))
-(zzc/leader-keys
-  "ts" '(hydra-text-scale/body :which-key "scale text"))
+  (use-package hydra)
+  (defhydra hydra-text-scale (:timeout 4)
+    "scale text"
+    ("j" text-scale-increase "in")
+    ("k" text-scale-decrease "out")
+    ("q" nil "finished" :exit t))
+  (zzc/leader-keys
+    "ts" '(hydra-text-scale/body :which-key "scale text"))
 #+end_src
 
 
 * Editing 
-
 ** Jump
 #+BEGIN_SRC emacs-lisp
-(use-package avy
-  :demand 1
-  :after general
-  :config
-  (zzc/leader-keys
-    "j" '(:ignore t :which-key "jump")
-    "jj" '(avy-goto-char :which-key "jump to char")
-    "jw" '(avy-goto-word-0 :which-key "jump to word")
-    "jl" '(avy-goto-line :which-key "jump to line")))
+  (use-package avy
+    :demand 1
+    :after general
+    :config
+    (zzc/leader-keys
+      "j" '(:ignore t :which-key "jump")
+      "jj" '(avy-goto-char :which-key "jump to char")
+      "jw" '(avy-goto-word-0 :which-key "jump to word")
+      "jl" '(avy-goto-line :which-key "jump to line")))
 #+END_SRC
-
 
 ** Remove CR
 
 #+BEGIN_SRC emacs-lisp
-(defun delete-carrage-returns ()
-  (interactive)
-  (save-excursion
-    (goto-char 0)
-    (while (search-forward "\r" nil :noerror)
-      (replace-match ""))))
+  (defun delete-carrage-returns ()
+    (interactive)
+    (save-excursion
+      (goto-char 0)
+      (while (search-forward "\r" nil :noerror)
+        (replace-match ""))))
 #+END_SRC
 
 
 
 * UI
-
 ** Basic
 #+begin_src emacs-lisp
 
   (setq inhibit-startup-message t)
-
   (scroll-bar-mode -1) ;;disable visusal scroll bar
-
   (tool-bar-mode -1) ;;disable tool bar
-
   (tooltip-mode -1) ;;disable tool tips
-
   (menu-bar-mode -1) ;;disable menu bar
-
   (set-fringe-mode 10) ;;Give some breathing room
-
   (column-number-mode)
-
   (global-hl-line-mode)
-
   (global-visual-line-mode)
-
   (global-display-line-numbers-mode t)
-
   (setq-default display-line-numbers-width-start t)
-
   ;; Disable line numbers for some modes
-
   (dolist (mode '(org-mode-hook
-
                   term-mode-hook
-
                   eshell-mode-hook))
-
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
   (defun doom/toggle-line-numbers ()
-
     "Toggle line numbers.
-
     Cycles through regular, relative and no line numbers. The order depends on what
-
     `display-line-numbers-type' is set to. If you're using Emacs 26+, and
-
     visual-line-mode is on, this skips relative and uses visual instead.
-
     See `display-line-numbers' for what these values mean."
-
     (interactive)
-
     (defvar doom--line-number-style display-line-numbers-type)
-
     (let* ((styles `(t ,(if visual-line-mode 'visual 'relative) nil))
-
            (order (cons display-line-numbers-type (remq display-line-numbers-type styles)))
-
            (queue (memq doom--line-number-style order))
-
            (next (if (= (length queue) 1)
-
                      (car order)
-
                    (car (cdr queue)))))
-
       (setq doom--line-number-style next)
-
       (setq display-line-numbers next)
-
       (setq display-line-numbers-width-start t)
-
       (message "Switched to %s line numbers"
-
                (pcase next
-
                  (`t "normal")
-
                  (`nil "disabled")
-
                  (_ (symbol-name next))))))
 
-
   (zzc/leader-keys
-    "ll" '(doom/toggle-line-numbers :which-key "toggle line numbers"))
+    "tl" '(doom/toggle-line-numbers :which-key "toggle line numbers"))
 
 #+end_src
 
-
-
-
 ** Encoding
 #+BEGIN_SRC emacs-lisp
-(prefer-coding-system 'utf-8)
-(setq-default buffer-file-coding-system 'utf-8-unix)
+  (prefer-coding-system 'utf-8)
+  (setq-default buffer-file-coding-system 'utf-8-unix)
 #+END_SRC
 
-
 ** Font
-
 *** Font config
 #+begin_src emacs-lisp
-(defvar my/font-height 200)
-(defvar my/latex-preview-scale 1.3)
+  (defvar my/font-height 200)
+  (defvar my/latex-preview-scale 1.3)
 
-(defvar my/mm-char-height 3.2) ;4.2mm
-;; 当字体高度为 4.2 mm 时, 对应的字体大小 1080p: 15.5; 2K: 18; 4K: 22
-(defun my/get-font-height (&optional frame)
-  (let* ((attrs (frame-monitor-attributes frame))
-	 (geometry (alist-get 'geometry attrs)) 
-	 (size (alist-get 'mm-size attrs)) 
-	 (pixel-width (caddr geometry)) ; ????????
-	 (mm-width  (car size))
-	 (round (* 10 (/ pixel-width  (/ mm-width my/mm-char-height)))))))
+  (defvar my/mm-char-height 3.2) ;4.2mm
+  ;; 当字体高度为 4.2 mm 时, 对应的字体大小 1080p: 15.5; 2K: 18; 4K: 22
+  (defun my/get-font-height (&optional frame)
+    (let* ((attrs (frame-monitor-attributes frame))
+  	 (geometry (alist-get 'geometry attrs)) 
+  	 (size (alist-get 'mm-size attrs)) 
+  	 (pixel-width (caddr geometry)) ; ????????
+  	 (mm-width  (car size))
+  	 (round (* 10 (/ pixel-width  (/ mm-width my/mm-char-height)))))))
 
-;; (defun my/get-font-height (&optional frame)
-;;   (let* ((attrs (frame-monitor-attributes frame))
-;;          (geometry (alist-get 'geometry attrs)) 
-;;          (size (alist-get 'mm-size attrs)) 
-;;          (pixel-width (caddr geometry)) 
-;;          (mm-width  (car size))
-;;          (font-height (round (* 10 (/ pixel-width (/ mm-width my/mm-char-height))))))
-;;     (if (and font-height (> font-height 0))
-;;         font-height
-;;       280))) ; default to 280 if invalid
-
-(defun my/set-font-size ()
+  (defun my/set-font-size ()
     (interactive)
     (let* ((font-size (my/get-font-height)))
       (message "font size: %s" font-size)
       (setq my/font-height font-size)
       (setq my/latex-preview-scale
-	    (/ font-size 80.0))))
+  	  (/ font-size 80.0))))
 
-(defun my/set-font (font-height &optional frame)
-  (interactive)
+  (defun my/set-font (font-height &optional frame)
+    (interactive)
     ;; Ensure font-height is a valid integer
     (unless (and (integerp font-height) (> font-height 0))
-    (setq font-height 200)) ; Fallback to default if invalid
+      (setq font-height 200)) ; Fallback to default if invalid
     ;; 系统默认字体
     (setq my/system-default-font (font-get-system-normal-font))
     ;; Emacs 默认字体
-    (setq my/default-font "Fira Code") ; fonts-firacode (ubuntu) ; ttf-fira-code (manjaro)
+    (setq my/default-font "Iosevka")
     (unless (find-font (font-spec :name my/default-font))
       (message (format "cannot find %s for the default font" my/default-font))
       (setq my/default-font my/system-default-font))
@@ -942,14 +752,14 @@
       (setq my/variable-pitch-font my/system-default-font))
 
     ;; 等宽字体
-    (setq my/fixed-pitch-font "JetBrains Mono") ; fonts-jetbrains-mono (ubuntu) ; ttf-jetbrains-mono (manjaro)
+    (setq my/fixed-pitch-font "JetBrains Mono Nerd Font") ; fonts-jetbrains-mono (ubuntu) ; ttf-jetbrains-mono (manjaro)
     (unless (find-font (font-spec :name my/fixed-pitch-font))
       (message (format "cannot find %s for the fixed-pitch font. Use system default instead"  my/fixed-pitch-font))
       (setq my/fixed-pitch-font my/system-default-font))
 
     (set-face-attribute 'default frame :font my/default-font :height font-height)  ; 默认字体 字号
     (set-face-attribute 'variable-pitch frame :font my/variable-pitch-font :height font-height) ; 比例字体
-    (set-face-attribute 'fixed-pitch frame :font my/fixed-pitch-font :height font-height) ; 等宽字体
+    (set-face-attribute 'fixed-pitch frame :font my/fixed-pitch-font :height font-height) ; 等宽体
     (set-face-attribute 'bold nil :foreground "Salmon")
 
     (set-fontset-font "fontset-default" 'mathematical my/math-font) 
@@ -957,29 +767,26 @@
     (set-fontset-font "fontset-default" 'unicode my/chinese-font) 
     (setq inhibit-compacting-font-caches t) 
     (setq auto-window-vscroll nil)
-)
 
-(defun my/set-font-current-frame ()
-  (interactive)
-  (my/set-font (my/get-font-height) (selected-frame)))
-(global-set-key (kbd "C-x 9") #'my/set-font-current-frame)
+  (defun my/set-font-current-frame ()
+    (interactive)
+    (my/set-font (my/get-font-height) (selected-frame)))
+  (global-set-key (kbd "C-x 9") #'my/set-font-current-frame)
+  (add-hook 'after-init-hook #'my/set-font-current-frame)
 
-(custom-set-faces
- '(region ((t (:background "yellow" :foreground "black" :weight bold)))))
+  (custom-set-faces
+   '(region ((t (:background "yellow" :foreground "black" :weight bold)))))
 #+end_src
 
 #+RESULTS:
 
-
 ** EMOJI
 #+BEGIN_SRC emacs-lisp
-(use-package emojify
-  :hook (after-init . global-emojify-mode))
+  (use-package emojify
+    :hook (after-init . global-emojify-mode))
 #+END_SRC
 
-
 ** Theme
-
 *** Doom Theme
 #+begin_src emacs-lisp
 (defun my/load-doom-theme (theme)
@@ -1003,7 +810,7 @@
   :config
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-Iosvkem t) ; ????
+  (load-theme 'doom-gruvbox t) ; ????
   (doom-themes-visual-bell-config) ; Enable flashing mode-line on errors
   (doom-themes-org-config))
 (zzc/leader-keys
@@ -1022,30 +829,28 @@
 
 *** Doom mode-line
 #+BEGIN_SRC emacs-lisp
-(use-package all-the-icons
-  :if (display-graphic-p)) ; ??????, M-x all-the-icon-install-fonts ????.
-(use-package minions
-  :hook (doom-modeline-mode . minions-mode))
-(use-package doom-modeline
-  :hook (after-init . doom-modeline-mode)
-  :custom
-  (doom-modeline-unicode-fallback t))
+  (use-package all-the-icons
+    :if (display-graphic-p)) ;M-x all-the-icon-install-fonts.
+  (use-package minions
+    :hook (doom-modeline-mode . minions-mode))
+  (use-package doom-modeline
+    :hook (after-init . doom-modeline-mode)
+    :custom
+    (setq doom-modeline-height 25) ;; Adjust height for better appearance
+    (setq doom-modeline-bar-width 3) ;; Optional: Adjust bar width
+    (custom-set-faces
+     '(mode-line ((t (:family "JetBrains Mono Nerd Font" :height 120))))
+     '(mode-line-inactive ((t (:family "JetBrains Mono Nerd Font" :height 120)))))
+    (doom-modeline-unicode-fallback t))
+  
 #+END_SRC
 
-
-
-
 ** Visual Helper 
-
 #+begin_src emacs-lisp
-
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
-
 #+end_src
 
-
-https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-and-workspaces
 
 * org
 
@@ -1084,9 +889,9 @@ https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-
   (require 'org-faces)
   ;; 标题字体大小优化
   (set-face-attribute 'org-document-title nil :weight 'bold :height 1.2)
-  (dolist (face '((org-level-1 . 1.05)
-                  (org-level-2 . 1.0)
-                  (org-level-3 . 1.0)
+  (dolist (face '((org-level-1 . 1.15)
+                  (org-level-2 . 1.1)
+                  (org-level-3 . 1.05)
                   (org-level-4 . 1.0)
                   (org-level-5 . 1.0)
                   (org-level-6 . 1.0)
@@ -1111,7 +916,9 @@ https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-
   (require 'org-indent) ;; 开启 org-indent 并设设置缩进字体
   (set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch)))
 #+end_src
-
+- [ ] checkbox
+- [ ] cec
+- [ ] dfs
 *** org visual column fill
 #+begin_src emacs-lisp
 (defun my/org-mode-visual-fill ()
@@ -1200,8 +1007,6 @@ https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-
   (add-to-list 'org-babel-load-languages '(shell . t)))
 #+end_src
 
-
-
 ** agenda 
 
 #+begin_src emacs-lisp
@@ -1278,7 +1083,6 @@ https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-
 
 #+end_src
 
-
 ** org-clock
 
 #+begin_src emacs-lisp
@@ -1296,9 +1100,7 @@ https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-
 
 #+end_src
 
-
 ** org-roam
-
 *** pre-requisite
 #+begin_src emacs-lisp
 ;; org-ref
@@ -1320,7 +1122,7 @@ https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-
 #+begin_src emacs-lisp
   (use-package org-roam
     :custom
-    (org-roam-directory "~/Documents/notes/") 
+    (org-roam-directory "~/Documents/org/notes/") 
     (org-roam-completion-everywhere t)
     (org-roam-node-display-template 
      (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
@@ -1333,7 +1135,7 @@ https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-
        ("t" "task" entry "* TODO %?\n  %U\n  %a\n  %i" 
         :if-new (file+head+olp ,my/daily-note-filename
                                ,my/daily-note-header
-                               ("tasks"))
+                              ("tasks"))
         :empty-lines 1) 
        ("j" "journal" entry "* %<%I:%M %P> - journal  :journal:\n\n%?\n\n" 
         :if-new (file+head+olp ,my/daily-note-filename
@@ -1364,23 +1166,11 @@ https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-
            ("C-M-i" . completion-at-point))
     :config
     (define-key org-roam-mode-map [mouse-1] (kbd "C-u <return>")) ; org-roam-buffer ???????c-u <return>
-    (setq org-roam-capture-templates  ; org-roam ????
-          '(("d" "default" plain "%?" ; ????
+    (setq org-roam-capture-templates  ; org-roam
+          '(("d" "default" plain "%?" ; 
              :target
              (file+head "%<%y%m%d%h%m%s>-${slug}.org" "#+title: ${title} \n")
              :unnarrowed t)
-            ;; ("r" "bibliography reference in pdfs" plain ; ????
-  ;;            "#+filetags: reading research \n - tags :: %^{keywords} \n* %^{title}
-  ;; :properties:\n:custom_id: %^{citekey}\n:url: %^{url}\n:author: %^{author-or-editor}\n:noter_document: ~/nutstore/1/nutstore/zotero-library/%^{citekey}.pdf\n:noter_page:\n:end:"      
-  ;;            :target
-             ;; (file+head "ref/${citekey}.org" "#+title: ${title}\n"))
-            ;; ("a" "article/post/blog/discussion" plain ; ??????
-            ;;  "#+filetags: reading \n"      
-            ;;  :target
-            ;;  (file+head "article/%<%y%m%d%h%m%s>-reading-${slug}.org" "#+title: ${title}\n"))
-            ;; ("s" "seminar notes" plain "#+filetags: seminar draft\n- title:\n- speaker:\n- event:\n- ref :: \n- tags ::"
-            ;;  :target
-            ;;  (file+head "seminar/%<%y%m%d>-seminar-${slug}.org" "#+title: ${title}\n"))
   	  ))
     (require 'org-roam-dailies) 
     (org-roam-db-autosync-mode) 
@@ -1426,7 +1216,6 @@ https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-
   (my/set-orui-latex-macros))
 #+end_src
 
-
 ** org-noter
 #+begin_src emacs-lisp
 (use-package org-noter
@@ -1436,28 +1225,33 @@ https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-
    ("M-e" . org-noter-insert-precise-note))
   :custom
   (org-noter-highlight-selected-text t)
-  (org-noter-notes-search-path '("~/Documents/notes/ref/"))
+  (org-noter-notes-search-path '("~/Documents/org/notes/ref/"))
   (org-noter-auto-save-last-location t))
 #+end_src
-
 
 ** project and todos
 
 *** basic function and variables
 #+begin_src emacs-lisp
-(defvar my/org-roam-project-template ; ??????
-  '("p" "project" plain "** TODO %?"
-    :if-new (file+head+olp "%<%Y%m%d%H>-${slug}.org"
-                           "#+title: ${title}\n\n#+filetags: Project\n"
-                           ("tasks"))))
-(defun my/org-roam-filter-by-tag (tag-name) ; ? tag ????; ?? lexical binding
+    (defvar my/org-roam-project-template 
+      '("p" "project" plain "** TODO %?"
+        :if-new (file+head+olp "%<%Y%m%d%H>-${slug}.org"
+                               "#+title: ${title}\n\n#+filetags: Project\n"
+                               ("tasks"))))
+    (defun my/org-roam-filter-by-tag (tag-name) 
+      (lambda (node)
+        (member tag-name (org-roam-node-tags node)))) 
+    (defun my/org-roam-list-notes-by-tag (tag-name) 
+      (mapcar #'org-roam-node-file
+              (seq-filter
+               (my/org-roam-filter-by-tag tag-name)
+               (org-roam-node-list))))
+  (defun my/org-roam-filter-by-tags (wanted unwanted)
   (lambda (node)
-    (member tag-name (org-roam-node-tags node)))) 
-(defun my/org-roam-list-notes-by-tag (tag-name) ; ? tag ????
-  (mapcar #'org-roam-node-file
-          (seq-filter
-           (my/org-roam-filter-by-tag tag-name)
-           (org-roam-node-list))))
+    (let ((node-tags (org-roam-node-tags node)))
+      (and (cl-some (lambda (tag) (member tag node-tags)) wanted)
+           (not (cl-some (lambda (tag) (member tag node-tags)) unwanted))))))
+
 #+end_src
 
 
@@ -1491,8 +1285,8 @@ https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-
     (org-roam-node-find
      nil
      nil
-     (my/org-roam-filter-by-tag "Project")))
-  
+     (my/org-roam-filter-by-tags '("Project") '("Archived"))))
+
   (defun my/org-roam-refresh-agenda-list ()
     (interactive)
     (setq org-agenda-files (my/org-roam-list-notes-by-tag "Project")))
@@ -1585,7 +1379,6 @@ _d_: date        ^ ^              ^ ^
           (org-refile nil nil (list "tasks" today-file nil pos))))))
 #+end_src
 
-
 ** org-babel 
 
 #+begin_src emacs-lisp
@@ -1598,21 +1391,124 @@ _d_: date        ^ ^              ^ ^
 (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
 #+end_src
 
-
 ** auto-tangle configuration file
 
 #+begin_src emacs-lisp
 ;; automatically tangle our emacs.org config file when we save it
 (defun zzc/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)
-                      (expand-file-name "~/.config/efs/config.org"))
+                      (expand-file-name "~/dotconfig/emacs/config.org"))
     ;; dynamic scoping to the rescue
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'zzc/org-babel-tangle-config)))
 #+end_src
 
+* Auto complete
+** Company Mode
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+    :hook ((org-mode LaTeX-mode prog-mode) . company-mode)
+    :custom
+    (company-minimum-prefix-length 4)
+    (company-idle-delay 0.3)
+    (company-tootip-idle-delay 0.5)
+    (company-tooltip-offset-display 'line)
+    (company-tooltip-align-annotation t)
+    (company-show-quick-access t)
+    (company-backends
+     '((company-capf :with company-dabbrev-code company-keywords)
+       (company-dabbrev)
+       (company-ispell)
+       (company-files)))
+    (company-dabbrev-ignore-case nil) 
+    (company-dabbrev-downcase nil)
+    (company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance))
+    (company-show-quick-access 'left)
+    :bind
+    (:map company-active-map 
+          ("M-/" . company-complete)
+          ("<tab>" . company-indent-or-complete-common)
+          ("C-c C-/" . company-other-backend))
+    :config
+    (set-face-attribute 'company-tooltip nil :inherit 'fixed-pitch))
+#+END_SRC
 
+** Vertico
+#+BEGIN_SRC emacs-lisp
+  (defun my/minibuffer-backward-kill (arg)
+    "When minibuffer is completing a file name delete up to parent
+    folder, otherwise delete a word"
+    (interactive "p")
+    (if minibuffer-completing-file-name
+        ;; Borrowed from https://github.com/raxod502/selectrum/issues/498#issuecomment-803283608
+        (if (string-match-p "/." (minibuffer-contents))
+            (zap-up-to-char (- arg) ?/)
+          (delete-minibuffer-contents))
+      (delete-word (- arg))))
+  (setq completion-ignore-case 't) ; minibuffer ignore case
+  (use-package vertico
+    :defer 1
+    :custom
+    (verticle-cycle t)
+    :config
+    (vertico-mode)
+    :bind (:map minibuffer-local-map
+                ("M-h" .  my/minibuffer-backward-kill)))
+  (use-package vertico-posframe
+    :init
+    (vertico-posframe-mode)
+    :config
+    (setq vertico-posframe-poshandler 'posframe-poshandler-point-window-center)
+    )
+#+END_SRC
+
+** Marginalia
+#+BEGIN_SRC emacs-lisp
+  (use-package marginalia
+    ;; Either bind `marginalia-cycle' globally or only in the minibuffer
+    :bind (("M-A" . marginalia-cycle)
+           :map minibuffer-local-map
+           ("M-A" . marginalia-cycle))
+    :defer 1
+    :config
+    (marginalia-mode))
+#+END_SRC
+
+** Orderless
+#+BEGIN_SRC emacs-lisp
+  (use-package orderless
+    :defer 1
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-defaults nil)
+    (completion-category-overrides '((file (styles partial-completion)))))
+#+END_SRC
+
+** emark and corfu
+
+#+BEGIN_SRC emacs-lisp
+  (use-package embark
+    :bind
+    ( "C-;" . 'embark-act))
+  (use-package consult)
+  (use-package embark-consult)
+  (zzc/leader-keys
+    "sb" '(consult-line :which-key "search line"))
+#+END_SRC
+
+** hydra 
+
+#+begin_src emacs-lisp
+  (use-package hydra)
+  (defhydra hydra-text-scale (:timeout 4)
+    "scale text"
+    ("j" text-scale-increase "in")
+    ("k" text-scale-decrease "out")
+    ("q" nil "finished" :exit t))
+  (zzc/leader-keys
+    "ts" '(hydra-text-scale/body :which-key "scale text"))
+#+end_src
 * programming languages
 ** general
 *** syntax check
@@ -1622,21 +1518,21 @@ _d_: date        ^ ^              ^ ^
 #+end_src
 ** C/ C++
 #+BEGIN_SRC emacs-lisp
-(use-package cmake-mode)
+;;(use-package cmake-mode)
 #+END_SRC
 ** Rust 
 #+BEGIN_SRC emacs-lisp
-(use-package rustic
-  :ensure t
-  :config
-  (setq rustic-format-on-save nil)
-  :custom
-  (rustic-cargo-use-last-stored-arguments t))
+;;(use-package rustic
+;;  :ensure t
+;;  :config
+;;  (setq rustic-format-on-save nil)
+;;  :custom
+;;  (rustic-cargo-use-last-stored-arguments t))
 #+END_SRC
 
 ** lua
 #+begin_src emacs-lisp
-(use-package lua-mode)
+;;(use-package lua-mode)
 #+end_src
 
 
@@ -1648,7 +1544,7 @@ _d_: date        ^ ^              ^ ^
   (add-hook 'yas-minor-mode-hook (lambda()
 				       (yas-activate-extra-mode 'fundamental-mode)))
   :config
-  (setq yas-snippet-dirs '("~/.config/efs/snippets")))
+  (setq yas-snippet-dirs '("~/.config/emacs/snippets")))
 (yas-global-mode 1)
 (zzc/leader-keys
   "s"  '(:ignore t :which-key "snippet")
@@ -1658,7 +1554,6 @@ _d_: date        ^ ^              ^ ^
 
 
 * chinese
-
 ** rime
 #+begin_src emacs-lisp
   ;; (require 'posframe)
@@ -1679,17 +1574,17 @@ _d_: date        ^ ^              ^ ^
   (add-hook 'kill-emacs-hook #'rime-lib-finalize)
 #+end_src
 
-
 ** Paste chinese in windows
 #+BEGIN_SRC emacs-lisp
-  ;; Conditionally set clipboard coding system for windows, windows clipboard seems not saved in UTF-8
-(cond
- ((and my/is-windows (not my/is-WSL)) ; Only Windows, not WSL
-  (set-clipboard-coding-system 'euc-cn))
- (my/is-WSL ; Specifically WSL
-  (set-clipboard-coding-system 'euc-cn)))
+    ;; Conditionally set clipboard coding system for windows, windows clipboard seems not saved in UTF-8
+  (cond
+   ((and my/is-windows (not my/is-WSL)) ; Only Windows, not WSL
+    ;; (set-clipboard-coding-system 'euc-cn))
+    (set-clipboard-coding-system 'utf-8))
+   (my/is-WSL ; Specifically WSL
+    ;; (set-clipboard-coding-system 'euc-cn)))
+    (set-clipboard-coding-system 'utf-8)))
 #+END_SRC
-
 
 ** space between chinese and english
 #+begin_src emacs-lisp
@@ -1700,9 +1595,7 @@ _d_: date        ^ ^              ^ ^
 #+end_src
 
 
-
 * external tools
-
 **  eee
 #+begin_src emacs-lisp
   ;; (use-package vterm)
@@ -1717,5 +1610,5 @@ _d_: date        ^ ^              ^ ^
   ;; )
 #+END_SRC
 
-
 ** aider
+
