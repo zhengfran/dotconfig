@@ -613,7 +613,7 @@
   (set-fontset-font "fontset-default" 'han my/chinese-font) 
   (set-fontset-font "fontset-default" 'unicode my/chinese-font) 
   (setq inhibit-compacting-font-caches t) 
-  (setq auto-window-vscroll nil)
+  (setq auto-window-vscroll nil))
 
 (defun my/set-font-current-frame ()
   (interactive)
