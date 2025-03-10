@@ -1,29 +1,27 @@
 ;; -*- lexical-binding: t; -*-
 ;;show show errors
 (setq warning-minimum-level :error)
-;(setq debug-on-error t)
-
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-
 ;;disable bell
-
 (setq visible-bell 1)
-
-
 ;; The default is 800 kilobytes.  Measured in bytes.
-
 (setq gc-cons-threshold (* 50 1000 1000))
 
 ;; Profile emacs startup
 (add-hook 'emacs-startup-hook
-	(lambda ()
-	(message "*** Emacs loaded in %s seconds with %d garbage collections."
-	(emacs-init-time "%.2f")
-	    gcs-done)))
+	  (lambda ()
+	    (message "*** Emacs loaded in %s seconds with %d garbage collections."
+		     (emacs-init-time "%.2f")
+		     gcs-done)))
 
 (defvar native-comp-deferred-compilation-deny-list nil)
 
 (defvar bootstrap-version)
+;; ?? Emacs 29 ??? native-compile ??????? bug
+(unless (version<= emacs-version "28.2")
+  (setq straight-repository-branch "develop"))
+(setq straight-check-for-modifications '(check-on-save find-when-checking))
+
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
       (bootstrap-version 6))
@@ -35,31 +33,27 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
-;; Ensure use-package is installed
 (straight-use-package 'use-package)
-
-;; Automatically use straight.el with use-package
 (setq straight-use-package-by-default t)
 (setq use-package-always-ensure t)
+
 ;; make sure shell PATH is same as emacs PATH 
 (use-package exec-path-from-shell
   :config
-(setq shell-file-name "/bin/bash")
-(setq exec-path-from-shell-arguments '("-l"))
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize)))
+  (setq shell-file-name "/bin/bash")
+  (setq exec-path-from-shell-arguments '("-l"))
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
 
 (use-package esup
   :config
   (setq esup-depth 0))
 
-(setq efs_dir "~/.config/efs" ; emacs from scratch config location
-      org_notes_dir "~/Documents/Notes" ; org notes location
+(setq org_notes_dir "~/Documents/org/notes" ; org notes location
       zot_bib "~/Nutstore/1/Nutstore/Zotero-Library/Main.bib"; Zotero .bib 文件
       zot_pdf "~/Nutstore/1/Nutstore/Zotero-Library" ; Zotero 同步文件
-      org_notes "~/Documents/notes/ref/") ; org-roam 文献笔记目录
-  
-(unless (file-exists-p efs_dir) (setq efs_dir nil))
+      org_notes "~/Documents/org/notes/ref/") ; org-roam 文献笔记目录
+
 (unless (file-exists-p org_notes_dir) (setq org_notes_dir nil))
 (unless (file-exists-p zot_bib) (setq zot_bib nil))
 (unless (file-exists-p zot_pdf) (setq zot_pdf nil))
@@ -76,52 +70,28 @@
 (setq my/is-terminal (not window-system)) ;GUI
 
 (when (and (eq system-type 'gnu/linux)
-
            (string-match
-
             "Linux.*Microsoft.*Linux"
-
             (shell-command-to-string "uname -a")))
-
   (setq
-
    browse-url-generic-program  "/mnt/c/Windows/System32/cmd.exe"
-
    browse-url-generic-args     '("/c" "start")
-
    browse-url-browser-function #'browse-url-generic))
 
-(use-package no-littering)
-(setq backup-directory-alist `(("." . ,(expand-file-name "tmp/backups/" user-emacs-directory))))
-;; auto-save-mode doesn't create the path automatically!
-(make-directory (expand-file-name "tmp/auto-saves/" user-emacs-directory) t)
-(setq auto-save-list-file-prefix (expand-file-name "tmp/auto-saves/sessions/" user-emacs-directory)
-      auto-save-file-name-transforms `((".*" ,(expand-file-name "tmp/auto-saves/" user-emacs-directory) t)))
-
-(use-package recentf
-  :after no-littering
-  :demand t 
-  :custom
-  (recentf-exclude '(no-littering-var-directory
-                     no-littering-etc-directory)) ; ??????
-  (recentf-max-menu-items 25)
-  (recentf-max-saved-items 25)
-  :bind ("C-x C-r" . 'recentf-open-files)
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
   :config
-  (recentf-mode 1))
-;;save history
-(use-package savehist
-  :init
-  (savehist-mode))
-;; save last visited pla
-(save-place-mode 1)
-;;revert buffers when the underlying file has  
-(global-auto-revert-mode 1)
-;; Revert Dired and other buffers
-(setq global-auto-revert-non-file-buffers t)
+  (setq which-key-idle-delay 1))
+
+(use-package general
+  :config
+  (general-create-definer zzc/leader-keys
+    :states '(normal insert visual emacs)
+    :prefix "SPC"
+    :global-prefix "C-SPC"))
 
 (use-package evil
-  :ensure t
   :demand t
   :bind (("<escape>" . keyboard-escape-quit))
   :init
@@ -133,27 +103,24 @@
   :config
   (evil-mode 1)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-        ;; Use visual line motions even outside of visual-line-mode buffers
+  ;; Use visual line motions even outside of visual-line-mode buffers
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal))
+  
 (use-package evil-collection
-  :ensure t
   :after evil
   :config
   (evil-collection-init))
 (use-package evil-commentary
-  :ensure t
   :after evil
   :init (evil-commentary-mode))
 (use-package evil-surround
-  :ensure t
   :after evil
   :config
   (global-evil-surround-mode 1))
 (use-package undo-tree
-  :ensure t
   :after evil
   :diminish
   :config
@@ -162,7 +129,6 @@
 (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
 
 (use-package evil-escape
-  :ensure t
   :init (evil-escape-mode)
   :after evil
   :config
@@ -183,24 +149,8 @@
 ;; save file very time after quit inder mode
 (add-hook 'evil-insert-state-exit-hook
           (lambda ()
-	    (call-interactively #'save-buffer)))
+            (call-interactively #'save-buffer)))
 
-(use-package which-key
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 1))
-
-(use-package general
-  :ensure t
-  :demand t
-  :config
-  (general-create-definer zzc/leader-keys
-    :states '(normal insert visual emacs)
-    :prefix "SPC"
-    :global-prefix "C-SPC"))
-(require 'general)
-(message "leader-keys are defined %s" (fboundp 'zzc/leader-keys))
 (defun minibuffer-next-line ()
   "Move to the next line in the minibuffer history."
   (interactive)
@@ -219,41 +169,23 @@
 (define-key minibuffer-local-map (kbd "C-k") 'minibuffer-previous-line)
 
 (setq
-
  display-buffer-alist
-
  '(("^\\*[Hh]elp"                            ;正则匹配buffer name
-
     (display-buffer-reuse-window
-
-     ;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些alist
-
+					;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些alist
      display-buffer-in-side-window)
-
     (side . right)                        ;参数alist从这里开始。这个side会被display-buffer-in-side-window使用
-
     (window-width . 0.5)                     ;emacs会自动把这个设置到window-parameter里
-
     (window-height . 0.33)                   ;同上
-
     (slot . 1)                               ;这个会被display-buffer-in-side-window使用，控制window位置
-
     (reusable-frames . visible)              ;这个参数看第三个链接的display-buffer
-
     (haha . whatever)                        ;当然随你放什么
-
     (window-parameters                       ;emacs 26及以上会自动把下面的设置到window-parameter里
-
      (select . t)                            ;自定义的param
-
      (quit . t)                              ;同上
-
      (popup . t)                             ;同上
-
      (mode-line-format . none)               ;emacs version > 25， none会隐藏mode line，nil会显示...
-
      (no-other-window . t)                   ;随你设置其他的window-parameter，看文档
-
      ))))
 
 (defun split-window-right-and-focus ()
@@ -268,27 +200,20 @@
   (split-window-below)
   (other-window 1))
 
-  (defadvice split-window-right (after split-window-right-and-focus activate)
-    (other-window 1))
+(defadvice split-window-right (after split-window-right-and-focus activate)
+  (other-window 1))
 
-  (defadvice split-window-below (after split-window-below-and-focus activate)
-    (other-window 1))
+(defadvice split-window-below (after split-window-below-and-focus activate)
+  (other-window 1))
 
 (use-package project
-
   ;; Cannot use :hook because 'project-find-functions does not end in -hook
-
   ;; Cannot use :init (must use :config) because otherwise
-
   ;; project-find-functions is not yet initialized.
-
   :config
-
   (setq project-vc-extra-root-markers '(".project" "*.csproj")))
 
 (use-package perspective
-  :ensure t
-  :demand t
   :bind
   ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
   :custom
@@ -302,53 +227,38 @@
   :init
   (persp-mode))
 
-;(zzc/leader-keys
-;  "b"  '(:ignore t :which-key "buffer")
-;  "bp"  '(switch-to-prev-buffer :which-key "previous buffer")
-;  "bn"  '(switch-to-next-buffer :which-key "next buffer")
-;  "bb"  '(switch-to-buffer :which-key "list buffers")
-;  "bB"  '(ibuffer-list-buffers :which-key "list ibuffers")
-;  "bk"  '(kill-current-buffer :which-key "kill current buffer")
-;  "bs"  '(save-buffer :which-key "save buffer")
-;)
+(zzc/leader-keys
+  "b"  '(:ignore t :which-key "buffer")
+  "bp"  '(switch-to-prev-buffer :which-key "previous buffer")
+  "bn"  '(switch-to-next-buffer :which-key "next buffer")
+  "bb"  '(switch-to-buffer :which-key "list buffers")
+  "bB"  '(ibuffer-list-buffers :which-key "list ibuffers")
+  "bd"  '(kill-current-buffer :which-key "kill current buffer")
+  "bs"  '(save-buffer :which-key "save buffer")
+  )
 
 (winner-mode 1)
-
 (global-set-key (kbd "C-c u") 'winner-undo)
-
 (global-set-key (kbd "C-c r") 'winner-redo)
 
 (use-package winum
-:ensure t
-:config
-(winum-mode))
+  :ensure t
+  :config
+  (winum-mode))
 
 (defvar toggle-one-window-window-configuration nil
-
   "The window configuration use for `toggle-one-window'.")
-
 (defun toggle-one-window ()
-
   "Toggle between window layout and one window."
-
   (interactive)
-
   (if (equal (length (cl-remove-if #'window-dedicated-p (window-list))) 1)
-
       (if toggle-one-window-window-configuration
-
           (progn
-
             (set-window-configuration toggle-one-window-window-configuration)
-
             (setq toggle-one-window-window-configuration nil))
-
         (message "No other windows exist."))
-
     (setq toggle-one-window-window-configuration (current-window-configuration))
-
     (delete-other-windows)))
-
 (general-define-key
  :prefix "C-c"
  "m" 'toggle-one-window)
@@ -356,133 +266,129 @@
 ;; save bookmark on change
 (setq bookmark-save-flag 1)
 (require 'bookmark)
-(list-bookmarks)
-(switch-to-buffer "*Bookmark List*")
 ;; set bookmark file to sync across difference device
-(setq bookmark-default-file "~/.config/efs/bookmarks")
+(setq bookmark-default-file "~/.config/emacs/bookmarks")
 (zzc/leader-keys
-  "bm"  '(:ignore t :which-key "bookmark")"bmm"  '(bookmark-set :which-key "Add current file/dir to bookmark")
+  "bm"  '(:ignore t :which-key "bookmark")
+  "bmm"  '(bookmark-set :which-key "Add current file/dir to bookmark")
   "bml"  '(list-bookmarks :which-key "Open Bookmark List"))
 
 (zzc/leader-keys
-
   "="  '(:ignore t :which-key "open")
-
   "=h" '((lambda () (interactive) (find-file "~/Documents/notes/20241004160632-habit_tracking.org")) :which-key "open habit.org")
-
-  "=c" '((lambda () (interactive) (find-file "~/.config/efs/config.org")) :which-key "open config file"))
+  "=c" '((lambda () (interactive) (find-file "~/.config/emacs/config.org")) :which-key "open config file"))
 
 (zzc/leader-keys
   "."  '(find-file :which-key "find file")
-)
+  )
 
 (use-package treemacs
-    :ensure t
-    :defer t
-    :init
-    (with-eval-after-load 'winum
-      (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-    :config
-    (progn
-      (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-            treemacs-deferred-git-apply-delay        0.5
-            treemacs-directory-name-transformer      #'identity
-            treemacs-display-in-side-window          t
-            treemacs-eldoc-display                   'simple
-            treemacs-file-event-delay                2000
-            treemacs-file-extension-regex            treemacs-last-period-regex-value
-            treemacs-file-follow-delay               0.2
-            treemacs-file-name-transformer           #'identity
-            treemacs-follow-after-init               t
-            treemacs-expand-after-init               t
-            treemacs-find-workspace-method           'find-for-file-or-pick-first
-            treemacs-git-command-pipe                ""
-            treemacs-goto-tag-strategy               'refetch-index
-            treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-            treemacs-hide-dot-git-directory          t
-            treemacs-indentation                     2
-            treemacs-indentation-string              " "
-            treemacs-is-never-other-window           nil
-            treemacs-max-git-entries                 5000
-            treemacs-missing-project-action          'ask
-            treemacs-move-files-by-mouse-dragging    t
-            treemacs-move-forward-on-expand          nil
-            treemacs-no-png-images                   nil
-            treemacs-no-delete-other-windows         t
-            treemacs-project-follow-cleanup          nil
-            treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-            treemacs-position                        'left
-            treemacs-read-string-input               'from-child-frame
-            treemacs-recenter-distance               0.1
-            treemacs-recenter-after-file-follow      nil
-            treemacs-recenter-after-tag-follow       nil
-            treemacs-recenter-after-project-jump     'always
-            treemacs-recenter-after-project-expand   'on-distance
-            treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-            treemacs-project-follow-into-home        nil
-            treemacs-show-cursor                     nil
-            treemacs-show-hidden-files               t
-            treemacs-silent-filewatch                nil
-            treemacs-silent-refresh                  nil
-            treemacs-sorting                         'alphabetic-asc
-            treemacs-select-when-already-in-treemacs 'move-back
-            treemacs-space-between-root-nodes        t
-            treemacs-tag-follow-cleanup              t
-            treemacs-tag-follow-delay                1.5
-            treemacs-text-scale                      nil
-            treemacs-user-mode-line-format           nil
-            treemacs-user-header-line-format         nil
-            treemacs-wide-toggle-width               70
-            treemacs-width                           35
-            treemacs-width-increment                 1
-            treemacs-width-is-initially-locked       t
-            treemacs-workspace-switch-cleanup        nil)
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay        0.5
+          treemacs-directory-name-transformer      #'identity
+          treemacs-display-in-side-window          t
+          treemacs-eldoc-display                   'simple
+          treemacs-file-event-delay                2000
+          treemacs-file-extension-regex            treemacs-last-period-regex-value
+          treemacs-file-follow-delay               0.2
+          treemacs-file-name-transformer           #'identity
+          treemacs-follow-after-init               t
+          treemacs-expand-after-init               t
+          treemacs-find-workspace-method           'find-for-file-or-pick-first
+          treemacs-git-command-pipe                ""
+          treemacs-goto-tag-strategy               'refetch-index
+          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+          treemacs-hide-dot-git-directory          t
+          treemacs-indentation                     2
+          treemacs-indentation-string              " "
+          treemacs-is-never-other-window           nil
+          treemacs-max-git-entries                 5000
+          treemacs-missing-project-action          'ask
+          treemacs-move-files-by-mouse-dragging    t
+          treemacs-move-forward-on-expand          nil
+          treemacs-no-png-images                   nil
+          treemacs-no-delete-other-windows         t
+          treemacs-project-follow-cleanup          nil
+          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                        'left
+          treemacs-read-string-input               'from-child-frame
+          treemacs-recenter-distance               0.1
+          treemacs-recenter-after-file-follow      nil
+          treemacs-recenter-after-tag-follow       nil
+          treemacs-recenter-after-project-jump     'always
+          treemacs-recenter-after-project-expand   'on-distance
+          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+          treemacs-project-follow-into-home        nil
+          treemacs-show-cursor                     nil
+          treemacs-show-hidden-files               t
+          treemacs-silent-filewatch                nil
+          treemacs-silent-refresh                  nil
+          treemacs-sorting                         'alphabetic-asc
+          treemacs-select-when-already-in-treemacs 'move-back
+          treemacs-space-between-root-nodes        t
+          treemacs-tag-follow-cleanup              t
+          treemacs-tag-follow-delay                1.5
+          treemacs-text-scale                      nil
+          treemacs-user-mode-line-format           nil
+          treemacs-user-header-line-format         nil
+          treemacs-wide-toggle-width               70
+          treemacs-width                           35
+          treemacs-width-increment                 1
+          treemacs-width-is-initially-locked       t
+          treemacs-workspace-switch-cleanup        nil)
 
-      ;; The default width and height of the icons is 22 pixels. If you are
-      ;; using a Hi-DPI display, uncomment this to double the icon size.
-      ;; (treemacs-resize-icons 44)
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;; (treemacs-resize-icons 44)
 
-      (treemacs-follow-mode t)
-      (treemacs-filewatch-mode t)
-      (treemacs-fringe-indicator-mode 'always)
-      (when treemacs-python-executable
-        (treemacs-git-commit-diff-mode t))
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode 'always)
+    (when treemacs-python-executable
+      (treemacs-git-commit-diff-mode t))
 
-      (pcase (cons (not (null (executable-find "git")))
-                   (not (null treemacs-python-executable)))
-        (`(t . t)
-         (treemacs-git-mode 'deferred))
-        (`(t . _)
-         (treemacs-git-mode 'simple)))
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple)))
 
-      (treemacs-hide-gitignored-files-mode nil))
-    :bind
-    (:map global-map
-          ("M-0"       . treemacs-select-window)
-          ("C-x t 1"   . treemacs-delete-other-windows)
-          ("C-x t t"   . treemacs)
-          ("C-x t d"   . treemacs-select-directory)
-          ("C-x t B"   . treemacs-bookmark)
-          ("C-x t C-t" . treemacs-find-file)
-          ("C-x t M-t" . treemacs-find-tag)))
+    (treemacs-hide-gitignored-files-mode nil))
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t d"   . treemacs-select-directory)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
 
-  (use-package treemacs-evil
-    :after (treemacs evil)
-    :ensure t)
+(use-package treemacs-evil
+  :after (treemacs evil)
+  :ensure t)
 
-  (use-package treemacs-icons-dired
-    :hook (dired-mode . treemacs-icons-dired-enable-once)
-    :ensure t)
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once)
+  :ensure t)
 
-  (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-    :after (treemacs persp-mode) ;;or perspective vs. persp-mode
-    :ensure t
-    :config (treemacs-set-scope-type 'Perspectives))
+(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+  :ensure t
+  :config (treemacs-set-scope-type 'Perspectives))
 
-  (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
-    :after (treemacs)
-    :ensure t
-    :config (treemacs-set-scope-type 'Tabs))
+(use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+  :after (treemacs)
+  :ensure t
+  :config (treemacs-set-scope-type 'Tabs))
 (defun treemacs-adjust-width-to-fit ()
   "Adjust Treemacs window width to fit the longest filename."
   (let ((max-length (apply 'max
@@ -544,7 +450,7 @@
   (vertico-posframe-mode)
   :config
   (setq vertico-posframe-poshandler 'posframe-poshandler-point-window-center)
-)
+  )
 
 (use-package marginalia
   ;; Either bind `marginalia-cycle' globally or only in the minibuffer
@@ -565,11 +471,10 @@
 (use-package embark
   :bind
   ( "C-;" . 'embark-act))
-(use-package consult
-  :bind
-  ( "C-s" . 'consult-line))
-
+(use-package consult)
 (use-package embark-consult)
+(zzc/leader-keys
+  "sb" '(consult-line :which-key "search line"))
 
 (use-package hydra)
 (defhydra hydra-text-scale (:timeout 4)
@@ -598,84 +503,46 @@
       (replace-match ""))))
 
 (setq inhibit-startup-message t)
-
 (scroll-bar-mode -1) ;;disable visusal scroll bar
-
 (tool-bar-mode -1) ;;disable tool bar
-
 (tooltip-mode -1) ;;disable tool tips
-
 (menu-bar-mode -1) ;;disable menu bar
-
 (set-fringe-mode 10) ;;Give some breathing room
-
 (column-number-mode)
-
 (global-hl-line-mode)
-
 (global-visual-line-mode)
-
 (global-display-line-numbers-mode t)
-
 (setq-default display-line-numbers-width-start t)
-
 ;; Disable line numbers for some modes
-
 (dolist (mode '(org-mode-hook
-
                 term-mode-hook
-
                 eshell-mode-hook))
-
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
 (defun doom/toggle-line-numbers ()
-
   "Toggle line numbers.
-
   Cycles through regular, relative and no line numbers. The order depends on what
-
   `display-line-numbers-type' is set to. If you're using Emacs 26+, and
-
   visual-line-mode is on, this skips relative and uses visual instead.
-
   See `display-line-numbers' for what these values mean."
-
   (interactive)
-
   (defvar doom--line-number-style display-line-numbers-type)
-
   (let* ((styles `(t ,(if visual-line-mode 'visual 'relative) nil))
-
          (order (cons display-line-numbers-type (remq display-line-numbers-type styles)))
-
          (queue (memq doom--line-number-style order))
-
          (next (if (= (length queue) 1)
-
                    (car order)
-
                  (car (cdr queue)))))
-
     (setq doom--line-number-style next)
-
     (setq display-line-numbers next)
-
     (setq display-line-numbers-width-start t)
-
     (message "Switched to %s line numbers"
-
              (pcase next
-
                (`t "normal")
-
                (`nil "disabled")
-
                (_ (symbol-name next))))))
 
-
 (zzc/leader-keys
-  "ll" '(doom/toggle-line-numbers :which-key "toggle line numbers"))
+  "tl" '(doom/toggle-line-numbers :which-key "toggle line numbers"))
 
 (prefer-coding-system 'utf-8)
 (setq-default buffer-file-coding-system 'utf-8-unix)
@@ -693,77 +560,66 @@
 	 (mm-width  (car size))
 	 (round (* 10 (/ pixel-width  (/ mm-width my/mm-char-height)))))))
 
-;; (defun my/get-font-height (&optional frame)
-;;   (let* ((attrs (frame-monitor-attributes frame))
-;;          (geometry (alist-get 'geometry attrs)) 
-;;          (size (alist-get 'mm-size attrs)) 
-;;          (pixel-width (caddr geometry)) 
-;;          (mm-width  (car size))
-;;          (font-height (round (* 10 (/ pixel-width (/ mm-width my/mm-char-height))))))
-;;     (if (and font-height (> font-height 0))
-;;         font-height
-;;       280))) ; default to 280 if invalid
-
 (defun my/set-font-size ()
-    (interactive)
-    (let* ((font-size (my/get-font-height)))
-      (message "font size: %s" font-size)
-      (setq my/font-height font-size)
-      (setq my/latex-preview-scale
-	    (/ font-size 80.0))))
+  (interactive)
+  (let* ((font-size (my/get-font-height)))
+    (message "font size: %s" font-size)
+    (setq my/font-height font-size)
+    (setq my/latex-preview-scale
+	  (/ font-size 80.0))))
 
 (defun my/set-font (font-height &optional frame)
   (interactive)
-    ;; Ensure font-height is a valid integer
-    (unless (and (integerp font-height) (> font-height 0))
+  ;; Ensure font-height is a valid integer
+  (unless (and (integerp font-height) (> font-height 0))
     (setq font-height 200)) ; Fallback to default if invalid
-    ;; 系统默认字体
-    (setq my/system-default-font (font-get-system-normal-font))
-    ;; Emacs 默认字体
-    (setq my/default-font "Fira Code") ; fonts-firacode (ubuntu) ; ttf-fira-code (manjaro)
-    (unless (find-font (font-spec :name my/default-font))
-      (message (format "cannot find %s for the default font" my/default-font))
-      (setq my/default-font my/system-default-font))
+  ;; 系统默认字体
+  (setq my/system-default-font (font-get-system-normal-font))
+  ;; Emacs 默认字体
+  (setq my/default-font "Iosevka")
+  (unless (find-font (font-spec :name my/default-font))
+    (message (format "cannot find %s for the default font" my/default-font))
+    (setq my/default-font my/system-default-font))
 
-    ;; LaTeX 默认字体
-    (setq my/math-font "Latin Modern Math")
-    (unless (find-font (font-spec :name my/math-font))
-      (message (format "cannot find %s for the math font. Use system default instead"  my/math-font))
-      (setq my/math-font my/system-default-font))
+  ;; LaTeX 默认字体
+  (setq my/math-font "Latin Modern Math")
+  (unless (find-font (font-spec :name my/math-font))
+    (message (format "cannot find %s for the math font. Use system default instead"  my/math-font))
+    (setq my/math-font my/system-default-font))
 
-    ;; 中文字体
-    (setq my/chinese-font "LXGW WenKai")
-    (unless (find-font (font-spec :name my/chinese-font))
-      (message (format "cannot find %s for the chinese font. Use system default instead"  my/chinese-font))
-      (setq my/chinese-font my/system-default-font))
+  ;; 中文字体
+  (setq my/chinese-font "LXGW WenKai")
+  (unless (find-font (font-spec :name my/chinese-font))
+    (message (format "cannot find %s for the chinese font. Use system default instead"  my/chinese-font))
+    (setq my/chinese-font my/system-default-font))
 
-    (setq my/variable-pitch-font "Cantarell")
-    (unless (find-font (font-spec :name my/variable-pitch-font))
-      (message (format "cannot find %s for the variable-pitch font. Use system default instead"  my/variable-pitch-font))
-      (setq my/variable-pitch-font my/system-default-font))
+  (setq my/variable-pitch-font "Cantarell")
+  (unless (find-font (font-spec :name my/variable-pitch-font))
+    (message (format "cannot find %s for the variable-pitch font. Use system default instead"  my/variable-pitch-font))
+    (setq my/variable-pitch-font my/system-default-font))
 
-    ;; 等宽字体
-    (setq my/fixed-pitch-font "JetBrains Mono") ; fonts-jetbrains-mono (ubuntu) ; ttf-jetbrains-mono (manjaro)
-    (unless (find-font (font-spec :name my/fixed-pitch-font))
-      (message (format "cannot find %s for the fixed-pitch font. Use system default instead"  my/fixed-pitch-font))
-      (setq my/fixed-pitch-font my/system-default-font))
+  ;; 等宽字体
+  (setq my/fixed-pitch-font "JetBrains Mono Nerd Font") ; fonts-jetbrains-mono (ubuntu) ; ttf-jetbrains-mono (manjaro)
+  (unless (find-font (font-spec :name my/fixed-pitch-font))
+    (message (format "cannot find %s for the fixed-pitch font. Use system default instead"  my/fixed-pitch-font))
+    (setq my/fixed-pitch-font my/system-default-font))
 
-    (set-face-attribute 'default frame :font my/default-font :height font-height)  ; 默认字体 字号
-    (set-face-attribute 'variable-pitch frame :font my/variable-pitch-font :height font-height) ; 比例字体
-    (set-face-attribute 'fixed-pitch frame :font my/fixed-pitch-font :height font-height) ; 等宽字体
-    (set-face-attribute 'bold nil :foreground "Salmon")
+  (set-face-attribute 'default frame :font my/default-font :height font-height)  ; 默认字体 字号
+  (set-face-attribute 'variable-pitch frame :font my/variable-pitch-font :height font-height) ; 比例字体
+  (set-face-attribute 'fixed-pitch frame :font my/fixed-pitch-font :height font-height) ; 等宽体
+  (set-face-attribute 'bold nil :foreground "Salmon")
 
-    (set-fontset-font "fontset-default" 'mathematical my/math-font) 
-    (set-fontset-font "fontset-default" 'han my/chinese-font) 
-    (set-fontset-font "fontset-default" 'unicode my/chinese-font) 
-    (setq inhibit-compacting-font-caches t) 
-    (setq auto-window-vscroll nil)
-)
+  (set-fontset-font "fontset-default" 'mathematical my/math-font) 
+  (set-fontset-font "fontset-default" 'han my/chinese-font) 
+  (set-fontset-font "fontset-default" 'unicode my/chinese-font) 
+  (setq inhibit-compacting-font-caches t) 
+  (setq auto-window-vscroll nil)
 
 (defun my/set-font-current-frame ()
   (interactive)
   (my/set-font (my/get-font-height) (selected-frame)))
 (global-set-key (kbd "C-x 9") #'my/set-font-current-frame)
+(add-hook 'after-init-hook #'my/set-font-current-frame)
 
 (custom-set-faces
  '(region ((t (:background "yellow" :foreground "black" :weight bold)))))
@@ -792,7 +648,7 @@
   :config
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-Iosvkem t) ; ????
+  (load-theme 'doom-gruvbox t) ; ????
   (doom-themes-visual-bell-config) ; Enable flashing mode-line on errors
   (doom-themes-org-config))
 (zzc/leader-keys
@@ -804,22 +660,27 @@
 (display-time-mode 1)
 
 (use-package all-the-icons
-  :if (display-graphic-p)) ; ??????, M-x all-the-icon-install-fonts ????.
+  :if (display-graphic-p)) ;M-x all-the-icon-install-fonts.
 (use-package minions
   :hook (doom-modeline-mode . minions-mode))
 (use-package doom-modeline
   :hook (after-init . doom-modeline-mode)
   :custom
+  (setq doom-modeline-height 25) ;; Adjust height for better appearance
+  (setq doom-modeline-bar-width 3) ;; Optional: Adjust bar width
+  (custom-set-faces
+   '(mode-line ((t (:family "JetBrains Mono Nerd Font" :height 120))))
+   '(mode-line-inactive ((t (:family "JetBrains Mono Nerd Font" :height 120)))))
   (doom-modeline-unicode-fallback t))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
-;(use-package org-modern-indent
-;  :straight (:host github :repo "jdtsmith/org-modern-indent")
-;  :config
-;  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
-;
+(use-package org-modern-indent
+  :straight (:host github :repo "jdtsmith/org-modern-indent")
+  :config
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+
 (use-package org-modern 
   :custom
   (org-modern-hide-stars nil) 
@@ -841,9 +702,9 @@
   (require 'org-faces)
   ;; 标题字体大小优化
   (set-face-attribute 'org-document-title nil :weight 'bold :height 1.2)
-  (dolist (face '((org-level-1 . 1.05)
-                  (org-level-2 . 1.0)
-                  (org-level-3 . 1.0)
+  (dolist (face '((org-level-1 . 1.15)
+                  (org-level-2 . 1.1)
+                  (org-level-3 . 1.05)
                   (org-level-4 . 1.0)
                   (org-level-5 . 1.0)
                   (org-level-6 . 1.0)
@@ -1041,7 +902,7 @@
 
 (use-package org-roam
   :custom
-  (org-roam-directory "~/Documents/notes/") 
+  (org-roam-directory "~/Documents/org/notes/") 
   (org-roam-completion-everywhere t)
   (org-roam-node-display-template 
    (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
@@ -1054,7 +915,7 @@
      ("t" "task" entry "* TODO %?\n  %U\n  %a\n  %i" 
       :if-new (file+head+olp ,my/daily-note-filename
                              ,my/daily-note-header
-                             ("tasks"))
+                            ("tasks"))
       :empty-lines 1) 
      ("j" "journal" entry "* %<%I:%M %P> - journal  :journal:\n\n%?\n\n" 
       :if-new (file+head+olp ,my/daily-note-filename
@@ -1085,23 +946,11 @@
          ("C-M-i" . completion-at-point))
   :config
   (define-key org-roam-mode-map [mouse-1] (kbd "C-u <return>")) ; org-roam-buffer ???????c-u <return>
-  (setq org-roam-capture-templates  ; org-roam ????
-        '(("d" "default" plain "%?" ; ????
+  (setq org-roam-capture-templates  ; org-roam
+        '(("d" "default" plain "%?" ; 
            :target
            (file+head "%<%y%m%d%h%m%s>-${slug}.org" "#+title: ${title} \n")
            :unnarrowed t)
-          ;; ("r" "bibliography reference in pdfs" plain ; ????
-;;            "#+filetags: reading research \n - tags :: %^{keywords} \n* %^{title}
-;; :properties:\n:custom_id: %^{citekey}\n:url: %^{url}\n:author: %^{author-or-editor}\n:noter_document: ~/nutstore/1/nutstore/zotero-library/%^{citekey}.pdf\n:noter_page:\n:end:"      
-;;            :target
-           ;; (file+head "ref/${citekey}.org" "#+title: ${title}\n"))
-          ;; ("a" "article/post/blog/discussion" plain ; ??????
-          ;;  "#+filetags: reading \n"      
-          ;;  :target
-          ;;  (file+head "article/%<%y%m%d%h%m%s>-reading-${slug}.org" "#+title: ${title}\n"))
-          ;; ("s" "seminar notes" plain "#+filetags: seminar draft\n- title:\n- speaker:\n- event:\n- ref :: \n- tags ::"
-          ;;  :target
-          ;;  (file+head "seminar/%<%y%m%d>-seminar-${slug}.org" "#+title: ${title}\n"))
 	  ))
   (require 'org-roam-dailies) 
   (org-roam-db-autosync-mode) 
@@ -1148,22 +997,27 @@
    ("M-e" . org-noter-insert-precise-note))
   :custom
   (org-noter-highlight-selected-text t)
-  (org-noter-notes-search-path '("~/Documents/notes/ref/"))
+  (org-noter-notes-search-path '("~/Documents/org/notes/ref/"))
   (org-noter-auto-save-last-location t))
 
-(defvar my/org-roam-project-template ; ??????
-  '("p" "project" plain "** TODO %?"
-    :if-new (file+head+olp "%<%Y%m%d%H>-${slug}.org"
-                           "#+title: ${title}\n\n#+filetags: Project\n"
-                           ("tasks"))))
-(defun my/org-roam-filter-by-tag (tag-name) ; ? tag ????; ?? lexical binding
-  (lambda (node)
-    (member tag-name (org-roam-node-tags node)))) 
-(defun my/org-roam-list-notes-by-tag (tag-name) ; ? tag ????
-  (mapcar #'org-roam-node-file
-          (seq-filter
-           (my/org-roam-filter-by-tag tag-name)
-           (org-roam-node-list))))
+(defvar my/org-roam-project-template 
+    '("p" "project" plain "** TODO %?"
+      :if-new (file+head+olp "%<%Y%m%d%H>-${slug}.org"
+                             "#+title: ${title}\n\n#+filetags: Project\n"
+                             ("tasks"))))
+  (defun my/org-roam-filter-by-tag (tag-name) 
+    (lambda (node)
+      (member tag-name (org-roam-node-tags node)))) 
+  (defun my/org-roam-list-notes-by-tag (tag-name) 
+    (mapcar #'org-roam-node-file
+            (seq-filter
+             (my/org-roam-filter-by-tag tag-name)
+             (org-roam-node-list))))
+(defun my/org-roam-filter-by-tags (wanted unwanted)
+(lambda (node)
+  (let ((node-tags (org-roam-node-tags node)))
+    (and (cl-some (lambda (tag) (member tag node-tags)) wanted)
+         (not (cl-some (lambda (tag) (member tag node-tags)) unwanted))))))
 
 (defun my/org-roam-project-finalize-hook ()
   "adds the captured project file to `org-agenda-files' if the
@@ -1193,7 +1047,7 @@
   (org-roam-node-find
    nil
    nil
-   (my/org-roam-filter-by-tag "Project")))
+   (my/org-roam-filter-by-tags '("Project") '("Archived"))))
 
 (defun my/org-roam-refresh-agenda-list ()
   (interactive)
@@ -1285,37 +1139,122 @@ _d_: date        ^ ^              ^ ^
 ;; automatically tangle our emacs.org config file when we save it
 (defun zzc/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)
-                      (expand-file-name "~/.config/efs/config.org"))
+                      (expand-file-name "~/dotconfig/emacs/config.org"))
     ;; dynamic scoping to the rescue
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'zzc/org-babel-tangle-config)))
 
+(use-package company
+  :hook ((org-mode LaTeX-mode prog-mode) . company-mode)
+  :custom
+  (company-minimum-prefix-length 4)
+  (company-idle-delay 0.3)
+  (company-tootip-idle-delay 0.5)
+  (company-tooltip-offset-display 'line)
+  (company-tooltip-align-annotation t)
+  (company-show-quick-access t)
+  (company-backends
+   '((company-capf :with company-dabbrev-code company-keywords)
+     (company-dabbrev)
+     (company-ispell)
+     (company-files)))
+  (company-dabbrev-ignore-case nil) 
+  (company-dabbrev-downcase nil)
+  (company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance))
+  (company-show-quick-access 'left)
+  :bind
+  (:map company-active-map 
+        ("M-/" . company-complete)
+        ("<tab>" . company-indent-or-complete-common)
+        ("C-c C-/" . company-other-backend))
+  :config
+  (set-face-attribute 'company-tooltip nil :inherit 'fixed-pitch))
+
+(defun my/minibuffer-backward-kill (arg)
+  "When minibuffer is completing a file name delete up to parent
+  folder, otherwise delete a word"
+  (interactive "p")
+  (if minibuffer-completing-file-name
+      ;; Borrowed from https://github.com/raxod502/selectrum/issues/498#issuecomment-803283608
+      (if (string-match-p "/." (minibuffer-contents))
+          (zap-up-to-char (- arg) ?/)
+        (delete-minibuffer-contents))
+    (delete-word (- arg))))
+(setq completion-ignore-case 't) ; minibuffer ignore case
+(use-package vertico
+  :defer 1
+  :custom
+  (verticle-cycle t)
+  :config
+  (vertico-mode)
+  :bind (:map minibuffer-local-map
+              ("M-h" .  my/minibuffer-backward-kill)))
+(use-package vertico-posframe
+  :init
+  (vertico-posframe-mode)
+  :config
+  (setq vertico-posframe-poshandler 'posframe-poshandler-point-window-center)
+  )
+
+(use-package marginalia
+  ;; Either bind `marginalia-cycle' globally or only in the minibuffer
+  :bind (("M-A" . marginalia-cycle)
+         :map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+  :defer 1
+  :config
+  (marginalia-mode))
+
+(use-package orderless
+  :defer 1
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
+
+(use-package embark
+  :bind
+  ( "C-;" . 'embark-act))
+(use-package consult)
+(use-package embark-consult)
+(zzc/leader-keys
+  "sb" '(consult-line :which-key "search line"))
+
+(use-package hydra)
+(defhydra hydra-text-scale (:timeout 4)
+  "scale text"
+  ("j" text-scale-increase "in")
+  ("k" text-scale-decrease "out")
+  ("q" nil "finished" :exit t))
+(zzc/leader-keys
+  "ts" '(hydra-text-scale/body :which-key "scale text"))
+
 ;; (use-package flycheck
 ;;   :init (global-flycheck-mode))
 
-(use-package cmake-mode)
+;;(use-package cmake-mode)
 
-(use-package rustic
-  :ensure t
+;;(use-package rustic
+;;  :ensure t
+;;  :config
+;;  (setq rustic-format-on-save nil)
+;;  :custom
+;;  (rustic-cargo-use-last-stored-arguments t))
+
+;;(use-package lua-mode)
+
+(use-package yasnippet
+  :init
+  (add-hook 'yas-minor-mode-hook (lambda()
+				       (yas-activate-extra-mode 'fundamental-mode)))
   :config
-  (setq rustic-format-on-save nil)
-  :custom
-  (rustic-cargo-use-last-stored-arguments t))
-
-(use-package lua-mode)
-
-;(use-package yasnippet
-; :init
-;  (add-hook 'yas-minor-mode-hook (lambda()
-;				       (yas-activate-extra-mode 'fundamental-mode)))
-;  :config
-;  (setq yas-snippet-dirs '("~/.config/efs/snippets")))
-;(yas-global-mode 1)
-;(zzc/leader-keys
-;  "s"  '(:ignore t :which-key "snippet")
-;  "sc"  '(yas-new-snippet :which-key "create new snippet")
-;  "si"  '(yas-insert-snippet :which-key "insert snippet"))
+  (setq yas-snippet-dirs '("~/.config/emacs/snippets")))
+(yas-global-mode 1)
+(zzc/leader-keys
+  "s"  '(:ignore t :which-key "snippet")
+  "sc"  '(yas-new-snippet :which-key "create new snippet")
+  "si"  '(yas-insert-snippet :which-key "insert snippet"))
 
 ;; (require 'posframe)
 ;; (use-package rime)
@@ -1337,9 +1276,11 @@ _d_: date        ^ ^              ^ ^
 ;; Conditionally set clipboard coding system for windows, windows clipboard seems not saved in UTF-8
 (cond
  ((and my/is-windows (not my/is-WSL)) ; Only Windows, not WSL
-  (set-clipboard-coding-system 'euc-cn))
+  ;; (set-clipboard-coding-system 'euc-cn))
+  (set-clipboard-coding-system 'utf-8))
  (my/is-WSL ; Specifically WSL
-  (set-clipboard-coding-system 'euc-cn)))
+  ;; (set-clipboard-coding-system 'euc-cn)))
+  (set-clipboard-coding-system 'utf-8)))
 
 (use-package pangu-spacing)
 (require 'pangu-spacing)
@@ -1355,4 +1296,4 @@ _d_: date        ^ ^              ^ ^
 ;; (zzc/leader-keys
 ;;   "t"  '(:ignore t :which-key "toggle")
 ;;   "tl"  '(ee-lazygit :which-key "lazygit")
-; )
+;; )
