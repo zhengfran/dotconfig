@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+
+# name: shell source block 
+
+# key: <sl
+
+# --
+
+#+BEGIN_SRC shell
+$0
+#+END_SRC
