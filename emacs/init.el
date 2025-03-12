@@ -78,6 +78,38 @@
    browse-url-generic-args     '("/c" "start")
    browse-url-browser-function #'browse-url-generic))
 
+(use-package no-littering
+  :demand t
+  :custom
+  (auto-save-file-name-transforms `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))) ; 设置自动保存文件目录
+(use-package recentf
+:after no-littering
+:demand t 
+:custom
+(recentf-exclude '(no-littering-var-directory
+                   no-littering-etc-directory)) ; 屏蔽临时文件
+(recentf-max-menu-items 25)
+(recentf-max-saved-items 25)
+:bind ("C-x C-r" . 'recentf-open-files)
+:config
+(recentf-mode 1))
+
+(use-package saveplace
+  :defer 1
+  :config
+    (save-place-mode 1))
+(use-package savehist
+  :defer 1
+  :config (savehist-mode))
+(use-package super-save
+  :defer 1
+  :custom
+  (super-save-auto-save-when-idle t)
+  :config
+  (super-save-mode +1))
+(global-auto-revert-mode 1)
+(setq global-auto-revert-non-file-buffers nil)
+
 (use-package which-key
   :init (which-key-mode)
   :diminish which-key-mode
@@ -103,7 +135,7 @@
   (setq evil-want-C-i-jump t)
   :config
   (evil-mode 1)
-  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  ;; (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
   ;; Use visual line motions even outside of visual-line-mode buffers
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
@@ -128,14 +160,12 @@
   (evil-set-undo-system 'undo-tree)
   (global-undo-tree-mode 1))
 (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
-
 (use-package evil-escape
   :init (evil-escape-mode)
   :after evil
   :config
   (setq evil-escape-key-sequence "jj")
   (setq evil-escape-delay 0.3))
-
 (use-package evil-org
   :after org
   :hook (org-mode . evil-org-mode)
@@ -147,46 +177,29 @@
    :keymaps 'org-mode-map
    "zd" 'org-fold-hide-drawer-toggle))
 
-;; save file very time after quit inder mode
+;; save file very time after quit insert mode
 (add-hook 'evil-insert-state-exit-hook
           (lambda ()
             (call-interactively #'save-buffer)))
 
-(defun minibuffer-next-line ()
-  "Move to the next line in the minibuffer history."
-  (interactive)
-  (if (eq last-command 'next-history-element)
-      (next-history-element 1)
-    (next-history-element 0)))
-
-(defun minibuffer-previous-line ()
-  "Move to the previous line in the minibuffer history."
-  (interactive)
-  (if (eq last-command 'previous-history-element)
-      (previous-history-element 1)
-    (previous-history-element 0)))
-
-(define-key minibuffer-local-map (kbd "C-j") 'minibuffer-next-line)
-(define-key minibuffer-local-map (kbd "C-k") 'minibuffer-previous-line)
-
 (setq
  display-buffer-alist
- '(("^\\*[Hh]elp"                            ;正则匹配buffer name
+ '(("^\\*[Hh]elp"                            ;正则匹配 buffer name
     (display-buffer-reuse-window
-					;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些alist
+					;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些 alist
      display-buffer-in-side-window)
-    (side . right)                        ;参数alist从这里开始。这个side会被display-buffer-in-side-window使用
-    (window-width . 0.5)                     ;emacs会自动把这个设置到window-parameter里
+    (side . right)                        ;参数 alist 从这里开始。这个 side 会被 display-buffer-in-side-window 使用
+    (window-width . 0.5)                     ;emacs 会自动把这个设置到 window-parameter 里
     (window-height . 0.33)                   ;同上
-    (slot . 1)                               ;这个会被display-buffer-in-side-window使用，控制window位置
-    (reusable-frames . visible)              ;这个参数看第三个链接的display-buffer
+    (slot . 1)                               ;这个会被 display-buffer-in-side-window 使用，控制 window 位置
+    (reusable-frames . visible)              ;这个参数看第三个链接的 display-buffer
     (haha . whatever)                        ;当然随你放什么
-    (window-parameters                       ;emacs 26及以上会自动把下面的设置到window-parameter里
-     (select . t)                            ;自定义的param
+    (window-parameters                       ;emacs 26 及以上会自动把下面的设置到 window-parameter 里
+     (select . t)                            ;自定义的 param
      (quit . t)                              ;同上
      (popup . t)                             ;同上
-     (mode-line-format . none)               ;emacs version > 25， none会隐藏mode line，nil会显示...
-     (no-other-window . t)                   ;随你设置其他的window-parameter，看文档
+     (mode-line-format . none)               ;emacs version > 25， none 会隐藏 mode line，nil 会显示...
+     (no-other-window . t)                   ;随你设置其他的 window-parameter，看文档
      ))))
 
 (defun split-window-right-and-focus ()
@@ -217,31 +230,38 @@
 (use-package perspective
   :bind
   ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
-  :custom
-  (persp-mode-prefix-key (kbd "SPC p"))  ; pick your own prefix key here
+;; :custom
+  ;; (persp-mode-prefix-key (kbd "SPC p"))  ; pick your own prefix key here
   :config
   (setq persp-state-default-file (expand-file-name ".persp-save" user-emacs-directory))
   ;; Save perspectives without confirmation
-(defun my/persp-state-save-silent ()
+
+  (defun my/persp-state-save-silent ()
   "Save perspective state without confirmation."
   (let ((persp-state-save-behavior nil)) ; Prevent prompting
     (persp-state-save persp-state-default-file)))
 
-;; Load perspectives without confirmation
-(defun my/persp-state-load-silent ()
-  "Load perspective state without confirmation."
-  (when (file-exists-p persp-state-default-file)
-    (persp-state-load persp-state-default-file)))
+  ;; Load perspectives without confirmation
+  (defun my/persp-state-load-silent ()
+    "Load perspective state without confirmation."
+    (when (file-exists-p persp-state-default-file)
+      (persp-state-load persp-state-default-file)))
 
   ;; Automatically save perspectives when Emacs quits
   (add-hook 'kill-emacs-hook #'my/persp-state-save-silent)
   ;; Automatically load perspectives at startup
   (add-hook 'emacs-startup-hook #'my/persp-state-load-silent)
+(zzc/leader-keys
+  "p" '(:keymap perspective-map :which-key "perspective")
+  :package 'perspective)
   :init
   (persp-mode))
-(zzc/leader-keys
-"p" '(:keymap perspective-map :which-key "perspective")
-:package 'perspective)
+
+(defun my-scratch-buffer-no-save ()
+  "Prevent *scratch* buffer from ever being marked as modified."
+  (with-current-buffer "*scratch*"
+    (set-buffer-modified-p nil)))
+(add-hook 'after-change-functions (lambda (&rest _) (my-scratch-buffer-no-save)))
 
 (zzc/leader-keys
   "b"  '(:ignore t :which-key "buffer")
@@ -485,11 +505,60 @@
   (completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package embark
-  :bind
-  ( "C-;" . 'embark-act))
-(use-package consult
-  :bind
-  ( "C-s" . 'consult-line))
+    :bind
+    ( "C-;" . 'embark-act))
+  (use-package consult
+    :defer 1
+    :bind
+    ( "C-s" . 'consult-line)
+    ;; Enable automatic preview at point in the *Completions* buffer. This is
+    ;; relevant when you use the default completion UI.
+    :hook (completion-list-mode . consult-preview-at-point-mode)
+
+    ;; The :init configuration is always executed (Not lazy)
+    :init
+    ;; Optionally configure the register formatting. This improves the register
+    ;; preview for `consult-register', `consult-register-load',
+    ;; `consult-register-store' and the Emacs built-ins.
+    (setq register-preview-delay 0.5
+          register-preview-function #'consult-register-format)
+
+    ;; Optionally tweak the register preview window.
+    ;; This adds thin lines, sorting and hides the mode line of the window.
+    (advice-add #'register-preview :override #'consult-register-window)
+
+    ;; Use Consult to select xref locations with preview
+    (setq xref-show-xrefs-function #'consult-xref
+          xref-show-definitions-function #'consult-xref)
+
+    ;; Configure other variables and modes in the :config section,
+    ;; after lazily loading the package.
+    :config
+
+    ;; Optionally configure preview. The default value
+    ;; is 'any, such that any key triggers the preview.
+    ;; (setq consult-preview-key 'any)
+    ;; (setq consult-preview-key "M-.")
+    ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+    ;; For some commands and buffer sources it is useful to configure the
+    ;; :preview-key on a per-command basis using the `consult-customize' macro.
+    (consult-customize
+     consult-theme :preview-key '(:debounce 0.2 any)
+     consult-ripgrep consult-git-grep consult-grep
+     consult-bookmark consult-recent-file consult-xref
+     consult--source-bookmark consult--source-file-register
+     consult--source-recent-file consult--source-project-recent-file
+     ;; :preview-key "M-."
+     :Preview-key '(:debounce 0.4 any))
+
+    ;; Optionally configure the narrowing key.
+    ;; Both < and C-+ work reasonably well.
+    (setq consult-narrow-key "<") ;; "C-+"
+
+    ;; Optionally make narrowing help available in the minibuffer.
+    ;; You may want to use `embark-prefix-help-command' or which-key instead.
+    ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
+    )
 (use-package embark-consult)
 
 (use-package hydra)
@@ -709,7 +778,7 @@
 (use-package org-modern 
   :custom
   (org-modern-hide-stars nil) 
-  (org-modern-table nil)
+  (org-modern-table t)
   (org-modern-list 
    '((?- . "•")
      (?* . "•")
@@ -811,8 +880,8 @@
   :defer 10
   :custom
   (org-m-ret-may-split-line t)
-  (org-priority-lowest ?e) ; org-agenda 的优先级设为a-e
-  (org-priority-default ?d) ; org-agenda 的默认优先级设为d
+  (org-priority-lowest ?e) ; org-agenda 的优先级设为 a-e
+  (org-priority-default ?d) ; org-agenda 的默认优先级设为 d
   ;; (org-startup-with-latex-preview t) ; 设为 t 则创建新笔记时会出错.
   :bind
   (:map org-mode-map
@@ -823,9 +892,7 @@
   :config
   (require 'org-download)
   (setq org-ellipsis " ▾"); 用小箭头代替...表示折叠
-  (if t ; my/enable-folding
-      (setq org-startup-folded 'content) ; 开启时折叠大纲
-    (setq org-startup-folded 'showeverything))
+  (setq org-startup-folded 'content) ; 开启时折叠大纲
 
   (my/set-org-font)
   (add-hook 'org-mode-hook 'my-org-hook)
@@ -886,16 +953,25 @@
     (advice-add 'org-priority       :after (η #'org-save-all-org-buffers))
 
 (use-package org-pomodoro)
-(setq org-pomodoro-audio-player "mpv")
+(setq org-pomodoro-audio-player "mpv"
+      org-pomodoro-ticking-sound-p t
+      org-pomodoro-ticking-sound-states '(:pomodoro)
+      org-pomodoro-finished-sound-p t
+      org-pomodoro-short-break-length 5
+      org-pomodoro-finished-sound-args "--volume=50"
+      org-pomodoro-long-break-sound-args "--volume=50"
+      org-pomodoro-short-break-sound-args "--volume=50"
+      org-pomodoro-ticking-sound-args "--volume=60")
+
 ;;key-binds
 (zzc/leader-keys
-  "nc"  '(:ignore t :which-key "clock")
-  "nci" '(org-clock-in :which-key "clock-in")
-  "nco" '(org-clock-out :which-key "clock-out")
-  "ncq" '(org-clock-cancel :which-key "clock-cancel")
-  "ncr" '(org-clock-report :which-key "clock-report")
-  "ncp" '(org-pomodoro :which-key "clock-pomodoro")
-  "ncd" '(org-clock-display :which-key "clock-display"))
+  "c"  '(:ignore t :which-key "clock")
+  "ci" '(org-clock-in :which-key "clock-in")
+  "co" '(org-clock-out :which-key "clock-out")
+  "cq" '(org-clock-cancel :which-key "clock-cancel")
+  "cr" '(org-clock-report :which-key "clock-report")
+  "cp" '(org-pomodoro :which-key "clock-pomodoro")
+  "cd" '(org-clock-display :which-key "clock-display"))
 
 ;; org-ref
 (use-package org-ref
@@ -906,62 +982,74 @@
 (use-package org-transclusion)
 
 (setq my/daily-note-filename "%<%Y-%m-%d>.org" 
-      my/daily-note-header "#+title: %<%Y-%m-%d %a>\n\n[[roam:%<%Y-w%W>]]\n\n[[roam:%<%Y-%B>]]\n\n")
+      my/daily-note-header "#+title: %<%Y-%m-%d %a>\n\n[[roam:%<%Y-w%W>]]\n\n[[roam:%<%Y-%B>]]\n\n* Tasks\n** Meeting\n* Capture\n** Information\n** Opinions\n** Tools\n** Feelings\n* Reflection\n** One thing Good\n** One thing Bad\n** Questions to my self\n*** All the decisions make today, how many is by choice, and how many is by fear?\n")
 
 (use-package org-roam
-  :custom
-  (org-roam-directory "~/Documents/org/notes/") 
-  (org-roam-completion-everywhere t)
-  (org-roam-node-display-template 
-   (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
-  (org-roam-db-gc-threshold most-positive-fixnum)
-  (org-roam-dailies-directory "daily/") 
-  (org-roam-dailies-capture-templates 
-    '(("d" "daily" entry
-       "* Tasks\n * Capture\n** Information\n** Opinions\n** Tools\n** Feelings\n* Reflection\n** One thing Good\n** One thing Bad\n** Questions to my self\n*** All the decisions make today, how many is by choice, and how many is by fear?\n"
-       :target (file+head "%<%Y-%m-%d>.org"
-                          "#+title: %<%Y-%m-%d>\n"))
-      ("i" "information" entry "* %?"
-       :target (file+olp "%<%Y-%m-%d>.org" "Capture" "Information"))
-      ("o" "opinions" entry "* %?"
-       :target (file+olp "%<%Y-%m-%d>.org" "Capture" "Opinions"))
-      ("t" "tools" entry "* %?"
-       :target (file+olp "%<%Y-%m-%d>.org" "Capture" "Tools"))
-      ("f" "feelings" entry "* %?"
-       :target (file+olp "%<%Y-%m-%d>.org" "Capture" "Feelings"))))
+    :defer 15
+    :custom
+    (org-roam-directory "~/Documents/org/notes/") 
+    (org-roam-completion-everywhere t)
+    (org-roam-node-display-template 
+     (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+    (org-roam-db-gc-threshold most-positive-fixnum)
+    (org-roam-dailies-directory "daily/")
+    (org-roam-dailies-capture-templates
+    `(("d" "default" entry "* %?"
+       :if-new (file+head ,my/daily-note-filename
+                          ,my/daily-note-header))
+      ))
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n c" . org-roam-capture)
+           ("C-c n i" . org-roam-node-insert)
+           ("C-c n I" . org-roam-node-insert-immediate)
+           ("C-c n t" . my/org-roam-capture-task)
+           ;; ("C-c n k" . orb-insert-link)
+           ;; ("C-c n a" . orb-note-actions)
+           ("C-c n P" . my/org-roam-insert-new-project)
+           ("C-c n p" . my/org-roam-find-project)
+           ("C-c n u" . org-roam-ui-mode)
+           :map org-mode-map
+           ("C-M-i" . completion-at-point)
+           :map org-roam-dailies-map
+           ("T" . org-roam-dailies-capture-tomorrow))
+	   :bind-keymap
+           ("C-c d" . org-roam-dailies-map)
+    :config
+    (define-key org-roam-mode-map [mouse-1] (kbd "C-u <return>"))
+    (setq org-roam-capture-templates  ; org-roam
+          '(("d" "default" plain "%?" ; 
+             :target
+             (file+head "%<%y%m%d%h%m%s>-${slug}.org" "#+title: ${title} \n")
+             :unnarrowed t)
+    ))
+    (require 'org-roam-dailies) 
+    (org-roam-db-autosync-mode) 
+    (my/org-roam-refresh-agenda-list) 
+    (add-to-list 'org-after-todo-state-change-hook 
+                 (lambda ()
+                   (when (or (equal org-state "DONE")
+  			   (equal org-state "COMPLETED"))
+                     (my/org-roam-copy-todo-to-today)))))
+  (add-hook 'org-roam-mode-hook 'visual-line-mode) ; 自动换行
 
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n c" . org-roam-capture)
-         ("C-c n i" . org-roam-node-insert)
-         ("C-c n I" . org-roam-node-insert-immediate)
-         ("C-c n t" . my/org-roam-capture-task)
-         ("C-c n k" . orb-insert-link)
-         ("C-c n a" . orb-note-actions)
-         ("C-c n d" . my/org-roam-jump-menu/body)
-         ("C-c n P" . my/org-roam-insert-new-project)
-         ("C-c n p" . my/org-roam-find-project)
-         ("C-c n u" . org-roam-ui-mode)
-         ("C-c n j" . org-roam-dailies-capture-today)
-         :map org-mode-map
-         ("C-M-i" . completion-at-point))
-  :config
-  (define-key org-roam-mode-map [mouse-1] (kbd "C-u <return>")) ; org-roam-buffer ???????c-u <return>
-  (setq org-roam-capture-templates  ; org-roam
-        '(("d" "default" plain "%?" ; 
-           :target
-           (file+head "%<%y%m%d%h%m%s>-${slug}.org" "#+title: ${title} \n")
-           :unnarrowed t)
-	  ))
-  (require 'org-roam-dailies) 
-  (org-roam-db-autosync-mode) 
-  (my/org-roam-refresh-agenda-list) 
-  (add-to-list 'org-after-todo-state-change-hook 
-               (lambda ()
-                 (when (or (equal org-state "DONE")
-			   (equal org-state "COMPLETED"))
-                   (my/org-roam-copy-todo-to-today)))))
-(add-hook 'org-roam-mode-hook 'visual-line-mode) ; 自动换行
+(defun my/org-roam-goto-month ()
+  (interactive)
+  (org-roam-capture- :goto (when (org-roam-node-from-title-or-alias (format-time-string "%Y-%B")) '(4))
+                     :node (org-roam-node-create)
+                     :templates '(("m" "month" plain "\n* goals\n\n%?* summary\n\n"
+                                   :if-new (file+head "%<%Y-%B>.org"
+                                                      "#+title: %<%Y-%B>\n#+filetags: project\n")
+                                   :unnarrowed t))))
+
+(defun my/org-roam-goto-year ()
+  (interactive)
+  (org-roam-capture- :goto (when (og-roam-node-from-title-or-alias (format-time-string "%Y")) '(4))
+                     :node (org-roam-node-create)
+                     :templates '(("y" "year" plain "\n* goals\n\n%?* summary\n\n"
+                                   :if-new (file+head "%<%Y>.org"
+                                                      "#+title: %<%Y>\n#+filetags: project\n")
+                                   :unnarrowed t))))
 
 (defun my/set-orui-latex-macros ()
   (setq org-roam-ui-latex-macros
@@ -991,6 +1079,40 @@
   :config
   (my/set-orui-latex-macros))
 
+(use-package consult-org-roam
+   :after org-roam
+   :init
+   (require 'consult-org-roam)
+   ;; Activate the minor mode
+   (consult-org-roam-mode 1)
+   :custom
+   ;; Use `ripgrep' for searching with `consult-org-roam-search'
+   (consult-org-roam-grep-func #'consult-ripgrep)
+   ;; Configure a custom narrow key for `consult-buffer'
+   (consult-org-roam-buffer-narrow-key ?r)
+   ;; Display org-roam buffers right after non-org-roam buffers
+   ;; in consult-buffer (and not down at the bottom)
+   (consult-org-roam-buffer-after-buffers t)
+   :config
+   ;; Eventually suppress previewing for certain functions
+   (consult-customize
+    consult-org-roam-forward-links
+    :preview-key "M-.")
+   :bind
+   ;; Define some convenient keybindings as an addition
+   ("C-c n e" . consult-org-roam-file-find)
+   ("C-c n b" . consult-org-roam-backlinks)
+   ("C-c n B" . consult-org-roam-backlinks-recursive)
+   ("C-c n L" . consult-org-roam-forward-links)
+   ("C-c n r" . consult-org-roam-search))
+
+;; org-roam capture 与 *Org-Select* 默认右侧打开
+(add-to-list 'display-buffer-alist '("\\(^CAPTURE.*\.org$\\|\\*Org.*Select\\*$\\)"
+                                     (display-buffer-in-side-window)
+                                     (side . right)
+                                     (slot . 0)
+                                     (window-width . 60)))
+
 (use-package org-noter
   :bind
   (("C-c n n" . org-noter)
@@ -1004,7 +1126,7 @@
 (defvar my/org-roam-project-template 
     '("p" "project" plain "** TODO %?"
       :if-new (file+head+olp "%<%Y%m%d%H>-${slug}.org"
-                             "#+title: ${title}\n\n#+filetags: Project\n"
+                             "#+title: ${title}\n\n#+category: ${title}\n#+filetags: Project\n"
                              ("tasks"))))
   (defun my/org-roam-filter-by-tag (tag-name) 
     (lambda (node)
@@ -1064,51 +1186,6 @@
                           (my/org-roam-filter-by-tag "Project"))
                    :templates (list my/org-roam-project-template)))
 
-(defun my/org-roam-dailies-go-to-today ()
-  "go to today's daily note if it exists, otherwise trigger capture."
-  (interactive)
-  (let* ((today (org-roam-dailies--file-for-today)))
-    (if (file-exists-p today)
-        (find-file today)  ;; open the existing file if it exists.
-      (org-roam-dailies-capture-today))))  ;; trigger capture if it doesn't.
-
-(defun my/org-roam-goto-month ()
-  (interactive)
-  (org-roam-capture- :goto (when (org-roam-node-from-title-or-alias (format-time-string "%Y-%B")) '(4))
-                     :node (org-roam-node-create)
-                     :templates '(("m" "month" plain "\n* goals\n\n%?* summary\n\n"
-                                   :if-new (file+head "%<%Y-%B>.org"
-                                                      "#+title: %<%Y-%B>\n#+filetags: project\n")
-                                   :unnarrowed t))))
-
-(defun my/org-roam-goto-year ()
-  (interactive)
-  (org-roam-capture- :goto (when (org-roam-node-from-title-or-alias (format-time-string "%Y")) '(4))
-                     :node (org-roam-node-create)
-                     :templates '(("y" "year" plain "\n* goals\n\n%?* summary\n\n"
-                                   :if-new (file+head "%<%Y>.org"
-                                                      "#+title: %<%Y>\n#+filetags: project\n")
-                                   :unnarrowed t))))
-(defhydra my/org-roam-jump-menu (:hint nil)
-  "
-^dailies^        ^capture^       ^jump^
-^^^^^^^^-------------------------------------------------
-_t_: today       _T_: today       _m_: current month
-_r_: tomorrow    _R_: tomorrow    _e_: current year
-_y_: yesterday   _Y_: yesterday   ^ ^
-_d_: date        ^ ^              ^ ^
-"
-  ("t" org-roam-dailies-goto-today)
-  ("r" org-roam-dailies-goto-tomorrow)
-  ("y" org-roam-dailies-goto-yesterday)
-  ("d" org-roam-dailies-goto-date)
-  ("T" org-roam-dailies-capture-today)
-  ("R" org-roam-dailies-capture-tomorrow)
-  ("Y" org-roam-dailies-capture-yesterday)
-  ("m" my/org-roam-goto-month)
-  ("e" my/org-roam-goto-year)
-  ("c" nil "cancel"))
-
 (defun my/org-roam-copy-todo-to-today ()
   (interactive)
   (unless (or (string= (buffer-name) "*habit*") ; do nothing in habit buffer
@@ -1163,6 +1240,9 @@ _d_: date        ^ ^              ^ ^
 
 ;;(use-package cmake-mode)
 
+(use-package elisp-format
+      :ensure t)
+
 ;;(use-package rustic
 ;;  :ensure t
 ;;  :config
@@ -1209,16 +1289,16 @@ _d_: date        ^ ^              ^ ^
 (global-pangu-spacing-mode 1)
 (setq pangu-spacing-real-insert-separtor t)
 
-;; (use-package vterm)
-;; (use-package eee
-;;    :straight (:host github :repo "eval-exec/eee.el" :files (:defaults "*.el" "*.sh"))
-;;    :config
-;;    (setq ee-terminal-command "vterm")
-;; )
-;; (zzc/leader-keys
-;;   "t"  '(:ignore t :which-key "toggle")
-;;   "tl"  '(ee-lazygit :which-key "lazygit")
-;; )
+(use-package vterm)
+(use-package eee
+   :straight (:host github :repo "eval-exec/eee.el" :files (:defaults "*.el" "*.sh"))
+   :config
+   (setq ee-terminal-command "st"))
+(zzc/leader-keys
+  "t"  '(:ignore t :which-key "toggle")
+  "tg"  '(ee-lazygit :which-key "lazygit")
+  "ty"  '(ee-yazi :which-key "yazi")
+)
 
 (use-package org-ai
   :ensure t
@@ -1232,14 +1312,14 @@ _d_: date        ^ ^              ^ ^
   (org-ai-install-yasnippets)) ; if you are using yasnippet and want `ai` snippets
 
 (use-package gptel
-      :ensure t
-      :custom
-      (setq gptel-api-key (auth-source-pick-first-password :host "openai.com"))
-      (gptel-model "gpt-4-turbo"))  ;; Use desired model
+  :ensure t
+  :custom
+  (setq gptel-api-key (auth-source-pick-first-password :host "openai.com"))
+  (gptel-model "gpt-4-turbo"))  ;; Use desired model
   (setq gptel-prompt-templates
-        '(("Journal Analysis"
-           :system "I’d like you to take on the role of a supportive and understanding life coach. For this session, I want to imagine the best life possible across various areas of my life, including relationships, career, health, and mental well-being."
-           :user "Analyze the following journal entry and provide actionable advice in chinese:\n\n{{input}}")))
+    '(("Journal Analysis"
+       :system "I’d like you to take on the role of a supportive and understanding life coach. For this session, I want to imagine the best life possible across various areas of my life, including relationships, career, health, and mental well-being."
+       :user "Analyze the following journal entry and provide actionable advice in chinese:\n\n{{input}}")))
 (defun my-gptel-analyze-current-buffer ()
   "Send the content of the current buffer to GPTel using a saved prompt template."
   (interactive)
