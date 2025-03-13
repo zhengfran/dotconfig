@@ -186,7 +186,7 @@
  display-buffer-alist
  '(("^\\*[Hh]elp"                            ;正则匹配 buffer name
     (display-buffer-reuse-window
-					;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些 alist
+   ;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些 alist
      display-buffer-in-side-window)
     (side . right)                        ;参数 alist 从这里开始。这个 side 会被 display-buffer-in-side-window 使用
     (window-width . 0.5)                     ;emacs 会自动把这个设置到 window-parameter 里
@@ -258,9 +258,12 @@
   (persp-mode))
 
 (defun my-scratch-buffer-no-save ()
-  "Prevent *scratch* buffer from ever being marked as modified."
-  (with-current-buffer "*scratch*"
-    (set-buffer-modified-p nil)))
+  "Prevent any buffer with *scratch* in its name from being marked as modified."
+  (interactive)
+  (dolist (buf (buffer-list))
+    (when (string-match-p "\\*scratch\\*" (buffer-name buf))
+      (with-current-buffer buf
+        (set-buffer-modified-p nil)))))
 (add-hook 'after-change-functions (lambda (&rest _) (my-scratch-buffer-no-save)))
 
 (zzc/leader-keys
@@ -463,30 +466,30 @@
   (set-face-attribute 'company-tooltip nil :inherit 'fixed-pitch))
 
 (defun my/minibuffer-backward-kill (arg)
-  "When minibuffer is completing a file name delete up to parent
-  folder, otherwise delete a word"
-  (interactive "p")
-  (if minibuffer-completing-file-name
-      ;; Borrowed from https://github.com/raxod502/selectrum/issues/498#issuecomment-803283608
-      (if (string-match-p "/." (minibuffer-contents))
-          (zap-up-to-char (- arg) ?/)
-        (delete-minibuffer-contents))
-    (delete-word (- arg))))
-(setq completion-ignore-case 't) ; minibuffer ignore case
-(use-package vertico
-  :defer 1
-  :custom
-  (verticle-cycle t)
-  :config
-  (vertico-mode)
-  :bind (:map minibuffer-local-map
-              ("M-h" .  my/minibuffer-backward-kill)))
-(use-package vertico-posframe
-  :init
-  (vertico-posframe-mode)
-  :config
-  (setq vertico-posframe-poshandler 'posframe-poshandler-point-window-center)
-  )
+   "When minibuffer is completing a file name delete up to parent
+   folder, otherwise delete a word"
+   (interactive "p")
+   (if minibuffer-completing-file-name
+       ;; Borrowed from https://github.com/raxod502/selectrum/issues/498#issuecomment-803283608
+       (if (string-match-p "/." (minibuffer-contents))
+           (zap-up-to-char (- arg) ?/)
+         (delete-minibuffer-contents))
+     (delete-word (- arg))))
+ (setq completion-ignore-case 't) ; minibuffer ignore case
+ (use-package vertico
+   :defer 1
+   :custom
+   (verticle-cycle t)
+   :config
+   (vertico-mode)
+   :bind (:map minibuffer-local-map
+               ("M-h" .  my/minibuffer-backward-kill)))
+;; (use-package vertico-posframe
+;;    :init
+;;    (vertico-posframe-mode)
+;;    :config
+;;    (setq vertico-posframe-poshandler 'posframe-poshandler-point-window-center)
+;;    )
 
 (use-package marginalia
   ;; Either bind `marginalia-cycle' globally or only in the minibuffer
@@ -530,7 +533,6 @@
     ;; Use Consult to select xref locations with preview
     (setq xref-show-xrefs-function #'consult-xref
           xref-show-definitions-function #'consult-xref)
-
     ;; Configure other variables and modes in the :config section,
     ;; after lazily loading the package.
     :config
@@ -982,7 +984,7 @@
 (use-package org-transclusion)
 
 (setq my/daily-note-filename "%<%Y-%m-%d>.org" 
-      my/daily-note-header "#+title: %<%Y-%m-%d %a>\n\n[[roam:%<%Y-w%W>]]\n\n[[roam:%<%Y-%B>]]\n\n* Tasks\n** Meeting\n* Capture\n** Information\n** Opinions\n** Tools\n** Feelings\n* Reflection\n** One thing Good\n** One thing Bad\n** Questions to my self\n*** All the decisions make today, how many is by choice, and how many is by fear?\n")
+      my/daily-note-header "#+title: %<%Y-%m-%d %a>\n\n[[roam:%<%Y-w%W>]]\n\n[[roam:%<%Y-%B>]]\n\n* Tasks\n** Meeting\n* Capture\n** Information\n** Opinions\n** Tools\n** Feelings\n* Reflection\n** One thing Good\n** One thing Bad\n** Questions to my self\n*** All the decisions make today, how many is by choice, and how many is by fear?\n*AI Summary")
 
 (use-package org-roam
     :defer 15
@@ -1290,6 +1292,10 @@
 (setq pangu-spacing-real-insert-separtor t)
 
 (use-package vterm)
+(with-eval-after-load 'vterm
+(add-hook 'vterm-mode-hook
+          (lambda ()
+            (setq buffer-save-without-query t))))
 (use-package eee
    :straight (:host github :repo "eval-exec/eee.el" :files (:defaults "*.el" "*.sh"))
    :config
@@ -1320,7 +1326,7 @@
     '(("Journal Analysis"
        :system "I’d like you to take on the role of a supportive and understanding life coach. For this session, I want to imagine the best life possible across various areas of my life, including relationships, career, health, and mental well-being."
        :user "Analyze the following journal entry and provide actionable advice in chinese:\n\n{{input}}")))
-(defun my-gptel-analyze-current-buffer ()
+(defun my/gptel-analyze-current-buffer ()
   "Send the content of the current buffer to GPTel using a saved prompt template."
   (interactive)
   (let* ((buffer-content (if (use-region-p)
