@@ -19,6 +19,7 @@ export TERM=screen-256color-bce
 # add path
 export PATH="$HOME/.local/bin/:$PATH"
 export PATH="$HOME/.cargo/bin/:$PATH"
+export PATH="$HOME/.config/doomemacs/bin/:$PATH"
 
 # wsl related
 # check if it is wsl
