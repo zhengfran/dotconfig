@@ -45,13 +45,20 @@
 ;; (unpin! pinned-package)
 ;; ...or multiple packages
 ;; (unpin! pinned-package another-pinned-package)
-;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
+;; ...Or *all* packages (NOT RECOMMENDED; wil likely break things)
 ;; (unpin! t)
+;; (package! org-modern)
+;; (package! org-modern-indent
+;;   :recipe (:host github :repo "jdtsmith/org-modern-indent"))
+(package! org-jira)
+(package! org-anki)
+(package! org-transclusion)
+(package! org-roam-ui)
 (package! eee
   :recipe (:host github :repo "eval-exec/eee.el"
            :files (:defaults "*.el" "*.sh")))
-(package! org-ai)
 (package! gptel)
+(package! aidermacs)
 (package! rime
   :recipe (:host github
            :repo "doglooksgood/emacs-rime"
