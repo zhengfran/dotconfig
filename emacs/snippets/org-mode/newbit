@@ -1,9 +1,0 @@
-# -*- mode: snippet -*-
-# name: add new habits todo
-# key: <habit
-# --
-
-** TODO $0
-:PROPERTIES:
-:STYLE:    habit
-:END:

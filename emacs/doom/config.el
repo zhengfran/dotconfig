@@ -32,12 +32,52 @@
   (setq evil-escape-key-sequence "jj")
   (setq evil-escape-delay 0.2)) ;; Adjust delay if needed
 
+(defun my/resize-window-up ()
+  "Increase window height repeatedly."
+  (interactive)
+  (enlarge-window 1)
+  (set-transient-map
+   (let ((map (make-sparse-keymap)))
+     (define-key map (kbd "<up>") 'my/resize-window-up)
+     map)
+   t))
+
+(defun my/resize-window-down ()
+  "Decrease window height repeatedly."
+  (interactive)
+  (shrink-window 1)
+  (set-transient-map
+   (let ((map (make-sparse-keymap)))
+     (define-key map (kbd "<down>") 'my/resize-window-down)
+     map)
+   t))
+
+(defun my/resize-window-right ()
+  "Increase window width repeatedly."
+  (interactive)
+  (enlarge-window-horizontally 1)
+  (set-transient-map
+   (let ((map (make-sparse-keymap)))
+     (define-key map (kbd "<right>") 'my/resize-window-right)
+     map)
+   t))
+
+(defun my/resize-window-left ()
+  "Decrease window width repeatedly."
+  (interactive)
+  (shrink-window-horizontally 1)
+  (set-transient-map
+   (let ((map (make-sparse-keymap)))
+     (define-key map (kbd "<left>") 'my/resize-window-left)
+     map)
+   t))
+
+;; Bind these to SPC + arrow keys
 (map! :leader
-      :repeat t  ;; Enables key repeat for these bindings
-      :desc "Resize window left"  "<left>"  #'shrink-window-horizontally
-      :desc "Resize window right" "<right>" #'enlarge-window-horizontally
-      :desc "Resize window up"    "<up>"    #'shrink-window
-      :desc "Resize window down"  "<down>"  #'enlarge-window)
+      :desc "Resize window up"    "<up>"    #'my/resize-window-up
+      :desc "Resize window down"  "<down>"  #'my/resize-window-down
+      :desc "Resize window right" "<right>" #'my/resize-window-right
+      :desc "Resize window left"  "<left>"  #'my/resize-window-left)
 
 (defvar toggle-one-window-window-configuration nil
   "The window configuration use for `toggle-one-window'.")
@@ -56,23 +96,14 @@
  :prefix "C-c"
  "m" 'toggle-one-window)
 
-(after! persp-mode
-  (setq persp-state-default-file (expand-file-name ".persp-save" doom-cache-dir))
-  (defun my/persp-state-save-silent ()
-    "Save perspective state without confirmation."
-    (let ((persp-state-save-behavior nil)) ; Prevent prompting
-      (persp-save-state-to-file persp-state-default-file)))
+;; Enable desktop-save-mode to save sessions
+(desktop-save-mode 1)
 
-    ;; Load perspectives without confirmation
-  (defun my/persp-state-load-silent ()
-      "Load perspective state without confirmation."
-      (when (file-exists-p persp-state-default-file)
-        (persp-load-state-from-file persp-state-default-file)))
-   ;; Automatically save perspectives when Emacs quits
-    (add-hook 'kill-emacs-hook #'my/persp-state-save-silent)
-    ;; Automatically load perspectives at startup
-    (add-hook 'emacs-startup-hook #'my/persp-state-load-silent)
-  (persp-mode +1))  ;; Enable persistence mode
+;; Configure auto-saving of the desktop
+(setq desktop-auto-save-timeout (* 15 60)) ; 15 minutes in seconds
+
+;; Ensure desktop saves even if Emacs is idle
+(add-hook 'auto-save-hook 'desktop-save-in-desktop-dir)
 
 (setq doom-theme 'doom-gruvbox)
 (setq display-line-numbers-type t)
@@ -295,7 +326,7 @@
   (setq ee-terminal-command "st") ; Set terminal command
   (map! :leader
         (:prefix ("t" . "toggle")  ; Prefix for toggle-related commands
-         :desc "Lazygit" "z" #'ee-lazygit
+         :desc "Lazygit" "g" #'ee-lazygit
          :desc "Yazi" "y" #'ee-yazi)))
 
 (use-package! aidermacs
