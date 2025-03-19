@@ -738,10 +738,9 @@
     (interactive)
     (save-excursion
       (goto-char 0)
-      (while (search-forward "\r" nil :noerror)
+     (while (search-forward "\r" nil :noerror)
         (replace-match ""))))
 #+END_SRC
-
 
 ** snippets
 
@@ -1030,9 +1029,6 @@
   (require 'org-indent) ;; 开启 org-indent 并设设置缩进字体
   (set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch)))
 #+end_src
-- [ ] checkbox
-- [ ] cec
-- [ ] dfs
 *** org visual column fill
 #+begin_src emacs-lisp
 (defun my/org-mode-visual-fill ()
@@ -1164,7 +1160,6 @@
 
   (setq org-todo-keywords
      '((sequence "TODO(t)" "ONGOING(o)" "|" "LOGGED(n@)" "DONE(d!)")))
-
       ;; configure custom agenda views
       (setq org-agenda-custom-commands
        '(("d" "dashboard"
@@ -1172,7 +1167,6 @@
           (todo "ongoing"
     	((org-agenda-overriding-header "next tasks")))
             (tags-todo "agenda/active" ((org-agenda-overriding-header "active projects")))))
-
          ("n" "ongoing tasks"
           ((todo "next"
      	((org-agenda-overriding-header "next tasks")))))))
