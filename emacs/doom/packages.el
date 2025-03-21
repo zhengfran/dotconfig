@@ -54,6 +54,8 @@
 (package! org-anki)
 (package! org-transclusion)
 (package! org-roam-ui)
+(package! org-ref)
+(package! org-media-note :recipe (:host github :repo "yuchen-lea/org-media-note"))
 (package! eee
   :recipe (:host github :repo "eval-exec/eee.el"
            :files (:defaults "*.el" "*.sh")))
@@ -64,3 +66,4 @@
            :repo "doglooksgood/emacs-rime"
            :files ("*.el" "Makefile" "lib.c")))
 (package! pangu-spacing)
+(package! super-save)
