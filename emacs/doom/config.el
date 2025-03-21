@@ -32,6 +32,13 @@
   (setq evil-escape-key-sequence "jj")
   (setq evil-escape-delay 0.2)) ;; Adjust delay if needed
 
+(after! super-save
+(super-save-mode +1)
+(setq super-save-auto-save-when-idle t)
+(setq super-save-delete-trailing-whitespace t)
+(setq auto-save-default nil)
+(setq super-save-exclude '(".gpg")))
+
 (defun my/resize-window-up ()
   "Increase window height repeatedly."
   (interactive)
@@ -96,14 +103,8 @@
  :prefix "C-c"
  "m" 'toggle-one-window)
 
-;; Enable desktop-save-mode to save sessions
-(desktop-save-mode 1)
-
-;; Configure auto-saving of the desktop
-(setq desktop-auto-save-timeout (* 15 60)) ; 15 minutes in seconds
-
-;; Ensure desktop saves even if Emacs is idle
-(add-hook 'auto-save-hook 'desktop-save-in-desktop-dir)
+;; save doom emacs session every 15 minute
+(run-with-timer 900 900 #'doom/quicksave-session)
 
 (setq doom-theme 'doom-gruvbox)
 (setq display-line-numbers-type t)
@@ -116,11 +117,11 @@
 (custom-set-faces!
   '(font-lock-comment-face :slant italic)
   '(font-lock-keyword-face :slant italic))
+(global-visual-line-mode)
 
 (setq doom-modeline-persp-name t) ;; Show workspace name in modeline
 (setq doom-modeline-display-default-persp-name t) ;; Display the default workspace name
 (defun my/display-all-workspaces ()
-  "Display all workspace names and numbers in the mode line."
   (let ((workspaces (persp-names)))
     (if workspaces
         (mapconcat (lambda (ws) (format "[%s]" ws)) workspaces " ")
@@ -254,6 +255,7 @@
                           nil
                           (my/org-roam-filter-by-tag "Project"))
                    :templates (list my/org-roam-project-template)))
+
 (defun my/org-roam-copy-todo-to-today ()
  (interactive)
  (unless (or (string= (buffer-name) "*habit*") ; do nothing in habit buffer
@@ -274,6 +276,13 @@
                     (file-truename (buffer-file-name)))
        (org-refile nil nil (list "Done" today-file nil pos))))))
 
+(defun org-roam-node-insert-immediate (arg &rest args)
+  (interactive "P")
+  (let ((args (push arg args))
+        (org-roam-capture-templates (list (append (car org-roam-capture-templates)
+                                                  '(:immediate-finish t)))))
+    (apply #'org-roam-node-insert args)))
+
 ;; Org-roam configuration for Doom Emacs
 (after! org-roam
   (setq org-roam-directory "~/Documents/org/notes/"
@@ -287,10 +296,17 @@
             :if-new (file+head ,my/daily-note-filename
                               ,my/daily-note-header)))
         org-roam-capture-templates
-        '(("h" "Hugo Blog Post" plain
-          (file "~/Documents/org/templates/hugo-post.org") ;; Uses external template
+        '(
+          ("d" "default" plain "- tag :: \n %?"
+           :target
+           (file+head "%<%y%m%d%h%m%s>-${slug}.org" "#+title: ${title} \n")
+           :unnarrowed t)
+          ("h" "Hugo Blog Post" plain
+          (file "~/Documents/org/templates/hugo-post.org")
             :target (file+head "%<%y%m%d%h%m%s>-${slug}.org" "")
-            :unnarrowed t)))
+            :unnarrowed t)
+        )
+  )
   ;; Keybindings
   (map! :leader
         :desc "Toggle org-roam buffer" "n r l" #'org-roam-buffer-toggle
@@ -305,7 +321,7 @@
   ;; Additional keybindings for Org mode
   (map! :map org-mode-map
         "C-M-i" #'completion-at-point)
-  (add-hook! 'after-init-hook #'my/org-roam-refresh-agenda-list))
+  (advice-add 'org-agenda :before #'my/org-roam-refresh-agenda-list))
 
 (use-package! org-roam-ui
   :config
@@ -313,6 +329,16 @@
     (setq org-roam-ui-follow t)
     (setq org-roam-ui-update-on-save t)
     (setq org-roam-ui-open-on-start t))
+
+(use-package! org-media-note
+  :init (setq org-media-note-use-org-ref t)
+  :hook (org-mode .  org-media-note-mode)
+  :config
+  (setq org-media-note-screenshot-image-dir "~/Documents/org/notes/images/")  ;; Folder to save screenshot
+  (setq org-media-note-use-refcite-first t)  ;; use videocite link instead of video link if possible
+  (map! :leader
+        (:prefix ("n" . "notes")
+         :desc "media note" "m" 'org-media-note-show-interface)))
 
 (org-babel-do-load-languages
   'org-babel-load-languages
@@ -325,7 +351,7 @@
 (after! eee
   (setq ee-terminal-command "st") ; Set terminal command
   (map! :leader
-        (:prefix ("t" . "toggle")  ; Prefix for toggle-related commands
+        (:prefix ("t" . "toggle")
          :desc "Lazygit" "g" #'ee-lazygit
          :desc "Yazi" "y" #'ee-yazi)))
 
@@ -365,7 +391,8 @@
   :config
   (setq yas-snippet-dirs '("~/dotconfig/emacs/doom/snippets")))
 
-(after! rime
+(use-package! rime
+  :config
   (setq rime-user-data-dir "~/dotconfig/rime")
   (setq default-input-method "rime"
         rime-show-candidate 'posframe
