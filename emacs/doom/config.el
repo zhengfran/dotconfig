@@ -394,6 +394,10 @@
 (use-package! rime
   :config
   (setq rime-user-data-dir "~/dotconfig/rime")
+  ;; mac needs to manually download librime and set these path for compilation
+  (when my/is-mac
+    (setq rime-librime-root "~/.emacs.d/librime/dist")
+    (setq rime-emacs-module-header-root "/opt/homebrew/Cellar/emacs-plus@30/30.1/include"))
   (setq default-input-method "rime"
         rime-show-candidate 'posframe
         rime-disable-predicates
