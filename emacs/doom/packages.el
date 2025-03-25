@@ -50,12 +50,23 @@
 ;; (package! org-modern)
 ;; (package! org-modern-indent
 ;;   :recipe (:host github :repo "jdtsmith/org-modern-indent"))
+
+(package! sort-tab
+  :recipe (:host github :repo "manateelazycat/sort-tab"
+           :files (:defaults "*.el")))
 (package! org-jira)
 (package! org-anki)
 (package! org-transclusion)
 (package! org-roam-ui)
 (package! org-ref)
 (package! org-media-note :recipe (:host github :repo "yuchen-lea/org-media-note"))
+(package! citre)
+(package! emacs-lsp-booster
+  :recipe (:host github :repo "blahgeek/emacs-lsp-booster"
+           :files (:defaults "*.el")))
+(package! eglot-booster
+  :recipe (:host github :repo "jdtsmith/eglot-booster"
+           :files (:defaults "*.el")))
 (package! eee
   :recipe (:host github :repo "eval-exec/eee.el"
            :files (:defaults "*.el" "*.sh")))
