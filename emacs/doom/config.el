@@ -103,6 +103,16 @@
  :prefix "C-c"
  "m" 'toggle-one-window)
 
+(require 'sort-tab)
+(sort-tab-mode 1)
+(defun my/sort-tab-hide-buffer-not-in-current-workspace (buffer)
+  "Hide BUFFER if it's not in the current Doom workspace."
+  (let ((buf-name (buffer-name buffer)))
+    (not (member buf-name (mapcar #'buffer-name (+workspace-buffer-list))))))
+(setq sort-tab-hide-function #'my/sort-tab-hide-buffer-not-in-current-workspace)
+(map! :n "H" #'sort-tab-select-prev-tab
+      :n "L" #'sort-tab-select-next-tab)
+
 ;; save doom emacs session every 15 minute
 (run-with-timer 900 900 #'doom/quicksave-session)
 
@@ -121,18 +131,14 @@
 
 (setq doom-modeline-persp-name t) ;; Show workspace name in modeline
 (setq doom-modeline-display-default-persp-name t) ;; Display the default workspace name
-(defun my/display-all-workspaces ()
-  (let ((workspaces (persp-names)))
-    (if workspaces
-        (mapconcat (lambda (ws) (format "[%s]" ws)) workspaces " ")
-      "No Workspaces")))
-
-(setq-default mode-line-format
-              (append mode-line-format
-                      '((:eval (my/display-all-workspaces)))))
-(setq doom-modeline-workspace-name (lambda () (my/display-all-workspaces)))
 
 (setq org-directory "~/Documents/org/")
+
+;; Set bold text color after Org and theme load
+(after! org
+  (setq org-hide-emphasis-markers t)
+  (custom-set-faces!
+    '(org-bold :foreground "#FF5555" :weight bold :inherit nil)))
 
 (after! org
   (setq org-agenda-dir "~/Documents/org/jira/")
@@ -347,6 +353,30 @@
     (python . t)))
 (setq org-confirm-babel-evaluate nil)
 (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
+
+(use-package! eglot-booster
+	:after eglot
+	:config	(eglot-booster-mode))
+
+(use-package! citre
+  :init
+  ;; Optional: Enable Citre globally or in specific modes
+  (add-hook 'prog-mode-hook #'citre-mode)
+  ;; Bind Citre commands to Doom’s leader key
+  (map! :leader
+        (:prefix "c"  ; SPC c for code commands
+         :desc "Jump to definition" "d" #'citre-jump
+         :desc "Jump back" "b" #'citre-jump-back
+         :desc "Jump back" "u" #'citre-update-this-tags-file
+         :desc "Peek definition" "p" #'citre-peek))
+  :config
+  ;; Enable Citre in supported buffers automatically
+  (citre-auto-enable-citre-mode)
+  ;; Define tags file names Citre should look for
+  (setq citre-default-tags-files '(".tags" "tags" "TAGS"))
+  ;; Optional: Integrate with LSP if you use it
+  (when (and (modulep! :tools lsp) (featurep 'lsp))
+    (citre-lsp-integration)))
 
 (after! eee
   (setq ee-terminal-command "st") ; Set terminal command
