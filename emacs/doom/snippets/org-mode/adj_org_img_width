@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: adjust image width in org mode
-# key: <adjimg
+# key:!adjimg
 # --
 
 #+ATTR_ORG: :width $0%

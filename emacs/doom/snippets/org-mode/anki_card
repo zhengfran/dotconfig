@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: anki 
-# key: <ak 
+# key: !ak 
 # --
 * $1
 :PROPERTIES:

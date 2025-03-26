@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: org mode python source block
-# key: <py
+# key: !py
 # --
 
 #+BEGIN_SRC python
