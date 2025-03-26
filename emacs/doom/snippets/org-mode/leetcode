@@ -1,0 +1,25 @@
+# -*- mode: snippet -*-
+# name: leetcode notes
+# key: !lc
+# condition: t
+# --
+
+* Thought Process
+$0
+* My Answer
+
+#+BEGIN_SRC python
+
+#+END_SRC
+
+- time complexity $O(\log(n))$
+- space complexity $O(n)$
+
+* Optimal Answer
+
+#+BEGIN_SRC python
+
+#+END_SRC
+
+- time complexity $O(\log(n))$
+- space complexity $O(n)$
