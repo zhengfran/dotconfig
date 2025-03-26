@@ -51,9 +51,9 @@
 ;; (package! org-modern-indent
 ;;   :recipe (:host github :repo "jdtsmith/org-modern-indent"))
 
-(package! sort-tab
-  :recipe (:host github :repo "manateelazycat/sort-tab"
-           :files (:defaults "*.el")))
+;; (package! sort-tab
+;;   :recipe (:host github :repo "manateelazycat/sort-tab"
+;;            :files (:defaults "*.el")))
 (package! org-jira)
 (package! org-anki)
 (package! org-transclusion)
@@ -66,6 +66,9 @@
            :files (:defaults "*.el")))
 (package! eglot-booster
   :recipe (:host github :repo "jdtsmith/eglot-booster"
+           :files (:defaults "*.el")))
+(package! leetcode
+  :recipe (:host github :repo "kaiwk/leetcode.el"
            :files (:defaults "*.el")))
 (package! eee
   :recipe (:host github :repo "eval-exec/eee.el"

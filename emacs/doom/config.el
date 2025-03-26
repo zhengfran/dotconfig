@@ -32,12 +32,14 @@
   (setq evil-escape-key-sequence "jj")
   (setq evil-escape-delay 0.2)) ;; Adjust delay if needed
 
-(after! super-save
-(super-save-mode +1)
-(setq super-save-auto-save-when-idle t)
-(setq super-save-delete-trailing-whitespace t)
-(setq auto-save-default nil)
-(setq super-save-exclude '(".gpg")))
+(use-package! super-save
+  :ensure t
+  :config
+  (super-save-mode +1)
+  (setq super-save-auto-save-when-idle t)
+  (setq super-save-delete-trailing-whitespace t)
+  (setq auto-save-default nil)
+  (setq super-save-exclude '(".gpg")))
 
 (defun my/resize-window-up ()
   "Increase window height repeatedly."
@@ -103,15 +105,29 @@
  :prefix "C-c"
  "m" 'toggle-one-window)
 
-(require 'sort-tab)
-(sort-tab-mode 1)
-(defun my/sort-tab-hide-buffer-not-in-current-workspace (buffer)
-  "Hide BUFFER if it's not in the current Doom workspace."
-  (let ((buf-name (buffer-name buffer)))
-    (not (member buf-name (mapcar #'buffer-name (+workspace-buffer-list))))))
-(setq sort-tab-hide-function #'my/sort-tab-hide-buffer-not-in-current-workspace)
-(map! :n "H" #'sort-tab-select-prev-tab
-      :n "L" #'sort-tab-select-next-tab)
+;; (use-package! sort-tab
+;;   :after doom-modeline
+;;   :config
+;;   (sort-tab-mode 1)
+;;   (defun my/refresh-tab ()
+;;     (interactive)
+;;     (message "Refreshing tabs...")
+;;     (sort-tab-turn-off)
+;;     (sort-tab-turn-on))
+;;   (defun my/sort-tab-hide-buffer (buffer)
+;;     "Hide BUFFER if it's not in the current Doom workspace or is a Dired buffer."
+;;     (or (not (member (buffer-name buffer)
+;;                      (mapcar #'buffer-name (+workspace-buffer-list))))
+;;         (eq (buffer-local-value 'major-mode buffer) 'dired-mode)))
+
+;;   (setq sort-tab-hide-function #'my/sort-tab-hide-buffer)
+;;   ;; Add advice to +workspace/switch-to
+;;   (advice-add '+workspace/switch-to :after
+;;     (lambda (index-or-name &rest _)
+;;       (my/refresh-tab)))
+;;   (map! :n "H" #'sort-tab-select-prev-tab
+;;         :n "L" #'sort-tab-select-next-tab)
+;; )
 
 ;; save doom emacs session every 15 minute
 (run-with-timer 900 900 #'doom/quicksave-session)
@@ -304,11 +320,9 @@
         org-roam-capture-templates
         '(
           ("d" "default" plain "- tag :: \n %?"
-           :target
-           (file+head "%<%y%m%d%h%m%s>-${slug}.org" "#+title: ${title} \n")
+           :target (file+head "%<%y%m%d%h%m%s>-${slug}.org" "#+title: ${title} \n")
            :unnarrowed t)
-          ("h" "Hugo Blog Post" plain
-          (file "~/Documents/org/templates/hugo-post.org")
+          ("h" "Hugo Blog Post" plain (file "~/Documents/org/templates/hugo-post.org")
             :target (file+head "%<%y%m%d%h%m%s>-${slug}.org" "")
             :unnarrowed t)
         )
@@ -354,6 +368,8 @@
 (setq org-confirm-babel-evaluate nil)
 (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
 
+(setq treesit-font-lock-level 4) ;; Enables all possible highlighting
+
 (use-package! eglot-booster
 	:after eglot
 	:config	(eglot-booster-mode))
@@ -377,6 +393,13 @@
   ;; Optional: Integrate with LSP if you use it
   (when (and (modulep! :tools lsp) (featurep 'lsp))
     (citre-lsp-integration)))
+
+(use-package! leetcode
+  :config
+  (setq leetcode-prefer-language "python3"
+        leetcode-prefer-sql "mysql"
+        leetcode-directory "~/Documents/org/leetcode"
+        leetcode-save-solutions t))
 
 (after! eee
   (setq ee-terminal-command "st") ; Set terminal command
