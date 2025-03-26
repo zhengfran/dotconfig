@@ -149,6 +149,9 @@
 (setq doom-modeline-display-default-persp-name t) ;; Display the default workspace name
 
 (setq org-directory "~/Documents/org/")
+(after! org
+  (set-company-backend! 'org-mode
+    '(:separate company-files company-capf company-dabbrev company-yasnippet company-ispell)))
 
 ;; Set bold text color after Org and theme load
 (after! org
@@ -209,11 +212,12 @@
      ("Closed" . "DONE")
      ("Verifying" . "STRT"))))
 
-(after! org-anki
+(use-package! org-anki
+  :config
   (setq org-anki-default-deck "Mega"))
 
 (setq my/daily-note-filename "%<%Y-%m-%d>.org"
-      my/daily-note-header "#+title: %<%Y-%m-%d %a>\n\n[[roam:%<%Y-w%W>]]\n\n[[roam:%<%Y-%B>]]\n\n* Tasks\n** Completed\n** Meeting\n\n* Capture\n** Information\n** Opinions\n** Tools\n** Feelings\n\n* Reflection\n** One thing Good\n** One thing Bad\n** Questions to my self\n*** All the decisions make today, which are by choice, and which are by fear?\n* AI Summary")
+      my/daily-note-header "#+title: %<%Y-%m-%d %a>\n\n[[roam:%<%Y-w%W>]]\n\n[[roam:%<%Y-%B>]]\n\n")
 (defvar my/org-roam-project-template
   '("p" "project" plain "** TODO %?"
     :if-new (file+head+olp "%<%Y%m%d%H>-${slug}.org"
@@ -314,9 +318,16 @@
         org-roam-db-gc-threshold most-positive-fixnum
         org-roam-dailies-directory "daily/"
         org-roam-dailies-capture-templates
-        `(("d" "default" entry "* %?"
-            :if-new (file+head ,my/daily-note-filename
-                              ,my/daily-note-header)))
+        `(
+          ("d" "default" plain (file "~/Documents/org/templates/daily.org")
+           :if-new (file+head ,my/daily-note-filename
+                              ,my/daily-note-header)
+           :unnarrowed t)
+          ("f" "Feelings entry" entry "- %?"
+           :if-new (file+head+olp ,my/daily-note-filename
+                                  ,my/daily-note-header
+                                  ("Captures" "Feelings")))
+        )
         org-roam-capture-templates
         '(
           ("d" "default" plain "- tag :: \n %?"
@@ -349,6 +360,14 @@
     (setq org-roam-ui-follow t)
     (setq org-roam-ui-update-on-save t)
     (setq org-roam-ui-open-on-start t))
+
+(use-package! org-noter
+    :custom
+    (org-noter-highlight-selected-text t)
+    (org-noter-notes-search-path (list org_notes))
+    :config
+    (setq org-noter-auto-save-last-location nil)
+    (setq org-noter-always-create-frame nil))
 
 (use-package! org-media-note
   :init (setq org-media-note-use-org-ref t)
