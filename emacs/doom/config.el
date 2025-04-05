@@ -33,7 +33,6 @@
   (setq evil-escape-delay 0.2)) ;; Adjust delay if needed
 
 (use-package! super-save
-  :ensure t
   :config
   (super-save-mode +1)
   (setq super-save-auto-save-when-idle t)
@@ -105,6 +104,16 @@
  :prefix "C-c"
  "m" 'toggle-one-window)
 
+(use-package! zoom
+  :init
+  (setq zoom-size '(0.618 . 0.618)) ;; golden ratio
+  (setq zoom-ignored-major-modes '(dired-mode vterm-mode))
+  (setq zoom-ignore-predicates
+        (list (lambda () (< (count-windows) 2))
+              (lambda () (memq major-mode zoom-ignored-major-modes))))
+  :config
+  (zoom-mode 1))
+
 ;; (use-package! sort-tab
 ;;   :after doom-modeline
 ;;   :config
@@ -145,13 +154,13 @@
   '(font-lock-keyword-face :slant italic))
 (global-visual-line-mode)
 
-(setq doom-modeline-persp-name t) ;; Show workspace name in modeline
-(setq doom-modeline-display-default-persp-name t) ;; Display the default workspace name
+(after! doom-modeline
+  (setq doom-modeline-persp-name t))
 
 (setq org-directory "~/Documents/org/")
 (after! org
   (set-company-backend! 'org-mode
-    '(:separate company-files company-capf company-dabbrev company-yasnippet company-ispell)))
+    '(:separate company-files company-capf company-dabbrev company-yasnippet)))
 
 ;; Set bold text color after Org and theme load
 (after! org
@@ -215,9 +224,53 @@
 (use-package! org-anki
   :config
   (setq org-anki-default-deck "Mega"))
+(map! :leader
+  (:prefix ("o" . "org")
+   :prefix ("ok" . "org anki")
+   :desc "anki sync entry" "s" 'org-media-note-show-interface))
 
-(setq my/daily-note-filename "%<%Y-%m-%d>.org"
-      my/daily-note-header "#+title: %<%Y-%m-%d %a>\n\n[[roam:%<%Y-w%W>]]\n\n[[roam:%<%Y-%B>]]\n\n")
+(defun my/org-download-method (link)
+    (let ((filename
+           (file-name-nondirectory
+            (car (url-path-and-query
+                  (url-generic-parse-url link)))))
+          (dirname (concat "~/Documents/org/notes/images/" (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))))
+      (setq org-download-image-dir dirname)
+      (make-directory dirname t)
+      (expand-file-name (funcall org-download-file-format-function filename) dirname)))
+
+(defun my/org-download-clipboard-wsl ()
+  (interactive)
+  (let* ((image-name (read-string "enter image name (without extension): "))
+         (filename (expand-file-name (concat image-name ".png") "/tmp/"))
+         (powershell-path "/mnt/c/windows/system32/windowspowershell/v1.0/powershell.exe"))
+    ;; use full path to powershell
+    (shell-command-to-string
+     (format "%s -command \"(get-clipboard -format image).save('$(wslpath -w %s)')\"" powershell-path filename))
+    (when (file-exists-p filename)
+      (org-download-image filename)
+      (delete-file filename))))
+
+(defun my/org-download-clipboard ()
+  (interactive)
+  (cond (my/is-windows (my/org-download-clipboard-windows))
+        (my/is-WSL (my/org-download-clipboard-wsl))
+        (t (org-download-clipboard)))) ; for linux and mac system
+
+(setq org-image-actual-width nil)
+(use-package! org-download
+  :after org
+  :config
+    (setq org-download-method 'directory)
+  :custom
+    (org-download-heading-lvl 1)
+    (org-download-method #'my/org-download-method)
+  :bind (:map org-mode-map
+              ("C-c i y" . org-download-yank)
+              ("C-c i d" . org-download-delete)
+              ("C-c i e" . org-download-edit)
+              ("C-M-y" . my/org-download-clipboard)))
+
 (defvar my/org-roam-project-template
   '("p" "project" plain "** TODO %?"
     :if-new (file+head+olp "%<%Y%m%d%H>-${slug}.org"
@@ -311,6 +364,8 @@
 
 ;; Org-roam configuration for Doom Emacs
 (after! org-roam
+  (setq my/daily-note-filename "%<%Y-%m-%d>.org"
+      my/daily-note-header "#+title: %<%Y-%m-%d %a>\n\n[[roam:%<%Y-w%W>]]\n\n[[roam:%<%Y-%B>]]\n\n* Tasks\n\n* Captures\n** Information\n** Opinions\n** Efficiency\n** Feelings\n\n* Reflection\n** One thing Good\n** One thing bad\n\n* AI summary\n\n")
   (setq org-roam-directory "~/Documents/org/notes/"
         org-roam-completion-everywhere t
         org-roam-node-display-template
@@ -319,20 +374,19 @@
         org-roam-dailies-directory "daily/"
         org-roam-dailies-capture-templates
         `(
-          ("d" "default" plain (file "~/Documents/org/templates/daily.org")
-           :if-new (file+head ,my/daily-note-filename
-                              ,my/daily-note-header)
-           :unnarrowed t)
-          ("f" "Feelings entry" entry "- %?"
-           :if-new (file+head+olp ,my/daily-note-filename
+          ("d" "default" entry "* %?"
+            :if-new (file+head ,my/daily-note-filename
+                               ,my/daily-note-header))
+          ("f" "Feelings entry" entry "* %?"
+            :if-new (file+head+olp ,my/daily-note-filename
                                   ,my/daily-note-header
                                   ("Captures" "Feelings")))
         )
         org-roam-capture-templates
         '(
-          ("d" "default" plain "- tag :: \n %?"
-           :target (file+head "%<%y%m%d%h%m%s>-${slug}.org" "#+title: ${title} \n")
-           :unnarrowed t)
+          ("d" "default" plain "%?"
+            :target (file+head "%<%y%m%d%h%m%s>-${slug}.org" "#+title: ${title} \n")
+            :unnarrowed t)
           ("h" "Hugo Blog Post" plain (file "~/Documents/org/templates/hugo-post.org")
             :target (file+head "%<%y%m%d%h%m%s>-${slug}.org" "")
             :unnarrowed t)
@@ -352,7 +406,8 @@
   ;; Additional keybindings for Org mode
   (map! :map org-mode-map
         "C-M-i" #'completion-at-point)
-  (advice-add 'org-agenda :before #'my/org-roam-refresh-agenda-list))
+  (advice-add 'org-agenda :before #'my/org-roam-refresh-agenda-list)
+ )
 
 (use-package! org-roam-ui
   :config
@@ -387,7 +442,9 @@
 (setq org-confirm-babel-evaluate nil)
 (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
 
-(setq treesit-font-lock-level 4) ;; Enables all possible highlighting
+(after! treesit
+  (setq treesit-font-lock-level 4) ;; Enables all possible highlighting
+  (add-to-list 'treesit-extra-load-path "~/.config/doomemacs/.local/straight/build-30.1/tree-sitter-langs/bin/"))
 
 (use-package! eglot-booster
 	:after eglot
