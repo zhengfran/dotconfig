@@ -31,7 +31,6 @@ Sometimes you have to work on windows
 **** Starship
 This is used to provide same shell UI for all the different shells I come across.
 *** Tmux
-Version must be greater than 3.3, if package manager version is lower than than, can try to compile latest from source.
  #+begin_src shell
  ## compile latest from source
  sudo apt install -y libevent-dev bip

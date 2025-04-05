@@ -61,6 +61,7 @@
 (package! org-ref)
 (package! org-media-note :recipe (:host github :repo "yuchen-lea/org-media-note"))
 (package! citre)
+(package! zoom)
 (package! emacs-lsp-booster
   :recipe (:host github :repo "blahgeek/emacs-lsp-booster"
            :files (:defaults "*.el")))
