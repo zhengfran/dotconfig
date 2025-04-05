@@ -478,7 +478,10 @@
         leetcode-save-solutions t))
 
 (after! eee
-  (setq ee-terminal-command "st") ; Set terminal command
+  (when my/is-WSL
+    (setq ee-terminal-command "st"))
+  (when my/is-mac
+    (setq ee-terminal-command "wezterm"))
   (map! :leader
         (:prefix ("t" . "toggle")
          :desc "Lazygit" "g" #'ee-lazygit
