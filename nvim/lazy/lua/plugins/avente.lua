@@ -5,25 +5,31 @@ return {
   version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
   opts = {
     ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
-    provider = "openai", -- Recommend using Claude
-    -- WARNING: Since auto-suggestions are a high-frequency operation and therefore expensive,
-    -- currently designating it as `copilot` provider is dangerous because: https://github.com/yetone/avante.nvim/issues/1048
-    -- Of course, you can reduce the request frequency by increasing `suggestion.debounce`.
-
-    -- auto_suggestions_provider = "claude",
-    -- claude = {
-    --   endpoint = "https://api.anthropic.com",
-    --   model = "claude-3-5-sonnet-20241022",
-    --   temperature = 0,
-    --   max_tokens = 4096,
-    --   disable_tools = true, -- disable tools!
-    -- },
-    openai = {
-      endpoint = "https://api.openai.com/v1",
-      model = "gpt-4o", -- your desired model (or use gpt-4o, etc.)
-      timeout = 30000, -- timeout in milliseconds
-      temperature = 0, -- adjust if needed
-      max_tokens = 4096,
+    provider = "openrouter_deepseek_v3", -- In this example, use Claude for planning, but you can also use any provider you want.
+    cursor_applying_provider = "openrouter_gemini", -- In this example, use Groq for applying, but you can also use any provider you want.
+    vendors = {
+      openrouter_claude = {
+        __inherited_from = "openai",
+        endpoint = "https://openrouter.ai/api/v1",
+        api_key_name = "OPENROUTER_API_KEY",
+        model = "anthropic/claude-3.7-sonnet",
+        disable_tools = true,
+      },
+      openrouter_gemini = {
+        __inherited_from = "openai",
+        endpoint = "https://openrouter.ai/api/v1",
+        api_key_name = "OPENROUTER_API_KEY",
+        model = "google/gemini-2.5-pro-preview-03-25",
+        disable_tools = true,
+      },
+      --- for testing
+      openrouter_deepseek_v3 = {
+        __inherited_from = "openai",
+        endpoint = "https://openrouter.ai/api/v1",
+        api_key_name = "OPENROUTER_API_KEY",
+        model = "deepseek/deepseek-v3-base:free",
+        disable_tools = true,
+      },
     },
     ---Specify the special dual_boost mode
     ---1. enabled: Whether to enable dual_boost mode. Default to false.
@@ -49,6 +55,7 @@ return {
       support_paste_from_clipboard = false,
       minimize_diff = true, -- Whether to remove unchanged lines when applying a code block
       enable_token_counting = true, -- Whether to enable token counting. Default to true.
+      enable_cursor_planning_mode = true, -- enable cursor planning mode!
     },
     mappings = {
       --- @class AvanteConflictMappings
@@ -134,7 +141,7 @@ return {
   },
   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
   build = vim.fn.has("win32") == 1 and "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false"
-    or "make",
+    or "make BUILD_FROM_SOURCE=true",
   dependencies = {
     "stevearc/dressing.nvim",
     "nvim-lua/plenary.nvim",
