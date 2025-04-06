@@ -17,19 +17,13 @@ export LANG=en_US.UTF-8
 export EDITOR=nvim
 export TERM=screen-256color-bce
 
-if [[ -f ~/.netrc ]]; then
-  while IFS= read -r line; do
-    # Skip empty lines and lines starting with #
-    [[ -z "$line" || "$line" == \#* ]] && continue
-    
-    # Match lines like: a="b"
-    if [[ $line =~ '^([A-Za-z_][A-Za-z0-9_]*)="(.*)"$' ]]; then
-      key=${match[1]}
-      value=${match[2]}
-      export $key="$value"
-    fi
-  done < ~/.netrc
-fi
+eval "$(
+  gpg --quiet --decrypt ~/.authinfo.gpg | \
+  awk '/machine/ {
+    # For each line that has "machine", print an export statement: login="password"
+    printf "export \"%s\"=\"%s\"\n", $4, $6
+  }'
+)"
 # add path
 export PATH="$HOME/.local/bin/:$PATH"
 export PATH="$HOME/.cargo/bin/:$PATH"
