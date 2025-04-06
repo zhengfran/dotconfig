@@ -17,6 +17,15 @@ return {
       form = {
         border = "rounded",
         win_opts = { winblend = 10 },
+        strategy = {
+          "terminal",
+          use_shell = true,
+          direction = "horizontal",
+          close_on_exit = false,
+          quit_on_exit = "never",
+          open_on_start = true,
+          hidden = false,
+        },
       },
     })
 
