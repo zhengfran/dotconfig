@@ -26,14 +26,22 @@ eval "$(
 )"
 # add path
 export PATH="$HOME/.local/bin/:$PATH"
-export PATH="$HOME/.cargo/bin/:$PATH"
+if [[ "$(uname)" == "Darwin" ]]; then
+  export PATH="/opt/homebrew/opt/rustup/bin:$PATH"
+else
+  export PATH="$HOME/.cargo/bin/:$PATH"
+fi
 export PATH="$HOME/.config/doomemacs/bin/:$PATH"
 
 # wsl related
 # check if it is wsl
 is_wsl() {
-  if grep -qi "microsoft" /proc/version; then
-    return 0  # True: Inside WSL
+  if [[ "$OS" == "Linux" ]]; then
+    if grep -qi "microsoft" /proc/version; then
+      return 0  # True: Inside WSL
+    else
+      return 1
+    fi
   else
     return 1  # False: Not in WSL
   fi
