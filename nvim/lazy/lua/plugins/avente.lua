@@ -5,29 +5,36 @@ return {
   version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
   opts = {
     ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
-    provider = "openrouter_deepseek_v3", -- In this example, use Claude for planning, but you can also use any provider you want.
+    provider = "openrouter_gemini", -- In this example, use Claude for planning, but you can also use any provider you want.
     cursor_applying_provider = "openrouter_gemini", -- In this example, use Groq for applying, but you can also use any provider you want.
     vendors = {
-      openrouter_claude = {
+      ["openrouter_claude"] = {
         __inherited_from = "openai",
         endpoint = "https://openrouter.ai/api/v1",
         api_key_name = "OPENROUTER_API_KEY",
         model = "anthropic/claude-3.7-sonnet",
         disable_tools = true,
       },
-      openrouter_gemini = {
+      ["openrouter_gemini"] = {
         __inherited_from = "openai",
         endpoint = "https://openrouter.ai/api/v1",
         api_key_name = "OPENROUTER_API_KEY",
-        model = "google/gemini-2.5-pro-preview-03-25",
+        model = "google/gemini-2.5-pro-exp-03-25:free",
         disable_tools = true,
       },
-      --- for testing
-      openrouter_deepseek_v3 = {
+      ["openrouter_deepseek_v3"] = {
         __inherited_from = "openai",
         endpoint = "https://openrouter.ai/api/v1",
         api_key_name = "OPENROUTER_API_KEY",
-        model = "deepseek/deepseek-v3-base:free",
+        model = "deepseek/deepseek-chat-v3-0324",
+        disable_tools = true,
+      },
+      ["claude-3.7"] = {
+        model = "claude-3.7-sonnet-latest",
+        disable_tools = true,
+      },
+      ["claude-3.5"] = {
+        model = "claude-3.5-sonnet-latest",
         disable_tools = true,
       },
     },
@@ -115,6 +122,15 @@ return {
         ---@type "ours" | "theirs"
         focus_on_apply = "ours", -- which diff to focus after applying
       },
+    },
+    chat_history = {
+      enabled = true,
+      max_history = 50,
+      storage_path = vim.fn.stdpath("data") .. "/avante_chat_history.json",
+    },
+    history = {
+      max_tokens = 4096,
+      storage_path = vim.fn.stdpath("state") .. "/avante",
     },
     highlights = {
       -- stylua: ignore
