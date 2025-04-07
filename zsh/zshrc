@@ -20,7 +20,6 @@ export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 
 if [[ "$(uname)" == "Linux" ]]; then
     # Linux-specific configuration
-	  eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
 elif [[ "$(uname)" == "Darwin" ]]; then
     # macOS-specific configuration
 		# use /opt/brew/bin first on my mac(m1)
