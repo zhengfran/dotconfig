@@ -1,18 +1,40 @@
 -- Keymaps are automatically loaded on the VeryLazy event
 -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
 -- Add any additional keymaps here
-local mode_n = { "n" }
-local mode_i = { "i" }
-local mode_v = { "v" }
--- local mode_nv = { "n", "v" }
-local nmappings = {
-  { from = "<c-q>",      to = ":q<CR>",          mode = mode_n },
-  { from = "<c-q>",      to = "<C-o>:q<CR>",     mode = mode_i },
-  { from = "jj",         to = "<Esc>",           mode = mode_i },
-  { from = "<c-q>",      to = "<Esc>:q<CR>",     mode = mode_v },
-  { from = "<leader>qf", to = "<cmd>cclose<CR>", mode = mode_n },
-}
 
-for _, mapping in ipairs(nmappings) do
-  vim.keymap.set(mapping.mode or "n", mapping.from, mapping.to, { noremap = true })
+local function mapkey(mode, lhs, rhs)
+  vim.api.nvim_set_keymap(mode, lhs, rhs, { noremap = true })
 end
+
+local function mapcmd(key, cmd)
+  vim.api.nvim_set_keymap("n", key, ":" .. cmd .. "<cr>", { noremap = true })
+end
+
+-- use arrow key for resize window
+mapcmd("<up>", "res +5")
+mapcmd("<down>", "res -5")
+mapcmd("<left>", "vertical resize-5")
+mapcmd("<right>", "vertical resize+5")
+-- use leader q for closing window
+mapkey("", "<leader>qj", "<C-w>j:q<CR>")
+mapkey("", "<leader>qk", "<C-w>k:q<CR>")
+mapkey("", "<leader>qh", "<C-w>h:q<CR>")
+mapkey("", "<leader>ql", "<C-w>l:q<CR>")
+-- use tab for indentation
+mapkey("x", "<s-tab>", "<gv")
+mapkey("x", "<tab>", ">gv")
+
+function Search_and_replace_current_file()
+  local search_text = vim.fn.input("Search for in current file: ")
+
+  local replace_text = vim.fn.input("Replace with: ")
+
+  if search_text ~= "" and replace_text ~= "" then
+    local cmd = string.format("!sed -i 's/%s/%s/g' %%", search_text, replace_text)
+    vim.cmd(cmd)
+    print("Replaced all occurrences of '" .. search_text .. "' with '" .. replace_text .. "' in current file.")
+  else
+    print("Search or replace text cannot be empty.")
+  end
+end
+mapcmd("<leader>sf", "lua Search_and_replace_current_file()")
