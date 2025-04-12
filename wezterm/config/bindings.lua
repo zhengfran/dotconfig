@@ -54,13 +54,13 @@ local keys = {
    { key = 'Backspace',  mods = mod.SUPER,     action = act.SendString '\x15' },
 
    -- copy/paste --
-   { key = 'c',          mods = 'CTRL|SHIFT',  action = act.CopyTo('Clipboard') },
-   { key = 'v',          mods = 'CTRL|SHIFT',  action = act.PasteFrom('Clipboard') },
+   { key = 'c',          mods = 'CTRL|SHIFT',  action = act.CopyTo('Clipboard')},
+   { key = 'v',          mods = 'CTRL|SHIFT',  action = act.PasteFrom('Clipboard')},
+   { key = 'r',          mods = 'CTRL|SHIFT',  action = act.EmitEvent("rename-tab")},
 
    -- tabs --
    -- tabs: spawn+close
    { key = 't',          mods = mod.SUPER,     action = act.SpawnTab('DefaultDomain') },
-   { key = 't',          mods = mod.SUPER_REV, action = act.SpawnTab({ DomainName = 'WSL:Ubuntu' }) },
    { key = 'w',          mods = mod.SUPER_REV, action = act.CloseCurrentTab({ confirm = false }) },
 
    -- tabs: navigation
@@ -155,7 +155,7 @@ local keys = {
       action = act.ActivateKeyTable({
          name = 'resize_font',
          one_shot = false,
-         timemout_miliseconds = 1000,
+         timemout_miliseconds = 2000,
       }),
    },
    -- resize panes
@@ -165,7 +165,17 @@ local keys = {
       action = act.ActivateKeyTable({
          name = 'resize_pane',
          one_shot = false,
-         timemout_miliseconds = 1000,
+         timemout_miliseconds = 2000,
+      }),
+   },
+   -- resize panes
+   {
+      key = 't',
+      mods = 'LEADER',
+      action = act.ActivateKeyTable({
+         name = 'spawn_tab',
+         one_shot = false,
+         timemout_miliseconds = 2000,
       }),
    },
 }
@@ -187,6 +197,17 @@ local key_tables = {
       { key = 'Escape', action = 'PopKeyTable' },
       { key = 'q',      action = 'PopKeyTable' },
    },
+   spawn_tab = {
+      { key = 'u', action = act.SpawnCommandInNewTab ({
+      args = { "C:\\Users\\uie41442\\scoop\\apps\\msys2\\current\\usr\\bin\\bash.exe", "-l" },
+        set_environment_variables = {
+          MSYSTEM = "UCRT64",
+          CHERE_INVOKING = "1",
+        },
+      })
+      },
+      { key = 'q',      action = 'PopKeyTable' },
+  },
 }
 
 local mouse_bindings = {

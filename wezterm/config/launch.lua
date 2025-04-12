@@ -15,6 +15,14 @@ if platform.is_win then
       label = "Git Bash",
       args = { "C:\\Users\\uie41442\\scoop\\apps\\git\\current\\bin\\bash.exe" },
     },
+    {
+      label = "MSYS2 UCRT64",
+      args = { "C:\\Users\\uie41442\\scoop\\apps\\msys2\\current\\usr\\bin\\bash.exe", "-l" },
+      set_environment_variables = {
+        MSYSTEM = "UCRT64",
+        CHERE_INVOKING = "1",
+      },
+    },
   }
 elseif platform.is_mac then
   options.default_prog = { "zsh", "-l" }
