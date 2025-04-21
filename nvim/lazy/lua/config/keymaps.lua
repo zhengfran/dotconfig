@@ -11,10 +11,10 @@ local function mapcmd(key, cmd)
 end
 
 -- use arrow key for resize window
-mapcmd("<up>", "res +5")
-mapcmd("<down>", "res -5")
-mapcmd("<left>", "vertical resize-5")
-mapcmd("<right>", "vertical resize+5")
+mapcmd("<leader><up>", "res +5")
+mapcmd("<leader><down>", "res -5")
+mapcmd("<leader><left>", "vertical resize-5")
+mapcmd("<leader><right>", "vertical resize+5")
 -- use leader q for closing window
 mapkey("", "<leader>qj", "<C-w>j:q<CR>")
 mapkey("", "<leader>qk", "<C-w>k:q<CR>")

@@ -5,8 +5,8 @@ return {
   version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
   opts = {
     ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
-    provider = "openrouter_gemini", -- In this example, use Claude for planning, but you can also use any provider you want.
-    cursor_applying_provider = "openrouter_gemini", -- In this example, use Groq for applying, but you can also use any provider you want.
+    provider = "openrouter_deepseek_v3", -- In this example, use Claude for planning, but you can also use any provider you want.
+    cursor_applying_provider = "openrouter_deepseek_v3", -- In this example, use Groq for applying, but you can also use any provider you want.
     vendors = {
       ["openrouter_claude"] = {
         __inherited_from = "openai",
