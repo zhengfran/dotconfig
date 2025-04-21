@@ -5,6 +5,7 @@ return {
     require("focus").setup({
       enable = true, -- Enable module
       commands = true, -- Create Focus commands
+      excluded_filetypes = { "fterm", "term" },
       autoresize = {
         enable = true, -- Enable or disable auto-resizing of splits
         width = 0, -- Force width for the focused window
