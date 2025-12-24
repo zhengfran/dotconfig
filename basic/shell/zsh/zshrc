@@ -1,6 +1,6 @@
-source ~/.config/shell/env
-source ~/.config/shell/aliases
-for f in ~/.config/shell/functions/*; do
+source ~/.config/common/env
+source ~/.config/common/aliases
+for f in ~/.config/common/functions/*; do
     [ -f "$f" ] && source "$f"
 done
 
