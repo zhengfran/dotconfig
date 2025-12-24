@@ -1,11 +1,12 @@
+#!/usr/bin/env bash
 
-# Fetch config if not present and set them up
-if [ ! -d ~/dotconfig ]; then
-    git clone -b Rebirth git@github.com:zhengfran/dotconfig.git ~/dotconfig
-fi
-# Symlink config files
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-##installtions
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-brew install zsh fzf fd ripgrep yazi lazygit
+echo "Setting up configuration files..."
+bash "$SCRIPT_DIR/setup-config.sh"
+
+echo "Installing packages..."
+bash "$SCRIPT_DIR/setup-packages.sh"
+
+echo "Setup complete!"
