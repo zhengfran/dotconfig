@@ -1,14 +1,1 @@
-**/plugin/packer_compiled.lua
-*.~undo-tree~
-**/tmp/
-**/.vscode
-**/bookmark
-**/yasb.log
-**/.DS_Store
-**/history*
-/rime/
-/yazi/flavors/
-/yazi/plugins/
-/emacs/default/
-*Zone.Identifier
-.aider*
+
