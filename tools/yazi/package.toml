@@ -1,24 +1,24 @@
 [[plugin.deps]]
 use = "dedukun/bookmarks"
-rev = "95b2c58"
-hash = "17a094653b7d0db4ac68ed531d2e1412"
+rev = "9ef1254"
+hash = "92fbb5483657fa7976cdf4e0104e18e0"
 
 [[plugin.deps]]
 use = "h-hg/yamb"
-rev = "22af003"
-hash = "7cc42012a7c2099f80064d228feb8d44"
+rev = "5f2e22e"
+hash = "699fe07e0d2d1b4af8dafb84168eeb04"
 
 [[plugin.deps]]
 use = "dedukun/relative-motions"
-rev = "8103065"
-hash = "9f13f0740fa3a0c18e47ec6fb62ddfaa"
+rev = "a603d9e"
+hash = "e02a788e5b8ae0fb47fd0193dda589cc"
 
 [[flavor.deps]]
 use = "PinThePenguine/sunset"
-rev = "181acd4"
-hash = "cc4c39af7098f02c42fec223fc1fc967"
+rev = "64ad82e"
+hash = "ae36775ed414cad1bcd7af692422df0f"
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-mocha"
-rev = "b929df6"
-hash = "2ac87e1b3a61f5887472899e86535d29"
+rev = "9276ffa"
+hash = "8d7799e4598ff079fa5ee5c770d9bc08"
