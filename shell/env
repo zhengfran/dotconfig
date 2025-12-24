@@ -1,0 +1,28 @@
+# environmental variables
+export PATH=$HOME/.local/bin:$PATH
+export XDG_CONFIG_HOME=$HOME/.config
+export LOCALBIN=$XDG_CONFIG_HOME/bin
+export PATH=$PATH:$LOCALBIN
+export PATH=$PATH:/usr/local/bin
+export PATH=$PATH:$HOME/go/bin
+export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
+export PATH=$PATH:/home/linuxbrew/.linuxbrew/sbin
+export PATH=$PATH:$HOME/.linuxbrew/bin
+export PATH=$PATH:$HOME/.linuxbrew/sbin
+export PATH=$PATH:/opt/homebrew/bin
+export PATH=$PATH:/opt/homebrew/sbin
+export PATH=$PATH:$HOME/.cargo/bin
+export PATH=$PATH:/snap/bin
+export PATH="$HOME/.config/doomemacs/bin/:$PATH"
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+export LANG=en_US.UTF-8
+unset LC_ALL
+export EDITOR=nvim
+export TERM=screen-256color-bce
+export TERM=screen-256color
+export TERM_ITALICS=true
+export EDITOR=nvim
+export ZSH_AUTOSUGGEST_USE_ASYNC=1
+export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
+export HOMEBREW_DOWNLOAD_CONCURRENCY=auto
