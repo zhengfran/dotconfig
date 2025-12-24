@@ -1,0 +1,13 @@
+
+# aliases
+alias c='clear'
+alias q='exit'
+alias lg='lazygit'
+alias nv='nvim'
+alias ta='tmux a'
+alias rl='source ~/.zshrc'
+alias bshconf='nvim $HOME/dotconfig/bash'
+alias zshconf='nvim $HOME/dotconfig/zsh'
+alias tmuxconfig='nvim $HOME/dotconfig/tmux'
+alias bark='wget --no-check-certificate "https://api.day.app/mupUWyEzXJpFVvXQpneELX/DONE"'
+alias fixwslg='ln -s /mnt/wslg/runtime-dir/wayland-* /run/user/1000/; ln -s /mnt/wslg/.X11-unix /tmp/.X11-unix'
