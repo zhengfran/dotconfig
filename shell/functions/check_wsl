@@ -1,0 +1,7 @@
+function is_wsl() {
+  if grep -qi "microsoft" /proc/version; then
+    return 0  # True: Inside WSL
+  else
+    return 1  # False: Not in WSL
+  fi
+}
