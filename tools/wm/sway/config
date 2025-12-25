@@ -46,6 +46,11 @@ bindsym $mod+Shift+Backspace exec swaylock -f -c $bg
 
 bindsym $mod+Return exec $term
 
+# Arrow keys
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
 
 # --- Move windows ---
 
