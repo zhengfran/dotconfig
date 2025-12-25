@@ -66,7 +66,7 @@ echo "==> Installing dependencies"
 
 sudo apt update
 sudo apt install -y \
-  build-essential autoconf texinfo git \
+  build-essential autoconf texinfo git cmake \
   libgccjit-13-dev \
   libjansson-dev libtree-sitter-dev \
   libgtk-3-dev \
@@ -76,6 +76,7 @@ sudo apt install -y \
   libwebkit2gtk-4.1-dev \
   libharfbuzz-dev libotf-dev \
   librime-dev \
+  libtool-bin \ 
   imagemagick libmagickwand-dev
 
 if [[ ${ENABLE_PGTK} -eq 1 ]]; then

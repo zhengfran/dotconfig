@@ -1086,10 +1086,13 @@
          (not (cl-some (lambda (tag) (member tag node-tags)) unwanted))))))
 (defun my/org-roam-refresh-agenda-list ()
   (interactive)
-  (setq org-agenda-files
-        (delete-dups (append org-agenda-files
-                             (my/org-roam-list-notes-by-tag "Project")))))
-(add-hook 'after-init-hook #'my/org-roam-refresh-agenda-list)
+  (when (featurep 'org-roam)
+    (setq org-agenda-files
+          (delete-dups (append org-agenda-files
+                               (my/org-roam-list-notes-by-tag "Project"))))))
+;; Only run after org-roam is loaded
+(with-eval-after-load 'org-roam
+  (my/org-roam-refresh-agenda-list))
 
 (defun my/org-roam-goto-month ()
   (interactive)
@@ -1292,8 +1295,8 @@
 (use-package elisp-format
       :ensure t)
 
-(use-package rust-mode
-  :ensure t)
+;; (use-package rust-mode
+;;   :ensure t)
 ;;(use-package rustic
 ;;  :ensure t
 ;;  :config
@@ -1302,6 +1305,77 @@
 ;;  (rustic-cargo-use-last-stored-arguments t))
 
 ;;(use-package lua-mode)
+
+(use-package vterm
+  :commands vterm
+  :config
+  ;; Speed up vterm
+  (setq vterm-max-scrollback 10000)
+  (setq vterm-buffer-name-string "vterm %s")
+  
+  ;; Disable line numbers in vterm
+  (add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode 0)))
+  
+  ;; Fix evil mode integration
+  (evil-set-initial-state 'vterm-mode 'emacs)
+  
+  ;; Keybindings for better navigation
+  (define-key vterm-mode-map (kbd "C-q") #'vterm-send-next-key)
+  (define-key vterm-mode-map (kbd "M-<left>") #'vterm-send-left)
+  (define-key vterm-mode-map (kbd "M-<right>") #'vterm-send-right)
+  
+  ;; Better copy mode
+  (define-key vterm-mode-map (kbd "C-c C-t") #'vterm-copy-mode)
+  
+  ;; Custom settings
+  :custom
+  (vterm-shell (or (executable-find "zsh") (getenv "SHELL") "/bin/bash"))
+  (vterm-kill-buffer-on-exit t)
+  (vterm-clear-scrollback-when-clearing t))
+
+;; Multi-vterm for managing multiple vterm buffers
+(use-package multi-vterm
+  :commands (multi-vterm multi-vterm-project)
+  :config
+  ;; Set the default shell
+  (setq multi-vterm-program (or (executable-find "zsh") (getenv "SHELL") "/bin/bash"))
+  
+  ;; Dedicated vterm window
+  (setq multi-vterm-dedicated-window-height-percent 30)
+  
+  :bind
+  (:map vterm-mode-map
+        ("C-c C-n" . multi-vterm-next)
+        ("C-c C-p" . multi-vterm-prev)))
+
+;; vterm-toggle for quick terminal popup
+(use-package vterm-toggle
+  :after vterm
+  :config
+  ;; Show vterm buffer in bottom side window
+  (setq vterm-toggle-fullscreen-p nil)
+  (add-to-list 'display-buffer-alist
+               '((lambda (buffer-or-name _)
+                   (let ((buffer (get-buffer buffer-or-name)))
+                     (with-current-buffer buffer
+                       (or (equal major-mode 'vterm-mode)
+                           (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                 (display-buffer-reuse-window display-buffer-at-bottom)
+                 (reusable-frames . visible)
+                 (window-height . 0.3)))
+  
+  :bind
+  (("C-`" . vterm-toggle)
+   ("C-~" . vterm-toggle-cd)))
+
+;; Key bindings with leader key
+(zzc/leader-keys
+  "v"  '(:ignore t :which-key "vterm")
+  "vv"  '(vterm :which-key "open vterm")
+  "vn"  '(multi-vterm :which-key "new vterm")
+  "vp"  '(multi-vterm-project :which-key "vterm in project")
+  "vt"  '(vterm-toggle :which-key "toggle vterm")
+  "vd"  '(vterm-toggle-cd :which-key "toggle vterm in current dir"))
 
 ;; (require 'posframe)
 ;; (use-package rime)
@@ -1316,17 +1390,22 @@
 :custom
 (default-input-method "rime")
 (rime-show-candidate 'posframe)
-(setq rime-user-data-dir "~/.config/rime")
-(setq rime-disable-predicates
-    '(rime-predicate-evil-mode-p
-      rime-predicate-after-ascii-char-p
-      rime-predicate-hydra-p
-      rime-predicate-tex-math-or-command-p
-      rime-predicate-prog-in-code-p)))
-
+(rime-user-data-dir "~/.config/rime")
+(rime-disable-predicates '(rime-predicate-evil-mode-p
+                            rime-predicate-after-ascii-char-p
+                            rime-predicate-hydra-p
+                            rime-predicate-tex-math-or-command-p
+                            rime-predicate-prog-in-code-p))
+:config
 ;; prevent rime crash
 (defun rime-lib-finalize() nil)
-(add-hook 'kill-emacs-hook #'rime-lib-finalize)
+(add-hook 'kill-emacs-hook #'rime-lib-finalize))
+
+(cond
+ ((and my/is-windows (not my/is-WSL)) ; Only Windows, not WSL
+  (set-clipboard-coding-system 'utf-8))
+ (my/is-WSL ; Specifically WSL
+  (set-clipboard-coding-system 'utf-8)))
 
 (use-package pangu-spacing)
 (require 'pangu-spacing)
