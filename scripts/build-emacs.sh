@@ -75,6 +75,7 @@ sudo apt install -y \
   librsvg2-dev \
   libwebkit2gtk-4.1-dev \
   libharfbuzz-dev libotf-dev \
+  librime-dev \
   imagemagick libmagickwand-dev
 
 if [[ ${ENABLE_PGTK} -eq 1 ]]; then

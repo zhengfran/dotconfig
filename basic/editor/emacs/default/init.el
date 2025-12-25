@@ -40,7 +40,7 @@
 ;; make sure shell PATH is same as emacs PATH 
 (use-package exec-path-from-shell
   :config
-  (setq shell-file-name "/home/linuxbrew/.linuxbrew/bin/zsh")
+  (setq shell-file-name "/usr/bin/zsh")
   (setq exec-path-from-shell-arguments '("-l"))
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
@@ -235,35 +235,49 @@
   :config
   (setq project-vc-extra-root-markers '(".project" "*.csproj")))
 
-(use-package perspective
-  :bind
-  ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
-;; :custom
-  ;; (persp-mode-prefix-key (kbd "SPC p"))  ; pick your own prefix key here
-  :config
-  (setq persp-state-default-file (expand-file-name ".persp-save" user-emacs-directory))
-  ;; Save perspectives without confirmation
-
-  (defun my/persp-state-save-silent ()
-  "Save perspective state without confirmation."
-  (let ((persp-state-save-behavior nil)) ; Prevent prompting
-    (persp-state-save persp-state-default-file)))
-
-  ;; Load perspectives without confirmation
-  (defun my/persp-state-load-silent ()
-    "Load perspective state without confirmation."
-    (when (file-exists-p persp-state-default-file)
-      (persp-state-load persp-state-default-file)))
-
-  ;; Automatically save perspectives when Emacs quits
-  (add-hook 'kill-emacs-hook #'my/persp-state-save-silent)
-  ;; Automatically load perspectives at startup
-  (add-hook 'emacs-startup-hook #'my/persp-state-load-silent)
-(zzc/leader-keys
-  "p" '(:keymap perspective-map :which-key "perspective")
-  :package 'perspective)
+(use-package persp-mode
   :init
-  (persp-mode))
+  (setq wg-morph-on nil) ; switch off animation
+  (setq persp-autokill-buffer-on-remove 'kill-weak)
+  (setq persp-auto-save-fname (expand-file-name ".persp-save" user-emacs-directory))
+  (setq persp-auto-save-opt 1) ; auto-save on emacs exit
+  (setq persp-auto-resume-time 0) ; don't auto-resume on startup (we'll do it manually)
+  :config
+  (persp-mode 1)
+  
+  ;; Auto-save perspectives periodically
+  (add-hook 'persp-mode-hook
+            (lambda ()
+              (when (and persp-mode (not (persp-is-frame-daemons-frame)))
+                (persp-auto-save-and-notify))))
+  
+  ;; Load perspectives at startup
+  (defun my/persp-load-on-startup ()
+    "Load persp-mode state at startup."
+    (when (file-exists-p persp-auto-save-fname)
+      (persp-load-state-from-file persp-auto-save-fname)))
+  
+  (add-hook 'emacs-startup-hook #'my/persp-load-on-startup)
+  
+  ;; Key bindings
+  :bind
+  ("C-x C-b" . persp-switch-to-buffer)
+  :custom
+  (persp-nil-name "main"))
+
+(zzc/leader-keys
+  "p" '(:ignore t :which-key "persp")
+  "ps" '(persp-switch :which-key "switch perspective")
+  "pk" '(persp-kill :which-key "kill perspective")
+  "pr" '(persp-rename :which-key "rename perspective")
+  "pa" '(persp-add-buffer :which-key "add buffer")
+  "pA" '(persp-set-buffer :which-key "set buffer")
+  "pb" '(persp-switch-to-buffer :which-key "switch to buffer")
+  "pi" '(persp-import-buffers :which-key "import buffers")
+  "pn" '(persp-next :which-key "next perspective")
+  "pp" '(persp-prev :which-key "previous perspective")
+  "pS" '(persp-save-state-to-file :which-key "save state")
+  "pL" '(persp-load-state-from-file :which-key "load state"))
 
 (defun my-scratch-buffer-no-save ()
   "Prevent any buffer with *scratch* in its name from being marked as modified."
@@ -426,8 +440,8 @@
   :hook (dired-mode . treemacs-icons-dired-enable-once)
   :ensure t)
 
-(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+(use-package treemacs-persp
+  :after (treemacs persp-mode)
   :ensure t
   :config (treemacs-set-scope-type 'Perspectives))
 
@@ -515,42 +529,42 @@
   (completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package embark
-    :bind
-    ( "C-;" . 'embark-act))
-  (use-package consult
-    :defer 1
-    :bind
-    ( "C-s" . 'consult-line)
-    ;; Enable automatic preview at point in the *Completions* buffer. This is
-    ;; relevant when you use the default completion UI.
-    :hook (completion-list-mode . consult-preview-at-point-mode)
+   :bind
+   ( "C-;" . 'embark-act))
+ (use-package consult
+   :defer 1
+   :bind
+   ( "C-s" . 'consult-line)
+   ;; Enable automatic preview at point in the *Completions* buffer. This is
+   ;; relevant when you use the default completion UI.
+   :hook (completion-list-mode . consult-preview-at-point-mode)
 
-    ;; The :init configuration is always executed (Not lazy)
-    :init
-    ;; Optionally configure the register formatting. This improves the register
-    ;; preview for `consult-register', `consult-register-load',
-    ;; `consult-register-store' and the Emacs built-ins.
-    (setq register-preview-delay 0.5
-          register-preview-function #'consult-register-format)
+   ;; The :init configuration is always executed (Not lazy)
+   :init
+   ;; Optionally configure the register formatting. This improves the register
+   ;; preview for `consult-register', `consult-register-load',
+   ;; `consult-register-store' and the Emacs built-ins.
+   (setq register-preview-delay 0.5
+         register-preview-function #'consult-register-format)
 
-    ;; Optionally tweak the register preview window.
-    ;; This adds thin lines, sorting and hides the mode line of the window.
-    (advice-add #'register-preview :override #'consult-register-window)
+   ;; Optionally tweak the register preview window.
+   ;; This adds thin lines, sorting and hides the mode line of the window.
+   (advice-add #'register-preview :override #'consult-register-window)
 
-    ;; Use Consult to select xref locations with preview
-    (setq xref-show-xrefs-function #'consult-xref
-          xref-show-definitions-function #'consult-xref)
-    ;; Configure other variables and modes in the :config section,
-    ;; after lazily loading the package.
-    :config
+   ;; Use Consult to select xref locations with preview
+   (setq xref-show-xrefs-function #'consult-xref
+         xref-show-definitions-function #'consult-xref)
+   ;; Configure other variables and modes in the :config section,
+   ;; after lazily loading the package.
+   :config
 
-    ;; Optionally configure preview. The default value
-    ;; is 'any, such that any key triggers the preview.
-    ;; (setq consult-preview-key 'any)
-    ;; (setq consult-preview-key "M-.")
-    ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
-    ;; For some commands and buffer sources it is useful to configure the
-    ;; :preview-key on a per-command basis using the `consult-customize' macro.
+   ;; Optionally configure preview. The default value
+   ;; is 'any, such that any key triggers the preview.
+   ;; (setq consult-preview-key 'any)
+   ;; (setq consult-preview-key "M-.")
+   ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+   ;; For some commands and buffer sources it is useful to configure the
+   ;; :preview-key on a per-command basis using the `consult-customize' macro.
     (consult-customize
      consult-theme :preview-key '(:debounce 0.2 any)
      consult-ripgrep consult-git-grep consult-grep
@@ -558,11 +572,11 @@
      consult--source-bookmark consult--source-file-register
      consult--source-recent-file consult--source-project-recent-file
      ;; :preview-key "M-."
-     :Preview-key '(:debounce 0.4 any))
+     :preview-key '(:debounce 0.4 any))
 
-    ;; Optionally configure the narrowing key.
-    ;; Both < and C-+ work reasonably well.
-    (setq consult-narrow-key "<") ;; "C-+"
+   ;; Optionally configure the narrowing key.
+   ;; Both < and C-+ work reasonably well.
+   (setq consult-narrow-key "<") ;; "C-+"
 
     ;; Optionally make narrowing help available in the minibuffer.
     ;; You may want to use `embark-prefix-help-command' or which-key instead.
@@ -761,9 +775,6 @@
   "tt" '(my/load-doom-theme :which-kei "themes")
 )
 
-;; (setq display-time-day-and-date t)
-;; (display-time-mode 1)
-
 (use-package all-the-icons
   :if (display-graphic-p)) ;M-x all-the-icon-install-fonts.
 (use-package minions
@@ -774,7 +785,9 @@
   :custom
   (doom-modeline-height 25)
   (doom-modeline-bar-width 3)
-  (doom-modeline-unicode-fallback t))
+  (doom-modeline-unicode-fallback t)
+  (doom-modeline-persp-name t)
+  (doom-modeline-persp-icon t))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -941,6 +954,43 @@
 ;;        ("Closed" . "DONE")
 ;;        ("Verifying" . "DONE"))))
 
+(setq org-agenda-dir "~/org/jira/")
+(setq org-agenda-files (directory-files-recursively org-agenda-dir "\\.org$"))
+
+(setq org-todo-keywords
+   '((sequence "TODO(t)" "ONGOING(o)" "|" "LOGGED(n@)" "DONE(d!)")))
+    ;; configure custom agenda views
+    (setq org-agenda-custom-commands
+     '(("d" "dashboard"
+       ((agenda "" ((org-deadline-warning-days 7)))
+        (todo "ongoing"
+  	((org-agenda-overriding-header "next tasks")))
+          (tags-todo "agenda/active" ((org-agenda-overriding-header "active projects")))))
+       ("n" "ongoing tasks"
+        ((todo "next"
+   	((org-agenda-overriding-header "next tasks")))))))
+
+      ;; do not display done items in org-agenda
+      (setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo '("Done" "LOGGED")))
+      ;;key-binds
+    (general-define-key
+     :prefix "C-c"
+     "a" 'org-agenda)
+    (add-hook 'org-agenda-mode-hook
+    	  (lambda ()
+    	    (local-set-key (kbd "k") 'org-agenda-previous-item)
+                (local-set-key (kbd "j") 'org-agenda-next-item)))
+    ;; save all org files after change todo
+    (defmacro η (fnc)
+      "return function that ignores its arguments and invokes fnc."
+      `(lambda (&rest _rest)
+         (funcall ,fnc)))
+    (advice-add 'org-deadline       :after (η #'org-save-all-org-buffers))
+    (advice-add 'org-schedule       :after (η #'org-save-all-org-buffers))
+    (advice-add 'org-store-log-note :after (η #'org-save-all-org-buffers))
+    (advice-add 'org-todo           :after (η #'org-save-all-org-buffers))
+    (advice-add 'org-priority       :after (η #'org-save-all-org-buffers))
+
 (use-package org-pomodoro)
 (setq org-pomodoro-audio-player "mpv"
       org-pomodoro-ticking-sound-p t
@@ -1052,7 +1102,7 @@
 
 (defun my/org-roam-goto-year ()
   (interactive)
-  (org-roam-capture- :goto (when (og-roam-node-from-title-or-alias (format-time-string "%Y")) '(4))
+  (org-roam-capture- :goto (when (org-roam-node-from-title-or-alias (format-time-string "%Y")) '(4))
                      :node (org-roam-node-create)
                      :templates '(("y" "year" plain "\n* goals\n\n%?* summary\n\n"
                                    :if-new (file+head "%<%Y>.org"
@@ -1111,7 +1161,7 @@
    ("C-c n e" . consult-org-roam-file-find)
    ("C-c n b" . consult-org-roam-backlinks)
    ("C-c n B" . consult-org-roam-backlinks-recursive)
-   ("C-c n L" . consult-org-ro () am-forward-links)
+   ("C-c n L" . consult-org-roam-forward-links)
    ("C-c n r" . consult-org-roam-search))
 
 ;; org-roam capture 与 *Org-Select* 默认右侧打开
@@ -1266,6 +1316,7 @@
 :custom
 (default-input-method "rime")
 (rime-show-candidate 'posframe)
+(setq rime-user-data-dir "~/.config/rime")
 (setq rime-disable-predicates
     '(rime-predicate-evil-mode-p
       rime-predicate-after-ascii-char-p
@@ -1276,14 +1327,6 @@
 ;; prevent rime crash
 (defun rime-lib-finalize() nil)
 (add-hook 'kill-emacs-hook #'rime-lib-finalize)
-
-(cond
- ((and my/is-windows (not my/is-WSL)) ; Only Windows, not WSL
-  ;; (set-clipboard-coding-system 'euc-cn))
-  (set-clipboard-coding-system 'utf-8))
- (my/is-WSL ; Specifically WSL
-  ;; (set-clipboard-coding-system 'euc-cn)))
-  (set-clipboard-coding-system 'utf-8)))
 
 (use-package pangu-spacing)
 (require 'pangu-spacing)
