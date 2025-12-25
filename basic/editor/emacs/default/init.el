@@ -594,7 +594,7 @@
   (interactive)
   (save-excursion
     (goto-char 0)
-    (while (search-forward "\r" nil :noerror)
+   (while (search-forward "\r" nil :noerror)
       (replace-match ""))))
 
 (use-package yasnippet
@@ -602,7 +602,7 @@
   (add-hook 'yas-minor-mode-hook (lambda()
 				       (yas-activate-extra-mode 'fundamental-mode)))
   :config
-  (setq yas-snippet-dirs '("~/dotconfig/emacs/snippets")))
+  (setq yas-snippet-dirs '("~/.config/emacs/snippets")))
 (yas-global-mode 1)
 (zzc/leader-keys
   "s"  '(:ignore t :which-key "snippet")
@@ -726,7 +726,7 @@
   (interactive)
   (my/set-font (my/get-font-height) (selected-frame)))
 (global-set-key (kbd "C-x 9") #'my/set-font-current-frame)
-(add-hook 'after-init-hook #'my/set-font-current-frame)
+(add-hook 'window-setup-hook #'my/set-font-current-frame)
 
 (custom-set-faces
  '(region ((t (:background "yellow" :foreground "black" :weight bold)))))
@@ -763,8 +763,8 @@
   "tt" '(my/load-doom-theme :which-kei "themes")
 )
 
-(setq display-time-day-and-date t)
-(display-time-mode 1)
+;; (setq display-time-day-and-date t)
+;; (display-time-mode 1)
 
 (use-package all-the-icons
   :if (display-graphic-p)) ;M-x all-the-icon-install-fonts.
@@ -926,21 +926,21 @@
     (add-hook 'org-mode-hook 'my-org-hook)
     (add-to-list 'org-babel-load-languages '(shell . t)))
 
-(use-package org-jira
-  :config
-  (setq org-jira-working-dir "~/Documents/org/jira/")
-  (setq jiralib-url "https://jira.vni.agileci.conti.de")
-  (setq jiralib-token
-    (cons "Authorization"
-      (concat "Bearer " (auth-source-pick-first-password
-			 :host "jira.vni.agileci.conti.de"))))
-  (setq org-jira-use-status-as-todo nil)
-  (setq org-jira-jira-status-to-org-keyword-alist 
-     '(("Working" . "ONGOING")
-       ("New" . "TODO")
-       ("Ready" . "TODO")
-       ("Closed" . "DONE")
-       ("Verifying" . "DONE"))))
+;; (use-package org-jira
+;;   :config
+;;   (setq org-jira-working-dir "~/Documents/org/jira/")
+;;   (setq jiralib-url "https://jira.vni.agileci.conti.de")
+;;   (setq jiralib-token
+;;     (cons "Authorization"
+;;       (concat "Bearer " (auth-source-pick-first-password
+;; 			 :host "jira.vni.agileci.conti.de"))))
+;;   (setq org-jira-use-status-as-todo nil)
+;;   (setq org-jira-jira-status-to-org-keyword-alist 
+;;      '(("Working" . "ONGOING")
+;;        ("New" . "TODO")
+;;        ("Ready" . "TODO")
+;;        ("Closed" . "DONE")
+;;        ("Verifying" . "DONE"))))
 
 (use-package org-pomodoro)
 (setq org-pomodoro-audio-player "mpv"
@@ -1226,12 +1226,14 @@
 
 ;; automatically tangle our emacs.org config file when we save it
 (defun zzc/org-babel-tangle-config ()
-  (when (string-equal (buffer-file-name)
-                      (expand-file-name "~/dotconfig/emacs/config.org"))
+  (when (string-equal (file-truename (buffer-file-name))
+		      (file-truename (expand-file-name "~/dotconfig/basic/editor/emacs/default/config.org")))
     ;; dynamic scoping to the rescue
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
-(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'zzc/org-babel-tangle-config)))
+(add-hook 'org-mode-hook 
+          (lambda () 
+            (add-hook 'after-save-hook #'zzc/org-babel-tangle-config nil t)))
 
 ;; (use-package flycheck
 ;;   :init (global-flycheck-mode))
@@ -1288,50 +1290,3 @@
 (require 'pangu-spacing)
 (global-pangu-spacing-mode 1)
 (setq pangu-spacing-real-insert-separtor t)
-
-(use-package vterm)
-(with-eval-after-load 'vterm
-(add-hook 'vterm-mode-hook
-          (lambda ()
-            (setq buffer-save-without-query t))))
-(use-package eee
-   :straight (:host github :repo "eval-exec/eee.el" :files (:defaults "*.el" "*.sh"))
-   :config
-   (setq ee-terminal-command "st"))
-(zzc/leader-keys
-  "t"  '(:ignore t :which-key "toggle")
-  "tg"  '(ee-lazygit :which-key "lazygit")
-  "ty"  '(ee-yazi :which-key "yazi")
-)
-
-(use-package org-ai
-  :ensure t
-  :commands (org-ai-mode
-             org-ai-global-mode)
-  :init
-  (add-hook 'org-mode-hook #'org-ai-mode) ; enable org-ai in org-mode
-  (org-ai-global-mode) ; installs global keybindings on C-c M-a
-  :config
-  (setq org-ai-default-chat-model "gpt-4o") ; if you are on the gpt-4 beta:
-  (org-ai-install-yasnippets)) ; if you are using yasnippet and want `ai` snippets
-
-(use-package gptel
-  :ensure t
-  :custom
-  (setq gptel-api-key (auth-source-pick-first-password :host "openai.com"))
-  (gptel-model "gpt-4-turbo"))  ;; Use desired model
-  (setq gptel-prompt-templates
-    '(("Journal Analysis"
-       :system "I’d like you to take on the role of a supportive and understanding life coach. For this session, I want to imagine the best life possible across various areas of my life, including relationships, career, health, and mental well-being."
-       :user "Analyze the following journal entry and provide actionable advice in chinese. Output the possible todo items in emacs org todo format with level 3 heading\n\n{{input}}")))
-(defun my/gptel-analyze-current-buffer ()
-  "Send the content of the current buffer to GPTel using a saved prompt template."
-  (interactive)
-  (let* ((buffer-content (if (use-region-p)
-                             (buffer-substring-no-properties (region-beginning) (region-end))
-                           (buffer-substring-no-properties (point-min) (point-max))))
-         (template (assoc "Journal Analysis" gptel-prompt-templates)) ;; Retrieve the template
-         (system-message (plist-get (cdr template) :system))
-         (user-prompt (plist-get (cdr template) :user))
-         (final-prompt (replace-regexp-in-string "{{input}}" buffer-content user-prompt))) ;; Replace {{input}}
-    (gptel-request final-prompt :system system-message)))
