@@ -1,15 +1,16 @@
 #!/bin/bash
 
 # Linux → Windows (supports selection and hotkey copy, no Chinese garbled text)
-wl-paste --watch bash -c 'iconv -f UTF-8 -t UTF-16LE | clip.exe' &
-wl-paste --watch --primary bash -c 'iconv -f UTF-8 -t UTF-16LE | clip.exe' &
+wl-paste -t text --watch sh -c 'wl-paste -n | iconv -f UTF-8 -t UTF-16LE | clip.exe' &
+wl-paste -t text --primary --watch sh -c 'wl-paste -n --primary | iconv -f UTF-8 -t UTF-16LE | clip.exe' &
 
 # Windows → Linux (force UTF-8 output to prevent garbled text)
 last=""
 while true; do
     current=$(powershell.exe -NoProfile -Command "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-Clipboard -Raw" 2>/dev/null | tr -d '\r')
     if [[ "$current" != "$last" ]] && [[ -n "$current" ]]; then
-        echo -n "$current" | wl-copy --primary
+        echo -n "$current" | wl-copy              # Standard clipboard (Ctrl+V)
+        echo -n "$current" | wl-copy --primary    # Primary selection (middle-click)
         last="$current"
     fi
     sleep 0.3
