@@ -1,0 +1,66 @@
+#!/bin/bash
+## ~/.local/bin/start-sway
+# ============================================================
+# 1. Environment Initialization
+# ============================================================
+export USER_ID=$(id -u)
+export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$USER_ID}
+export WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}
+export DISPLAY=${DISPLAY:-:0}
+export XDG_SESSION_DESKTOP=sway
+export XDG_SESSION_TYPE=wayland
+
+# Ensure correct permissions for runtime directory (Wayland is very sensitive to this)
+[ ! -d "$XDG_RUNTIME_DIR" ] && mkdir -p "$XDG_RUNTIME_DIR"
+chmod 700 "$XDG_RUNTIME_DIR"
+
+# ============================================================
+# 2. Graphics Driver and Hardware Acceleration Configuration (Critical Fix Section)
+# ============================================================
+# Prefer WSL-specific library path
+export LD_LIBRARY_PATH=/usr/lib/wsl/lib:$LD_LIBRARY_PATH
+# Force use of Mesa's D3D12 bridge driver
+export __GLX_VENDOR_LIBRARY_NAME=mesa
+export GALLIUM_DRIVER=d3d12
+
+# Prevent loading of native NVIDIA Linux libraries that cause segmentation faults (Core Fix)
+MESA_JSON="/usr/share/glvnd/egl_vendor.d/50_mesa.json"
+if [ -f "$MESA_JSON" ]; then
+    export __EGL_VENDOR_LIBRARY_FILENAMES="$MESA_JSON"
+fi
+
+# ============================================================
+# 3. WSLg Channel Mapping
+# ============================================================
+# Re-establish X11 link (ensure XWayland and X11 applications are available)
+if mountpoint -q /tmp/.X11-unix; then umount /tmp/.X11-unix; fi
+rm -rf /tmp/.X11-unix && mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
+ln -sf /mnt/wslg/.X11-unix/X0 /tmp/.X11-unix/X0
+
+# Re-establish Wayland link
+ln -sf /mnt/wslg/runtime-dir/wayland-0 ${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}
+ln -sf /mnt/wslg/runtime-dir/wayland-0.lock ${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}.lock
+
+# ============================================================
+# 4. Start D-Bus and Sway
+# ============================================================
+# Ensure Systemd user instance is started
+if [[ ! -e ${XDG_RUNTIME_DIR}/bus ]]; then
+    systemctl --user start dbus.socket
+fi
+
+# Start Sway process
+dbus-run-session sway > /tmp/sway.log 2>&1 &
+
+# ============================================================
+# 5. Readiness Check and Post-processing
+# ============================================================
+echo "Waiting for Sway to initialize..."
+for i in {1..20}; do
+    if swaymsg -t get_outputs >/dev/null 2>&1; then
+        echo "Sway is active on $WAYLAND_DISPLAY"
+        swaymsg "workspace 1"
+        break
+    fi
+    sleep 0.5
+done
