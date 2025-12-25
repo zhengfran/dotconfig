@@ -10,3 +10,5 @@ source ~/.config/zsh/fzf.zsh
 autopair-init
 source ~/.zim/modules/fzf-tab/fzf-tab.plugin.zsh
 source ~/.config/zsh/prompt.zsh
+# opencode
+export PATH=/home/uie41442/.opencode/bin:$PATH

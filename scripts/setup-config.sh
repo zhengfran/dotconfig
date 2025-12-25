@@ -78,11 +78,61 @@ fi
 nvim_dir_path=$(find ~/dotconfig -type d -name "lazy" | head -n 1)
 if [ -n "$nvim_dir_path" ] && [ ! -e ~/.config/nvim ]; then
     echo "[INFO] Symlinking nvim dir: $nvim_dir_path -> ~/.config/nvim"
-    ln -s "$nvim_dir_path" ~/.config/nvim
+    git clone https://github.com/LazyVim/starter ~/.config/nvim
 elif [ -e ~/.config/nvim ]; then
     echo "[INFO] ~/.config/nvim already exists. Skipping."
 else
     echo "[WARN] lazy directory for nvim not found in dotconfig."
+fi
+
+## emacs
+if [ ! -e ~/.emacs.d ]; then
+    echo "[INFO] Cloning chemacs2 into ~/.emacs.d..."
+    git clone --depth 1 https://github.com/plexus/chemacs2.git ~/.emacs.d
+else
+    echo "[INFO] ~/.emacs.d already exists. Skipping chemacs2 clone."
+fi
+
+emacs_dir_path=$(find ~/dotconfig -type d -name "emacs" | head -n 1)
+if [ -n "$emacs_dir_path" ] && [ ! -e ~/.config/emacs ]; then
+    echo "[INFO] Symlinking emacs dir: $emacs_dir_path -> ~/.config/emacs"
+    ln -s "$emacs_dir_path" ~/.config/emacs
+    ln -s "$emacs_dir_path/chemacs/.emacs-profiles.el" ~/.emacs-profiles.el
+elif [ -e ~/.config/emacs ]; then
+    echo "[INFO] ~/.config/emacs already exists. Skipping."
+else
+    echo "[WARN] emacs directory not found in dotconfig."
+fi
+
+## sway
+sway_dir_path=$(find ~/dotconfig -type d -name "sway" | head -n 1)
+if [ -n "$sway_dir_path" ] && [ ! -e ~/.config/sway ]; then
+    echo "[INFO] Symlinking sway dir: $sway_dir_path -> ~/.config/sway"
+    ln -s "$sway_dir_path" ~/.config/sway
+
+    # Symlink individual scripts if scripts folder exists
+    sway_scripts_path="$sway_dir_path/scripts"
+    if [ -d "$sway_scripts_path" ]; then
+        mkdir -p ~/.local/bin
+        for script in "$sway_scripts_path"/*; do
+            if [ -f "$script" ]; then
+                script_name=$(basename "$script")
+                target="$HOME/.local/bin/$script_name"
+                if [ ! -e "$target" ]; then
+                    echo "[INFO] Symlinking script: $script -> $target"
+                    ln -s "$script" "$target"
+                else
+                    echo "[INFO] $target already exists. Skipping."
+                fi
+            fi
+        done
+    else
+        echo "[WARN] scripts directory not found under sway."
+    fi
+elif [ -e ~/.config/sway ]; then
+    echo "[INFO] ~/.config/sway already exists. Skipping."
+else
+    echo "[WARN] sway directory not found in dotconfig."
 fi
 
 echo "[INFO] setup-config.sh completed."
