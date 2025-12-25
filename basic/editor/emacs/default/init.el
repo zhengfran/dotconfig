@@ -40,7 +40,7 @@
 ;; make sure shell PATH is same as emacs PATH 
 (use-package exec-path-from-shell
   :config
-  (setq shell-file-name "/bin/bash")
+  (setq shell-file-name "/home/linuxbrew/.linuxbrew/bin/zsh")
   (setq exec-path-from-shell-arguments '("-l"))
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
@@ -49,10 +49,10 @@
   :config
   (setq esup-depth 0))
 
-(setq org_notes_dir "~/Documents/org/notes" ; org notes location
+(setq org_notes_dir "~/org/notes" ; org notes location
       zot_bib "~/Nutstore/1/Nutstore/Zotero-Library/Main.bib"; Zotero .bib 文件
       zot_pdf "~/Nutstore/1/Nutstore/Zotero-Library" ; Zotero 同步文件
-      org_notes "~/Documents/org/notes/ref/") ; org-roam 文献笔记目录
+      org_notes "~/org/notes/ref/") ; org-roam 文献笔记目录
 
 (unless (file-exists-p org_notes_dir) (setq org_notes_dir nil))
 (unless (file-exists-p zot_bib) (setq zot_bib nil))
@@ -322,7 +322,6 @@
 
 (zzc/leader-keys
   "="  '(:ignore t :which-key "open")
-  "=h" '((lambda () (interactive) (find-file "~/Documents/notes/20241004160632-habit_tracking.org")) :which-key "open habit.org")
   "=c" '((lambda () (interactive) (find-file "~/.config/emacs/config.org")) :which-key "open config file"))
 
 (zzc/leader-keys
@@ -656,7 +655,6 @@
 
 (defvar my/font-height 200)
 (defvar my/latex-preview-scale 1.3)
-
 (defvar my/mm-char-height 3.2) ;4.2mm
 ;; 当字体高度为 4.2 mm 时, 对应的字体大小 1080p: 15.5; 2K: 18; 4K: 22
 (defun my/get-font-height (&optional frame)
@@ -771,10 +769,11 @@
 (use-package minions
   :hook (doom-modeline-mode . minions-mode))
 (use-package doom-modeline
-  :hook (after-init . doom-modeline-mode)
+  :init
+  (doom-modeline-mode 1)
   :custom
-  (setq doom-modeline-height 25) ;; Adjust height for better appearance
-  (setq doom-modeline-bar-width 3) ;; Optional: Adjust bar width
+  (doom-modeline-height 25)
+  (doom-modeline-bar-width 3)
   (doom-modeline-unicode-fallback t))
 
 (use-package rainbow-delimiters
@@ -846,7 +845,7 @@
            (file-name-nondirectory
             (car (url-path-and-query
                   (url-generic-parse-url link)))))
-          (dirname (concat "~/Documents/org/notes/images/" (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))))
+          (dirname (concat "~/org/notes/images/" (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))))
       (setq org-download-image-dir dirname)
       (make-directory dirname t)
       (expand-file-name (funcall org-download-file-format-function filename) dirname)))
@@ -1129,7 +1128,7 @@
    ("M-e" . org-noter-insert-precise-note))
   :custom
   (org-noter-highlight-selected-text t)
-  (org-noter-notes-search-path '("~/Documents/org/notes/ref/"))
+  (org-noter-notes-search-path '("~/org/notes/ref/"))
   (org-noter-auto-save-last-location t))
 
 (use-package org-anki
