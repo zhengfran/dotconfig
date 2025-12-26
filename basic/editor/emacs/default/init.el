@@ -49,15 +49,25 @@
   :config
   (setq esup-depth 0))
 
-(setq org_notes_dir "~/org/notes" ; org notes location
+;; Centralized path configuration
+(defvar my/org-base-dir (expand-file-name "~/org/notes/")
+  "Base directory for all org-roam notes.")
+
+(setq org_notes_dir my/org-base-dir
       zot_bib "~/Nutstore/1/Nutstore/Zotero-Library/Main.bib"; Zotero .bib 文件
       zot_pdf "~/Nutstore/1/Nutstore/Zotero-Library" ; Zotero 同步文件
-      org_notes "~/org/notes/ref/") ; org-roam 文献笔记目录
+      org_notes (expand-file-name "ref/" my/org-base-dir)) ; org-roam 文献笔记目录
 
 (unless (file-exists-p org_notes_dir) (setq org_notes_dir nil))
 (unless (file-exists-p zot_bib) (setq zot_bib nil))
 (unless (file-exists-p zot_pdf) (setq zot_pdf nil))
 (unless (file-exists-p org_notes) (setq org_notes nil)) ; 防止文件不存在报错
+
+;; Create org-roam subdirectories if they don't exist
+(dolist (subdir '("daily" "projects" "meetings" "concepts" "lit" "ref" "templates"))
+  (let ((dir (expand-file-name subdir my/org-base-dir)))
+    (unless (file-exists-p dir)
+      (make-directory dir t))))
 
 (setq my/is-windows (eq system-type 'windows-nt)) ; Windows 
 (setq my/is-linux (eq system-type 'gnu/linux)) ; Linux
@@ -241,7 +251,7 @@
   (setq persp-autokill-buffer-on-remove 'kill-weak)
   (setq persp-auto-save-fname (expand-file-name ".persp-save" user-emacs-directory))
   (setq persp-auto-save-opt 1) ; auto-save on emacs exit
-  (setq persp-auto-resume-time 0) ; don't auto-resume on startup (we'll do it manually)
+  (setq persp-auto-resume-time 0) ; Don't use built-in auto-resume
   :config
   (persp-mode 1)
   
@@ -251,19 +261,48 @@
               (when (and persp-mode (not (persp-is-frame-daemons-frame)))
                 (persp-auto-save-and-notify))))
   
-  ;; Load perspectives at startup
+  ;; Load perspectives after Emacs is fully started
   (defun my/persp-load-on-startup ()
     "Load persp-mode state at startup."
     (when (file-exists-p persp-auto-save-fname)
-      (persp-load-state-from-file persp-auto-save-fname)))
+      (message "Loading perspectives from %s..." persp-auto-save-fname)
+      (condition-case err
+          (progn
+            (persp-load-state-from-file persp-auto-save-fname)
+            (message "Successfully loaded perspectives!"))
+        (error
+         (message "Failed to load perspectives: %s" (error-message-string err))))))
   
-  (add-hook 'emacs-startup-hook #'my/persp-load-on-startup)
+  ;; Delay loading until after startup message (0.5 seconds after emacs-startup-hook)
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (run-with-timer 0.5 nil #'my/persp-load-on-startup)))
   
   ;; Key bindings
   :bind
   ("C-x C-b" . persp-switch-to-buffer)
   :custom
   (persp-nil-name "main"))
+
+;; Interactive wrapper functions for manual save/load (defined OUTSIDE use-package)
+(defun my/persp-load-default ()
+  "Load persp-mode state from default save file."
+  (interactive)
+  (unless (featurep 'persp-mode)
+    (require 'persp-mode))
+  (if (file-exists-p persp-auto-save-fname)
+      (progn
+        (persp-load-state-from-file persp-auto-save-fname)
+        (message "Loaded perspectives from %s" persp-auto-save-fname))
+    (message "No saved perspective file found at %s" persp-auto-save-fname)))
+
+(defun my/persp-save-default ()
+  "Save persp-mode state to default save file."
+  (interactive)
+  (unless (featurep 'persp-mode)
+    (require 'persp-mode))
+  (persp-save-state-to-file persp-auto-save-fname)
+  (message "Saved perspectives to %s" persp-auto-save-fname))
 
 (zzc/leader-keys
   "p" '(:ignore t :which-key "persp")
@@ -276,8 +315,8 @@
   "pi" '(persp-import-buffers :which-key "import buffers")
   "pn" '(persp-next :which-key "next perspective")
   "pp" '(persp-prev :which-key "previous perspective")
-  "pS" '(persp-save-state-to-file :which-key "save state")
-  "pL" '(persp-load-state-from-file :which-key "load state"))
+  "pS" '(my/persp-save-default :which-key "save state")
+  "pL" '(my/persp-load-default :which-key "load state"))
 
 (defun my-scratch-buffer-no-save ()
   "Prevent any buffer with *scratch* in its name from being marked as modified."
@@ -306,6 +345,74 @@
   :ensure t
   :config
   (winum-mode))
+
+(use-package golden-ratio
+  :ensure t
+  :diminish golden-ratio-mode
+  :config
+  ;; Widescreen support - auto-scale on wide monitors
+  (setq golden-ratio-auto-scale t)
+  
+  ;; Exclude special modes from golden-ratio resizing
+  (setq golden-ratio-exclude-modes
+        '(ediff-mode
+          eshell-mode
+          dired-mode
+          term-mode
+          vterm-mode
+          compilation-mode
+          ibuffer-mode
+          treemacs-mode
+          pdf-view-mode
+          doc-view-mode
+          magit-mode
+          magit-status-mode
+          magit-log-mode
+          magit-diff-mode))
+  
+  ;; Exclude special buffer names from resizing
+  (setq golden-ratio-exclude-buffer-names
+        '("*Org Agenda*"
+          "*Org Select*"
+          "*which-key*"
+          "*Treemacs*"
+          " *NeoTree*"
+          "*Messages*"
+          "*Warnings*"))
+  
+  ;; Exclude buffer name patterns (regex)
+  (setq golden-ratio-exclude-buffer-regexp
+        '("^\\*helm.*"
+          "^\\*Flycheck.*"
+          "^\\*Warnings.*"
+          "^CAPTURE.*\\.org$"))
+  
+  ;; Integration with window commands - CRITICAL for golden-ratio to work
+  (add-to-list 'golden-ratio-extra-commands 'other-window)
+  (add-to-list 'golden-ratio-extra-commands 'select-window-1)
+  (add-to-list 'golden-ratio-extra-commands 'select-window-2)
+  (add-to-list 'golden-ratio-extra-commands 'select-window-3)
+  (add-to-list 'golden-ratio-extra-commands 'select-window-4)
+  (add-to-list 'golden-ratio-extra-commands 'select-window-5)
+  (add-to-list 'golden-ratio-extra-commands 'select-window-6)
+  (add-to-list 'golden-ratio-extra-commands 'select-window-7)
+  (add-to-list 'golden-ratio-extra-commands 'select-window-8)
+  (add-to-list 'golden-ratio-extra-commands 'select-window-9)
+  
+  ;; Integration with winum - golden-ratio triggers on window selection
+  (dolist (n (number-sequence 1 9))
+    (add-to-list 'golden-ratio-extra-commands 
+                 (intern (format "winum-select-window-%d" n))))
+  
+  ;; Integrate with other window navigation commands
+  (add-to-list 'golden-ratio-extra-commands 'windmove-left)
+  (add-to-list 'golden-ratio-extra-commands 'windmove-right)
+  (add-to-list 'golden-ratio-extra-commands 'windmove-up)
+  (add-to-list 'golden-ratio-extra-commands 'windmove-down)
+  (add-to-list 'golden-ratio-extra-commands 'ace-window)
+  
+  ;; Enable golden-ratio globally - MUST be last
+  (golden-ratio-mode 1))
 
 (defvar toggle-one-window-window-configuration nil
   "The window configuration use for `toggle-one-window'.")
@@ -787,7 +894,11 @@
   (doom-modeline-bar-width 3)
   (doom-modeline-unicode-fallback t)
   (doom-modeline-persp-name t)
-  (doom-modeline-persp-icon t))
+  (doom-modeline-persp-icon t)
+  :config
+  ;; Force doom-modeline to show persp name even for nil/main perspective
+  (setq doom-modeline-persp-name t)
+  (setq doom-modeline-display-default-persp-name t))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -920,8 +1031,9 @@
     :defer 10
     :custom
     (org-m-ret-may-split-line t)
-    (org-priority-lowest ?e) ; org-agenda 的优先级设为 a-e
-    (org-priority-default ?d) ; org-agenda 的默认优先级设为 d
+    (org-priority-highest ?A) ; org-agenda 的最高优先级设为 A
+    (org-priority-lowest ?C) ; org-agenda 的优先级设为 A-E
+    (org-priority-default ?C) ; org-agenda 的默认优先级设为 D
     ;; (org-startup-with-latex-preview t) ; 设为 t 则创建新笔记时会出错.
     :bind
     (:map org-mode-map
@@ -958,7 +1070,7 @@
 (setq org-agenda-files (directory-files-recursively org-agenda-dir "\\.org$"))
 
 (setq org-todo-keywords
-   '((sequence "TODO(t)" "ONGOING(o)" "|" "LOGGED(n@)" "DONE(d!)")))
+   '((sequence "TODO(t)" "ONGOING(o)" "|" "CANCEL(n@)" "DONE(d!)")))
     ;; configure custom agenda views
     (setq org-agenda-custom-commands
      '(("d" "dashboard"
@@ -971,7 +1083,7 @@
    	((org-agenda-overriding-header "next tasks")))))))
 
       ;; do not display done items in org-agenda
-      (setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo '("Done" "LOGGED")))
+      (setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo '("DONE" "CANCEL")))
       ;;key-binds
     (general-define-key
      :prefix "C-c"
@@ -1012,24 +1124,19 @@
   "cp" '(org-pomodoro :which-key "clock-pomodoro")
   "cd" '(org-clock-display :which-key "clock-display"))
 
-;; org-ref
-(use-package org-ref
-  :bind (:map org-mode-map
-              ("C-c (". org-ref-insert-label-link)
-              ("C-c )". org-ref-insert-ref-link)))
-;; org-transclusion
-(use-package org-transclusion)
-
 (setq my/daily-note-filename "%<%Y-%m-%d>.org" 
       my/daily-note-header "#+title: %<%Y-%m-%d %a>\n\n[[roam:%<%Y-w%W>]]\n\n[[roam:%<%Y-%B>]]\n\n* Tasks\n** Done\n** Meeting\n\n* Capture\n** Information\n** Opinions\n** Tools\n** Feelings\n\n* Reflection\n** One thing Good\n** One thing Bad\n** Questions to my self\n*** All the decisions make today, how many is by choice, and how many is by fear?\n* AI Summary")
 
 (use-package org-roam
     :custom
-    (org-roam-directory "~/Documents/org/notes/") 
+    (org-roam-directory my/org-base-dir)
     (org-roam-completion-everywhere t)
+    (org-roam-completion-system 'default)
     (org-roam-node-display-template 
      (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
     (org-roam-db-gc-threshold most-positive-fixnum)
+    (org-roam-db-update-on-save t)
+    (org-roam-db-update-idle-seconds 2.0)
     (org-roam-dailies-directory "daily/")
     (org-roam-dailies-capture-templates
     `(("d" "default" entry "* %?"
@@ -1042,28 +1149,54 @@
            ("C-c n i" . org-roam-node-insert)
            ("C-c n I" . org-roam-node-insert-immediate)
            ("C-c n t" . my/org-roam-capture-task)
-           ;; ("C-c n k" . orb-insert-link)
-           ;; ("C-c n a" . orb-note-actions)
            ("C-c n P" . my/org-roam-insert-new-project)
            ("C-c n p" . my/org-roam-find-project)
            ("C-c n u" . org-roam-ui-mode)
+           ("C-c n g" . org-roam-graph)
+           ("C-c n a" . org-roam-alias-add)
+           ("C-c n T" . org-roam-tag-add)
+           ("C-c n D" . org-roam-tag-remove)
+           ("C-c n m" . org-roam-buffer-display-dedicated)
+           ("C-c n s" . org-roam-db-sync)
+           ("C-c n S" . my/org-roam-db-diagnose)
+           ("C-c n Y" . my/org-roam-goto-year)
+           ("C-c n M" . my/org-roam-goto-month)
+           ("C-c n C" . my/org-roam-dailies-capture-date)
            :map org-mode-map
-           ("C-M-i". completion-at-point)
-           :map org-roam-dailies-map
-           ("T" . org-roam-dailies-capture-tomorrow))
-	   :bind-keymap
-           ("C-c d" . org-roam-dailies-map)
+           ("C-M-i". completion-at-point))
     :config
     (define-key org-roam-mode-map [mouse-1] (kbd "C-u <return>"))
-    (setq org-roam-capture-templates  ; org-roam
-          '(("d" "default" plain "%?" ; 
-             :target
-             (file+head "%<%y%m%d%h%m%s>-${slug}.org" "#+title: ${title} \n")
+    (setq org-roam-capture-templates
+          '(("d" "default" plain "%?"
+             :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n#+date: %U\n#+filetags: \n\n")
              :unnarrowed t)
-    ))
-    (require 'org-roam-dailies) 
+            
+            ("l" "literature" plain
+             "* Source\n\n%?\n\n* Summary\n\n* Key Points\n- \n\n* Personal Notes\n\n* Related\n"
+             :target (file+head "lit/%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n#+filetags: :literature:\n#+date: %U\n\n")
+             :unnarrowed t)
+            
+            ("m" "meeting" plain
+             "* Attendees\n- %?\n\n* Agenda\n- \n\n* Discussion\n\n* Action Items\n- [ ] \n\n* Follow-up\n"
+             :target (file+head "meetings/%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n#+filetags: :meeting:\n#+date: %U\n\n")
+             :unnarrowed t)
+            
+            ("c" "concept" plain
+             "* Definition\n\n%?\n\n* Examples\n- \n\n* Properties\n- \n\n* Related Concepts\n- \n\n* References\n"
+             :target (file+head "concepts/%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n#+filetags: :concept:\n#+date: %U\n\n")
+             :unnarrowed t)
+            
+            ("r" "reference" plain
+             "* Key Ideas\n\n%?\n\n* Quotes\n\n* Questions\n\n* Next Steps\n"
+             :target (file+head "ref/%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n#+filetags: :reference:\n#+date: %U\n\n")
+             :unnarrowed t)))
     (org-roam-db-autosync-mode) 
-    ;; (my/org-roam-refresh-agenda-list) 
+    (my/org-roam-refresh-agenda-list)
     (add-to-list 'org-after-todo-state-change-hook 
                  (lambda ()
                    (when (or (equal org-state "DONE")
@@ -1071,30 +1204,61 @@
                      (my/org-roam-copy-todo-to-today)))))
   (add-hook 'org-roam-mode-hook 'visual-line-mode) ; 自动换行
 
-(defun my/org-roam-filter-by-tag (tag-name) 
+(defun my/org-roam-filter-by-tag (tag-name)
+  "Return a predicate function that filters org-roam nodes by TAG-NAME.
+The returned lambda checks if TAG-NAME is present in a node's tags list."
   (lambda (node)
-      (member tag-name (org-roam-node-tags node)))) 
-(defun my/org-roam-list-notes-by-tag (tag-name) 
-   (mapcar #'org-roam-node-file
-            (seq-filter
-             (my/org-roam-filter-by-tag tag-name)
-             (org-roam-node-list))))
+    (member tag-name (org-roam-node-tags node))))
+
+(defun my/org-roam-list-notes-by-tag (tag-name)
+  "Return a list of file paths for all org-roam nodes tagged with TAG-NAME."
+  (mapcar #'org-roam-node-file
+          (seq-filter (my/org-roam-filter-by-tag tag-name)
+                      (org-roam-node-list))))
+
 (defun my/org-roam-filter-by-tags (wanted unwanted)
-(lambda (node)
-  (let ((node-tags (org-roam-node-tags node)))
-    (and (cl-some (lambda (tag) (member tag node-tags)) wanted)
-         (not (cl-some (lambda (tag) (member tag node-tags)) unwanted))))))
+  "Return a predicate that filters nodes having any tag in WANTED but none in UNWANTED.
+WANTED and UNWANTED should be lists of tag strings."
+  (lambda (node)
+    (let ((node-tags (org-roam-node-tags node)))
+      (and (cl-some (lambda (tag) (member tag node-tags)) wanted)
+           (not (cl-some (lambda (tag) (member tag node-tags)) unwanted))))))
+
 (defun my/org-roam-refresh-agenda-list ()
+  "Add all org-roam files tagged with 'Project' to `org-agenda-files'.
+This allows project files to appear in the org-agenda view."
   (interactive)
   (when (featurep 'org-roam)
     (setq org-agenda-files
           (delete-dups (append org-agenda-files
                                (my/org-roam-list-notes-by-tag "Project"))))))
+
+(defun my/org-roam-db-diagnose ()
+  "Clear and rebuild org-roam database to fix issues.
+Prompts for confirmation before clearing the database."
+  (interactive)
+  (when (yes-or-no-p "Clear and rebuild org-roam database? This may take a few minutes. Continue? ")
+    (message "Clearing org-roam database...")
+    (org-roam-db-clear-all)
+    (message "Rebuilding database from %s..." org-roam-directory)
+    (org-roam-db-sync)
+    (message "Org-roam database rebuilt successfully! Found %d nodes." 
+             (caar (org-roam-db-query "SELECT COUNT(*) FROM nodes")))))
+
+(defun my/org-roam-dailies-capture-date ()
+  "Capture to a daily note on a specific date selected from calendar.
+Prompts for date using org-mode's date picker."
+  (interactive)
+  (let ((time (org-read-date nil t nil "Daily note date:")))
+    (org-roam-dailies-capture-date time)))
+
 ;; Only run after org-roam is loaded
 (with-eval-after-load 'org-roam
   (my/org-roam-refresh-agenda-list))
 
 (defun my/org-roam-goto-month ()
+  "Navigate to or create a monthly planning note for the current month.
+Creates a note in the root directory with format YYYY-MMMM.org."
   (interactive)
   (org-roam-capture- :goto (when (org-roam-node-from-title-or-alias (format-time-string "%Y-%B")) '(4))
                      :node (org-roam-node-create)
@@ -1104,6 +1268,8 @@
                                    :unnarrowed t))))
 
 (defun my/org-roam-goto-year ()
+  "Navigate to or create a yearly planning note for the current year.
+Creates a note in the root directory with format YYYY.org."
   (interactive)
   (org-roam-capture- :goto (when (org-roam-node-from-title-or-alias (format-time-string "%Y")) '(4))
                      :node (org-roam-node-create)
@@ -1113,21 +1279,23 @@
                                    :unnarrowed t))))
 
 (defun my/set-orui-latex-macros ()
+  "Configure LaTeX macros for org-roam-ui mathematical notation rendering.
+Sets up commonly used mathematical symbols and operators."
   (setq org-roam-ui-latex-macros
-        '(("\\c" . "\\mathbb{c}")
+        '(("\\C" . "\\mathbb{C}")
           ("\\fc" . "\\mathcal{f}")
           ("\\nc" . "\\mathcal{n}")
           ("\\ps" . "\\mathsf{p}")
-          ("\\pp" . "\\mathbf{p}")
-          ("\\pp" . "\\mathbb{p}")
-          ("\\e" . "\\mathsf{e}")
-          ("\\ee" . "\\mathbf{e}")
-          ("\\ee" . "\\mathbb{e}")
+          ("\\ppbf" . "\\mathbf{p}")
+          ("\\ppbb" . "\\mathbb{p}")
+          ("\\esf" . "\\mathsf{e}")
+          ("\\eebf" . "\\mathbf{e}")
+          ("\\eebb" . "\\mathbb{e}")
           ("\\one" . "\\mathbf{1}")
-          ("\\r" . "\\mathbb{r}")
-          ("\\z" . "\\mathbb{z}")
-          ("\\q" . "\\mathbb{q}")
-          ("\\n" . "\\mathbb{n}")
+          ("\\R" . "\\mathbb{R}")
+          ("\\Z" . "\\mathbb{Z}")
+          ("\\Q" . "\\mathbb{Q}")
+          ("\\N" . "\\mathbb{N}")
           ("\\eps" . "\\varepsilon")
           ("\\det" . "\\mathop{det}"))))
 (use-package org-roam-ui
@@ -1136,7 +1304,7 @@
   (org-roam-ui-sync-theme t)
   (org-roam-ui-follow t)
   (org-roam-ui-update-on-save t)
-  (org-roam-ui-open-on-start t)
+  (org-roam-ui-open-on-start nil)
   :config
   (my/set-orui-latex-macros))
 
@@ -1167,6 +1335,25 @@
    ("C-c n L" . consult-org-roam-forward-links)
    ("C-c n r" . consult-org-roam-search))
 
+;; Org-roam leader key bindings under SPC n prefix
+(zzc/leader-keys
+  "n" '(:ignore t :which-key "notes")
+  "n f" '(org-roam-node-find :which-key "find node")
+  "n i" '(org-roam-node-insert :which-key "insert node")
+  "n c" '(org-roam-capture :which-key "capture")
+  "n j" '(org-roam-dailies-capture-today :which-key "daily today")
+  "n d" '(org-roam-dailies-goto-today :which-key "goto today")
+  "n y" '(org-roam-dailies-goto-yesterday :which-key "goto yesterday")
+  "n t" '(org-roam-dailies-goto-tomorrow :which-key "goto tomorrow")
+  "n D" '(org-roam-dailies-goto-date :which-key "goto date")
+  "n p" '(my/org-roam-find-project :which-key "find project")
+  "n P" '(my/org-roam-insert-new-project :which-key "new project")
+  "n T" '(my/org-roam-capture-task :which-key "capture task")
+  "n Y" '(my/org-roam-goto-year :which-key "goto year")
+  "n M" '(my/org-roam-goto-month :which-key "goto month")
+  "n u" '(org-roam-ui-open :which-key "open ui")
+  "n s" '(org-roam-db-sync :which-key "sync db"))
+
 ;; org-roam capture 与 *Org-Select* 默认右侧打开
 (add-to-list 'display-buffer-alist '("\\(^CAPTURE.*\.org$\\|\\*Org.*Select\\*$\\)"
                                      (display-buffer-in-side-window)
@@ -1181,7 +1368,7 @@
    ("M-e" . org-noter-insert-precise-note))
   :custom
   (org-noter-highlight-selected-text t)
-  (org-noter-notes-search-path '("~/org/notes/ref/"))
+  (org-noter-notes-search-path (list (expand-file-name "ref/" my/org-base-dir)))
   (org-noter-auto-save-last-location t))
 
 (use-package org-anki
@@ -1192,9 +1379,9 @@
 
 (defvar my/org-roam-project-template 
   '("p" "project" plain "** TODO %?"
-    :if-new (file+head+olp "%<%Y%m%d%H>-${slug}.org"
-                           "#+title: ${title}\n\n#+category: ${title}\n#+filetags: Project\n"
-                           ("tasks"))))
+    :if-new (file+head+olp "projects/%<%Y%m%d%H%M%S>-${slug}.org"
+                           "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: :Project:\n"
+                           ("Tasks"))))
 
 (defun my/org-roam-project-finalize-hook ()
   "adds the captured project file to `org-agenda-files' if the
@@ -1264,9 +1451,8 @@
 ;; Run once on startup
 (my/org-refile-update-targets)
 
-;; Update targets whenever `org-agenda-files` changes
-(add-hook 'org-agenda-mode-hook #'my/org-refile-update-targets)
-(add-hook 'org-mode-hook #'my/org-refile-update-targets)
+;; Update targets when project finalize hook runs (only when projects change)
+(advice-add 'my/org-roam-project-finalize-hook :after #'my/org-refile-update-targets)
 
 (org-babel-do-load-languages
   'org-babel-load-languages
