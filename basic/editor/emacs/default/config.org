@@ -348,8 +348,7 @@
     
     ;; Delay loading until after startup message (0.5 seconds after emacs-startup-hook)
     (add-hook 'emacs-startup-hook
-              (lambda ()
-                (run-with-timer 0.5 nil #'my/persp-load-on-startup)))
+              (lambda () (run-with-timer 0.5 nil #'my/persp-load-on-startup)))
     
     ;; Key bindings
     :bind
