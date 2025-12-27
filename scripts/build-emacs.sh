@@ -5,7 +5,6 @@ set -euo pipefail
 EMACS_VERSION="emacs-31"
 SRC_DIR="$HOME/src/emacs"
 PREFIX="/usr/local"
-ENABLE_PGTK=0
 JOBS="$(nproc)"
 # ------------------------------------------
 
@@ -17,8 +16,9 @@ Options:
   -v, --version <ver>     Emacs branch, tag, or commit (default: emacs-31)
   -s, --src <dir>         Emacs source directory (default: ~/src/emacs)
   -p, --prefix <dir>      Install prefix (default: /usr/local)
-      --pgtk              Enable Wayland (pgtk) backend
   -h, --help              Show this help
+
+Note: This script builds Emacs with Wayland (pgtk) support only, no X11.
 EOF
 }
 
@@ -37,10 +37,6 @@ while [[ $# -gt 0 ]]; do
       PREFIX="$2"
       shift 2
       ;;
-    --pgtk)
-      ENABLE_PGTK=1
-      shift
-      ;;
     -h|--help)
       usage
       exit 0
@@ -58,7 +54,7 @@ echo "==> Emacs build configuration"
 echo "Version      : ${EMACS_VERSION}"
 echo "Source dir   : ${SRC_DIR}"
 echo "Install to   : ${PREFIX}"
-echo "pgtk enabled : ${ENABLE_PGTK}"
+echo "Backend      : Wayland (pgtk)"
 echo
 
 # ---------------- dependencies ----------------
@@ -70,7 +66,7 @@ sudo apt install -y \
   libgccjit-13-dev \
   libjansson-dev libtree-sitter-dev \
   libgtk-3-dev \
-  libxpm-dev libjpeg-dev libpng-dev libtiff-dev libgif-dev \
+  libjpeg-dev libpng-dev libtiff-dev libgif-dev \
   libncurses-dev libxml2-dev libsqlite3-dev \
   librsvg2-dev \
   libwebkit2gtk-4.1-dev \
@@ -78,10 +74,6 @@ sudo apt install -y \
   librime-dev \
   libtool-bin \ 
   imagemagick libmagickwand-dev
-
-if [[ ${ENABLE_PGTK} -eq 1 ]]; then
-  sudo apt install -y libwebkit2gtk-4.1-dev
-fi
 # ------------------------------------------------
 
 # ---------------- source ----------------
@@ -113,14 +105,9 @@ CONFIG_FLAGS=(
   "--with-rsvg"
   "--with-imagemagick"
   "--with-sqlite3"
-  "--with-x-toolkit=gtk3"
+  "--with-pgtk"
+  "--without-x"
 )
-
-if [[ ${ENABLE_PGTK} -eq 1 ]]; then
-  CONFIG_FLAGS+=("--with-pgtk")
-else
-  CONFIG_FLAGS+=("--with-xwidgets")
-fi
 
 echo "==> Configuring Emacs"
 ./configure "${CONFIG_FLAGS[@]}"
