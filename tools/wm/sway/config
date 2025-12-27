@@ -1,7 +1,7 @@
 ### 变量定义
 set $mod Mod1
-set $term kitty
-set $menu fuzzel
+set $term env DISPLAY=:0 kitty
+set $menu env DISPLAY=:0 fuzzel
 set $bg #282828
 
 ### 基础设置
@@ -11,7 +11,15 @@ default_border pixel 2
 
 # XWayland 桥接与环境同步（WSLg 专用）
 xwayland enable
-exec dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
+exec dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway LD_LIBRARY_PATH __GLX_VENDOR_LIBRARY_NAME GALLIUM_DRIVER __EGL_VENDOR_LIBRARY_FILENAMES
+
+# ============================================================
+# Force X11 for ALL applications (GPU acceleration via WSLg)
+# ============================================================
+# Set DISPLAY globally in systemd user environment
+# This ensures ALL apps launched via Sway use WSLg's X server (:0)
+# which provides GPU acceleration through D3D12
+exec systemctl --user set-environment DISPLAY=:0
 
 ### 输入与显示配置 (WSLg 专用)
 
