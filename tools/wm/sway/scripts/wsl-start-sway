@@ -5,10 +5,13 @@
 # ============================================================
 export USER_ID=$(id -u)
 export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$USER_ID}
+# Prioritize X11 for GPU acceleration via WSLg
+# Applications will use DISPLAY=:0 (WSLg's X server with D3D12 GPU access)
+export DISPLAY=:0
 export WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}
-export DISPLAY=${DISPLAY:-:0}
 export XDG_SESSION_DESKTOP=sway
-export XDG_SESSION_TYPE=wayland
+# Set to x11 to make ALL apps prefer X11 over Wayland
+export XDG_SESSION_TYPE=x11
 
 # Ensure correct permissions for runtime directory (Wayland is very sensitive to this)
 [ ! -d "$XDG_RUNTIME_DIR" ] && mkdir -p "$XDG_RUNTIME_DIR"
@@ -26,7 +29,7 @@ export GALLIUM_DRIVER=d3d12
 # Prevent loading of native NVIDIA Linux libraries that cause segmentation faults (Core Fix)
 MESA_JSON="/usr/share/glvnd/egl_vendor.d/50_mesa.json"
 if [ -f "$MESA_JSON" ]; then
-    export __EGL_VENDOR_LIBRARY_FILENAMES="$MESA_JSON"
+  export __EGL_VENDOR_LIBRARY_FILENAMES="$MESA_JSON"
 fi
 
 # ============================================================
@@ -46,21 +49,44 @@ ln -sf /mnt/wslg/runtime-dir/wayland-0.lock ${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY
 # ============================================================
 # Ensure Systemd user instance is started
 if [[ ! -e ${XDG_RUNTIME_DIR}/bus ]]; then
-    systemctl --user start dbus.socket
+  systemctl --user start dbus.socket
 fi
 
 # Start Sway process
-dbus-run-session sway > /tmp/sway.log 2>&1 &
+dbus-run-session sway --unsupported-gpu >/tmp/sway.log 2>&1 &
 
 # ============================================================
 # 5. Readiness Check and Post-processing
 # ============================================================
 echo "Waiting for Sway to initialize..."
 for i in {1..20}; do
-    if swaymsg -t get_outputs >/dev/null 2>&1; then
-        echo "Sway is active on $WAYLAND_DISPLAY"
-        swaymsg "workspace 1"
-        break
-    fi
-    sleep 0.5
+  if swaymsg -t get_outputs >/dev/null 2>&1; then
+    echo "Sway is active on $WAYLAND_DISPLAY"
+    swaymsg "workspace 1"
+    break
+  fi
+  sleep 0.5
 done
+
+# ============================================================
+# 6. GPU Acceleration Verification
+# ============================================================
+echo ""
+echo "=== GPU Acceleration Status ==="
+if DISPLAY=:0 glxinfo -B 2>&1 | grep -q "direct rendering: Yes"; then
+  echo "✓ GPU acceleration is WORKING"
+  echo ""
+  echo "GPU Details:"
+  DISPLAY=:0 glxinfo -B 2>&1 | grep -E "Vendor:|Device:|Accelerated:|direct rendering" | sed 's/^/  /'
+  echo ""
+  echo "Environment:"
+  echo "  DISPLAY=$DISPLAY"
+  echo "  GALLIUM_DRIVER=$GALLIUM_DRIVER"
+  echo "  __GLX_VENDOR_LIBRARY_NAME=$__GLX_VENDOR_LIBRARY_NAME"
+else
+  echo "✗ WARNING: GPU acceleration NOT working"
+  echo "  Check DISPLAY and LD_LIBRARY_PATH settings"
+fi
+echo "==============================="
+echo ""
+
