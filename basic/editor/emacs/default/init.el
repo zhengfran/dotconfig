@@ -134,6 +134,34 @@
     :prefix "SPC"
     :global-prefix "C-SPC"))
 
+(defun my/reload-emacs-config ()
+    "Reload Emacs configuration by loading init.el.
+This is useful after making changes to config.org and tangling it."
+    (interactive)
+    (message "Reloading Emacs configuration...")
+    (load-file (expand-file-name "init.el" user-emacs-directory))
+    (message "Emacs configuration reloaded successfully!"))
+
+  (defun my/tangle-and-reload-config ()
+    "Tangle config.org and then reload the configuration.
+This is useful when you've edited config.org and want to apply changes immediately."
+    (interactive)
+    (if (and (buffer-file-name)
+             (string-match-p "config\\.org$" (buffer-file-name)))
+        (progn
+          (message "Tangling config.org...")
+          (org-babel-tangle)
+          (message "Config tangled successfully!")
+          (my/reload-emacs-config))
+      (message "Current buffer is not config.org. Reloading init.el anyway...")
+      (my/reload-emacs-config)))
+
+  ;; Keybindings for config reload
+  (zzc/leader-keys
+    "r"  '(:ignore t :which-key "reload")
+    "rr" '(my/reload-emacs-config :which-key "reload config")
+    "rt" '(my/tangle-and-reload-config :which-key "tangle & reload"))
+
 (use-package evil
   :demand t
   :bind (("<escape>" . keyboard-escape-quit))
@@ -206,17 +234,7 @@
 
 (setq
  display-buffer-alist
- '(;; Sort-tab window - must be at top, always 1 line
-   ("\\*sort-tab\\*"
-    (display-buffer-in-side-window)
-    (side . top)
-    (slot . 0)
-    (window-height . 1)
-    (preserve-size . (nil . t))
-    (window-parameters . ((no-other-window . t)
-                          (no-delete-other-windows . t))))
-   
-   ;; Help windows
+ '(;; Help windows
    ("^\\*[Hh]elp"                            ;正则匹配 buffer name
     (display-buffer-reuse-window
    ;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些 alist
@@ -251,9 +269,7 @@
   (other-window 1))
 
 (defadvice split-window-below (after split-window-below-and-focus activate)
-  ;; Don't auto-focus 1-line windows (used by sort-tab and similar utilities)
-  (unless (= (window-height) 1)
-    (other-window 1)))
+  (other-window 1))
 
 (use-package project
   ;; Cannot use :hook because 'project-find-functions does not end in -hook
@@ -419,26 +435,6 @@
   "w 8" '(my/tab-bar-select-tab-8 :which-key "workspace 8")
   "w 9" '(my/tab-bar-select-tab-9 :which-key "workspace 9"))
 
-(use-package sort-tab
-  :straight (sort-tab :type git
-                      :host github
-                      :repo "manateelazycat/sort-tab")
-  :after tab-bar
-  :config
-  ;; Enable sort-tab mode
-  (sort-tab-mode 1)
-  
-  ;; Optional: Customize sort-tab behavior
-  ;; Sort tabs by recently used (set to nil for recently used order)
-  (setq sort-tab-sort-by-name nil)
-  
-  ;; Key bindings for sort-tab functions under SPC T
-  (zzc/leader-keys
-    "t" '(:ignore t :which-key "tab sorting")
-    "tn" '(sort-tab-select-next-tab :which-key "next sorted tab")
-    "tp" '(sort-tab-select-prev-tab :which-key "prev sorted tab")
-    "to" '(sort-tab-turn-off :which-key "disable sort-tab")))
-
 (defun my-scratch-buffer-no-save ()
   "Prevent any buffer with *scratch* in its name from being marked as modified."
   (interactive)
@@ -496,7 +492,6 @@
         '("*Org Agenda*"
           "*Org Select*"
           "*which-key*"
-          "*sort-tab*"
           "*Treemacs*"
           " *NeoTree*"
           "*Messages*"
@@ -507,8 +502,7 @@
         '("^\\*helm.*"
           "^\\*Flycheck.*"
           "^\\*Warnings.*"
-          "^CAPTURE.*\\.org$"
-          "^\\*sort-tab.*"))
+          "^CAPTURE.*\\.org$"))
   
   ;; Integration with window commands - CRITICAL for golden-ratio to work
   (add-to-list 'golden-ratio-extra-commands 'other-window)
@@ -534,18 +528,15 @@
   (add-to-list 'golden-ratio-extra-commands 'windmove-down)
   (add-to-list 'golden-ratio-extra-commands 'ace-window)
   
-  ;; Additional function-based exclusion for sort-tab using golden-ratio-inhibit-functions
-  ;; This provides extra protection beyond buffer name/regexp matching
-  (defun my/golden-ratio-inhibit-sort-tab-p ()
-    "Return non-nil if sort-tab window should be excluded from golden-ratio.
-This checks buffer name and window-side parameter as additional safeguards."
-    (or (string-equal (buffer-name) "*sort-tab*")
-        (eq (window-parameter nil 'window-side) 'top)
-        (and (get-buffer-window "*sort-tab*")
-             (eq (selected-window) (get-buffer-window "*sort-tab*")))))
+  ;; Only enable golden-ratio when there are more than 2 windows
+  (defun my/golden-ratio-inhibit-few-windows ()
+    "Inhibit golden-ratio when there are 2 or fewer windows.
+This prevents golden-ratio from activating in simple window layouts."
+    (let ((window-count (length (cl-remove-if #'window-dedicated-p (window-list)))))
+      (<= window-count 2)))
   
   (add-to-list 'golden-ratio-inhibit-functions 
-               'my/golden-ratio-inhibit-sort-tab-p)
+               'my/golden-ratio-inhibit-few-windows)
   
   ;; Enable golden-ratio globally - MUST be last
   (golden-ratio-mode 1))
@@ -1215,6 +1206,16 @@ This checks buffer name and window-side parameter as additional safeguards."
 (setq org-agenda-dir "~/org/jira/")
 (setq org-agenda-files (directory-files-recursively org-agenda-dir "\\.org$"))
 
+;; Log timestamp when TODO state changes
+(setq org-log-done 'time)              ; Log timestamp when marking DONE
+(setq org-log-into-drawer t)           ; Store state changes in :LOGBOOK: drawer
+(setq org-log-state-notes-insert-after-drawers nil)  ; Insert state changes after properties
+
+;; TODO keywords with logging:
+;; ! = log timestamp when entering state
+;; @ = prompt for note when entering state
+;; Example: "DONE(d!)" logs timestamp when entering DONE
+;;          "CANCEL(n@)" prompts for cancellation reason
 (setq org-todo-keywords
    '((sequence "TODO(t)" "ONGOING(o)" "|" "CANCEL(n@)" "DONE(d!)")))
     ;; configure custom agenda views
@@ -1248,6 +1249,66 @@ This checks buffer name and window-side parameter as additional safeguards."
     (advice-add 'org-store-log-note :after (η #'org-save-all-org-buffers))
     (advice-add 'org-todo           :after (η #'org-save-all-org-buffers))
     (advice-add 'org-priority       :after (η #'org-save-all-org-buffers))
+
+(defun my/org-roam-get-daily-note-file ()
+    "Get the file path for today's daily note."
+    (let* ((time (current-time))
+           (dailies-dir (expand-file-name org-roam-dailies-directory org-roam-directory))
+           (filename (format-time-string "%Y-%m-%d.org" time)))
+      (expand-file-name filename dailies-dir)))
+
+  (defun my/org-roam-ensure-daily-note-exists ()
+    "Ensure today's daily note exists, creating it if necessary."
+    (let ((daily-file (my/org-roam-get-daily-note-file)))
+      (unless (file-exists-p daily-file)
+        ;; Create the daily note using org-roam-dailies
+        (save-window-excursion
+          (org-roam-dailies-goto-today)))
+      daily-file))
+
+  (defun my/refile-completed-task-to-daily ()
+    "Refile completed task to today's daily note under Tasks > Completed heading.
+This function is called automatically when a task is marked as DONE."
+    (when (and (eq major-mode 'org-mode)
+               (member (org-get-todo-state) '("DONE" "CANCEL")))
+      (let* ((daily-file (my/org-roam-ensure-daily-note-exists))
+             (task-heading (org-get-heading t t t t))
+             (task-body (save-excursion
+                          (org-back-to-heading t)
+                          (let ((start (point)))
+                            (org-end-of-subtree t t)
+                            (buffer-substring-no-properties start (point))))))
+        ;; Only refile if not already in daily note
+        (unless (string= (buffer-file-name) daily-file)
+          (save-excursion
+            ;; Find and append to Tasks > Completed in daily note
+            (with-current-buffer (find-file-noselect daily-file)
+              (goto-char (point-min))
+              ;; Find "Tasks" heading
+              (if (re-search-forward "^\\* Tasks" nil t)
+                  (progn
+                    ;; Find or create "Completed" subheading
+                    (let ((tasks-end (save-excursion
+                                       (org-end-of-subtree t t)
+                                       (point))))
+                      (if (re-search-forward "^\\*\\* Completed" tasks-end t)
+                          (progn
+                            ;; Go to end of Completed section
+                            (org-end-of-subtree t t)
+                            (insert "\n" task-body))
+                        ;; Create Completed subheading
+                        (org-end-of-subtree t t)
+                        (insert "\n** Completed\n" task-body)))
+                    (save-buffer))
+                (message "Warning: Could not find 'Tasks' heading in daily note"))))
+          ;; Delete the original task
+          (org-back-to-heading t)
+          (org-cut-subtree)
+          (save-buffer)
+          (message "Task refiled to daily note: %s" task-heading)))))
+
+  ;; Hook to auto-refile when TODO state changes to DONE/CANCEL
+  (add-hook 'org-after-todo-state-change-hook 'my/refile-completed-task-to-daily)
 
 (use-package org-pomodoro)
 (setq org-pomodoro-audio-player "mpv"
@@ -1716,6 +1777,26 @@ Sets up commonly used mathematical symbols and operators."
   "vp"  '(multi-vterm-project :which-key "vterm in project")
   "vt"  '(vterm-toggle :which-key "toggle vterm")
   "vd"  '(vterm-toggle-cd :which-key "toggle vterm in current dir"))
+
+(use-package eee
+   :straight '(eee :type git :host github :repo "eval-exec/eee.el"
+               :files (:defaults "*.el" "*.sh"))
+   :config
+  ;; Set terminal command based on system
+  (when my/is-WSL
+    (setq ee-terminal-command "kitty"))
+  (when my/is-mac
+    (setq ee-terminal-command "wezterm"))
+  
+  ;; Set custom kitty options with --class scratchterm (overwrite default)
+  (setq ee-terminal-options
+        '(("kitty" . "--class scratchterm")))
+  
+  ;; Keybindings
+  (zzc/leader-keys
+    "tf"  '(ee-find :which-key "find")
+    "tg"  '(ee-lazygit :which-key "lazygit")
+    "ty"  '(ee-yazi :which-key "yazi")))
 
 ;; (require 'posframe)
 ;; (use-package rime)
