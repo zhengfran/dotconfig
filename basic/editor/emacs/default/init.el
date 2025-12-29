@@ -434,7 +434,7 @@
 (setq bookmark-save-flag 1)
 (require 'bookmark)
 ;; set bookmark file to sync across difference device
-(setq bookmark-default-file "~/.config/emacs/bookmarks")
+(setq bookmark-default-file "~/.config/emacs/default/bookmarks")
 (zzc/leader-keys
   "bm"  '(:ignore t :which-key "bookmark")
   "bmm"  '(bookmark-set :which-key "Add current file/dir to bookmark")
@@ -708,6 +708,30 @@
     "jj" '(avy-goto-char :which-key "jump to char")
     "jw" '(avy-goto-word-0 :which-key "jump to word")
     "jl" '(avy-goto-line :which-key "jump to line")))
+
+(use-package multiple-cursors
+  :ensure t
+  :bind (("C->" . mc/mark-next-like-this)
+         ("C-<" . mc/mark-previous-like-this)
+         ("C-c C-<" . mc/mark-all-like-this)
+         ("C-S-c C-S-c" . mc/edit-lines))
+  :config
+  ;; Evil mode integration
+  (with-eval-after-load 'evil
+    (define-key evil-normal-state-map (kbd "g z") 'mc/mark-next-like-this)
+    (define-key evil-normal-state-map (kbd "g Z") 'mc/mark-previous-like-this)
+    (define-key evil-visual-state-map (kbd "g z") 'mc/mark-all-like-this))
+  
+  ;; Leader key bindings
+  (zzc/leader-keys
+    "m"  '(:ignore t :which-key "multiple-cursors")
+    "mn" '(mc/mark-next-like-this :which-key "mark next")
+    "mp" '(mc/mark-previous-like-this :which-key "mark previous")
+    "ma" '(mc/mark-all-like-this :which-key "mark all")
+    "ml" '(mc/edit-lines :which-key "edit lines")
+    "mr" '(mc/mark-all-in-region :which-key "mark all in region")
+    "ms" '(mc/skip-to-next-like-this :which-key "skip to next")
+    "mu" '(mc/unmark-next-like-this :which-key "unmark next")))
 
 (defun delete-carrage-returns ()
   (interactive)
@@ -1123,8 +1147,16 @@
   "cp" '(org-pomodoro :which-key "clock-pomodoro")
   "cd" '(org-clock-display :which-key "clock-display"))
 
-(setq my/daily-note-filename "%<%Y-%m-%d>.org" 
-      my/daily-note-header "#+title: %<%Y-%m-%d %a>\n\n[[roam:%<%Y-w%W>]]\n\n[[roam:%<%Y-%B>]]\n\n* Tasks\n** Done\n** Meeting\n\n* Capture\n** Information\n** Opinions\n** Tools\n** Feelings\n\n* Reflection\n** One thing Good\n** One thing Bad\n** Questions to my self\n*** All the decisions make today, how many is by choice, and how many is by fear?\n* AI Summary")
+(defun my/org-roam-daily-note-header ()
+  "Generate daily note header with links and template content."
+  (concat "#+title: " (format-time-string "%Y-%m-%d %a") "\n\n"
+          "[[roam:" (format-time-string "%Y-w%W") "]]\n\n"
+          "[[roam:" (format-time-string "%Y-%B") "]]\n\n"
+          (with-temp-buffer
+            (insert-file-contents "~/org/templates/daily.org")
+            (buffer-string))))
+
+(setq my/daily-note-filename "%<%Y-%m-%d>.org")
 
 (use-package org-roam
     :custom
@@ -1140,7 +1172,7 @@
     (org-roam-dailies-capture-templates
     `(("d" "default" entry "* %?"
        :if-new (file+head ,my/daily-note-filename
-                          ,my/daily-note-header))
+                          ,(my/org-roam-daily-note-header)))
       ))
     :bind (("C-c n l" . org-roam-buffer-toggle)
            ("C-c n f" . org-roam-node-find)
