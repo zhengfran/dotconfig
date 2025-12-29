@@ -1795,6 +1795,7 @@ Sets up commonly used mathematical symbols and operators."
   ;; Keybindings
   (zzc/leader-keys
     "tf"  '(ee-find :which-key "find")
+    "tr"  '(ee-rg :which-key "rg")
     "tg"  '(ee-lazygit :which-key "lazygit")
     "ty"  '(ee-yazi :which-key "yazi")))
 
