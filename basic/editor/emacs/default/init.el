@@ -440,14 +440,6 @@
   "bmm"  '(bookmark-set :which-key "Add current file/dir to bookmark")
   "bml"  '(list-bookmarks :which-key "Open Bookmark List"))
 
-(zzc/leader-keys
-  "="  '(:ignore t :which-key "open")
-  "=c" '((lambda () (interactive) (find-file "~/.config/emacs/config.org")) :which-key "open config file"))
-
-(zzc/leader-keys
-  "."  '(find-file :which-key "find file")
-  )
-
 (use-package treemacs
   :ensure t
   :defer t
