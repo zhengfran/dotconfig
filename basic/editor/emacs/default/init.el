@@ -290,8 +290,8 @@
 
 (use-package tab-bar
   :init
-  ;; Always show tab bar at top (per user preference)
-  (setq tab-bar-show t)
+  ;; Hide tab bar (workspaces managed in background)
+  (setq tab-bar-show nil)
   
   ;; Clean appearance - no extra buttons
   (setq tab-bar-close-button-show nil)
