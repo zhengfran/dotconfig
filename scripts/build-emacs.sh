@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # ---------------- defaults ----------------
-EMACS_VERSION="emacs-31"
-SRC_DIR="$HOME/src/emacs"
+EMACS_VERSION="emacs-30.2"
+SRC_DIR="$HOME/emacs-source-code"
 PREFIX="/usr/local"
 JOBS="$(nproc)"
 # ------------------------------------------
@@ -60,10 +60,14 @@ echo
 # ---------------- dependencies ----------------
 echo "==> Installing dependencies"
 
+# Detect available GCC version for libgccjit
+GCC_VERSION=$(gcc --version | head -n1 | grep -oP '\d+' | head -n1)
+echo "Detected GCC version: ${GCC_VERSION}"
+
 sudo apt update
 sudo apt install -y \
   build-essential autoconf texinfo git cmake \
-  libgccjit-13-dev \
+  libgccjit-${GCC_VERSION}-dev \
   libjansson-dev libtree-sitter-dev \
   libgtk-3-dev \
   libjpeg-dev libpng-dev libtiff-dev libgif-dev \
@@ -72,8 +76,9 @@ sudo apt install -y \
   libwebkit2gtk-4.1-dev \
   libharfbuzz-dev libotf-dev \
   librime-dev \
-  libtool-bin \ 
-  imagemagick libmagickwand-dev
+  libtool-bin \
+  imagemagick \
+  libmagickwand-dev
 # ------------------------------------------------
 
 # ---------------- source ----------------
