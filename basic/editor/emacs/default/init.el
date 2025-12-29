@@ -206,7 +206,18 @@
 
 (setq
  display-buffer-alist
- '(("^\\*[Hh]elp"                            ;正则匹配 buffer name
+ '(;; Sort-tab window - must be at top, always 1 line
+   ("\\*sort-tab\\*"
+    (display-buffer-in-side-window)
+    (side . top)
+    (slot . 0)
+    (window-height . 1)
+    (preserve-size . (nil . t))
+    (window-parameters . ((no-other-window . t)
+                          (no-delete-other-windows . t))))
+   
+   ;; Help windows
+   ("^\\*[Hh]elp"                            ;正则匹配 buffer name
     (display-buffer-reuse-window
    ;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些 alist
      display-buffer-in-side-window)
@@ -240,7 +251,9 @@
   (other-window 1))
 
 (defadvice split-window-below (after split-window-below-and-focus activate)
-  (other-window 1))
+  ;; Don't auto-focus 1-line windows (used by sort-tab and similar utilities)
+  (unless (= (window-height) 1)
+    (other-window 1)))
 
 (use-package project
   ;; Cannot use :hook because 'project-find-functions does not end in -hook
@@ -303,7 +316,7 @@
   (setq tab-bar-close-tab-select 'recent)
   
   ;; Show tab numbers for quick switching
-  (setq tab-bar-tab-hints t)
+  (setq tab-bar-tab-hints nil)
   
   ;; Tab bar format
   (setq tab-bar-format '(tab-bar-format-tabs tab-bar-separator))
@@ -406,6 +419,26 @@
   "w 8" '(my/tab-bar-select-tab-8 :which-key "workspace 8")
   "w 9" '(my/tab-bar-select-tab-9 :which-key "workspace 9"))
 
+(use-package sort-tab
+  :straight (sort-tab :type git
+                      :host github
+                      :repo "manateelazycat/sort-tab")
+  :after tab-bar
+  :config
+  ;; Enable sort-tab mode
+  (sort-tab-mode 1)
+  
+  ;; Optional: Customize sort-tab behavior
+  ;; Sort tabs by recently used (set to nil for recently used order)
+  (setq sort-tab-sort-by-name nil)
+  
+  ;; Key bindings for sort-tab functions under SPC T
+  (zzc/leader-keys
+    "t" '(:ignore t :which-key "tab sorting")
+    "tn" '(sort-tab-select-next-tab :which-key "next sorted tab")
+    "tp" '(sort-tab-select-prev-tab :which-key "prev sorted tab")
+    "to" '(sort-tab-turn-off :which-key "disable sort-tab")))
+
 (defun my-scratch-buffer-no-save ()
   "Prevent any buffer with *scratch* in its name from being marked as modified."
   (interactive)
@@ -463,6 +496,7 @@
         '("*Org Agenda*"
           "*Org Select*"
           "*which-key*"
+          "*sort-tab*"
           "*Treemacs*"
           " *NeoTree*"
           "*Messages*"
@@ -473,7 +507,8 @@
         '("^\\*helm.*"
           "^\\*Flycheck.*"
           "^\\*Warnings.*"
-          "^CAPTURE.*\\.org$"))
+          "^CAPTURE.*\\.org$"
+          "^\\*sort-tab.*"))
   
   ;; Integration with window commands - CRITICAL for golden-ratio to work
   (add-to-list 'golden-ratio-extra-commands 'other-window)
@@ -498,6 +533,19 @@
   (add-to-list 'golden-ratio-extra-commands 'windmove-up)
   (add-to-list 'golden-ratio-extra-commands 'windmove-down)
   (add-to-list 'golden-ratio-extra-commands 'ace-window)
+  
+  ;; Additional function-based exclusion for sort-tab using golden-ratio-inhibit-functions
+  ;; This provides extra protection beyond buffer name/regexp matching
+  (defun my/golden-ratio-inhibit-sort-tab-p ()
+    "Return non-nil if sort-tab window should be excluded from golden-ratio.
+This checks buffer name and window-side parameter as additional safeguards."
+    (or (string-equal (buffer-name) "*sort-tab*")
+        (eq (window-parameter nil 'window-side) 'top)
+        (and (get-buffer-window "*sort-tab*")
+             (eq (selected-window) (get-buffer-window "*sort-tab*")))))
+  
+  (add-to-list 'golden-ratio-inhibit-functions 
+               'my/golden-ratio-inhibit-sort-tab-p)
   
   ;; Enable golden-ratio globally - MUST be last
   (golden-ratio-mode 1))
