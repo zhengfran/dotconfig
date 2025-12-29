@@ -75,6 +75,8 @@ Desktop.ini
 # Emacs temp files
 .emacs.desktop
 .emacs.desktop.lock
+emacs-desktop
+emacs-desktop.lock
 auto-save-list
 ac-comphist.dat
 .mc-lists.el
