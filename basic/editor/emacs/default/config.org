@@ -436,6 +436,17 @@ Tab-bar provides multiple named workspaces for project separation.
           (consult-buffer))
       (consult-buffer)))
   
+  ;; Desktop save/load helpers without prompting
+  (defun my/desktop-save-default ()
+    "Save desktop to default directory without prompting."
+    (interactive)
+    (desktop-save desktop-dirname))
+  
+  (defun my/desktop-load-default ()
+    "Load desktop from default directory without prompting."
+    (interactive)
+    (desktop-read desktop-dirname))
+  
   ;; Key bindings with SPC w prefix
   (zzc/leader-keys
     "w"   '(:ignore t :which-key "workspace")
@@ -450,9 +461,9 @@ Tab-bar provides multiple named workspaces for project separation.
     "w ."   '(tab-bar-switch-to-recent-tab :which-key "recent workspace")
     "w p"   '(my/open-project-in-new-tab :which-key "open project in new tab")
     "w R"   '(tab-bar-rename-tab-by-name :which-key "rename workspace by name")
-    "w s"   '(desktop-save :which-key "save session")
+    "w s"   '(my/desktop-save-default :which-key "save session")
     "w S"   '(desktop-save-in-desktop-dir :which-key "save session now")
-    "w l"   '(desktop-read :which-key "load session")
+    "w l"   '(my/desktop-load-default :which-key "load session")
     "w k"   '(desktop-clear :which-key "clear session")))
 #+END_SRC
 
