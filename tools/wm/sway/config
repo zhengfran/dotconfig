@@ -32,12 +32,19 @@ exec ~/.local/bin/wsl-clipboard-sync
 # }
 
 # 显示器布局
-output * mode 3440x1440 position 0 1440
+# Resolution is now set dynamically by wsl-start-sway script
+# The script detects Windows monitor resolution and generates config.d/10-output.conf
+# To override, edit that file or uncomment below:
+# output * mode 3440x1440 position 0 1440
 # output * mode 1920x1080 position 0 1080
 
 
 # --- 鼠标主题 ---
 seat seat0 xcursor_theme Bibata-Modern-Ice 24
+
+### 窗口规则
+# Scratchterm - floating terminal in center
+for_window [app_id="scratchterm"] floating enable, resize set 80ppt 80ppt, move position center
 
 ### 键盘快捷键设置
 # --- Basic ---
@@ -192,3 +199,4 @@ bar {
 }
 
 include /etc/sway/config.d/*
+include ~/.config/sway/config.d/*
