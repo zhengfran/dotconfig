@@ -135,4 +135,15 @@ else
     echo "[WARN] sway directory not found in dotconfig."
 fi
 
+
+##AI
+opencode_dir_path=$(find ~/dotconfig -type d -name "opencode" | head -n 1)
+if [ -n "$opencode_dir_path" ] && [ ! -e ~/.config/opencode ]; then
+    echo "[INFO] Symlinking opencode dir: $opencode_dir_path -> ~/.config/opencode"
+    ln -s "$opencode_dir_path" ~/.config/opencode
+elif [ -e ~/.config/opencode ]; then
+    echo "[INFO] ~/.config/opencode already exists. Skipping."
+else
+    echo "[WARN] opencode directory not found in dotconfig."
+fi
 echo "[INFO] setup-config.sh completed."
