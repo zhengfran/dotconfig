@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Install devtools
+sudo apt install -y shfmt 
+
 # Install debian/ubuntu packages
 sudo apt install -y git wl-clipboard zsh ffmpeg 7zip jq poppler-utils zoxide imagemagick
 
