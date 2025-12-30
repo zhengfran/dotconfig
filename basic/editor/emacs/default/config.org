@@ -1428,7 +1428,7 @@ This prevents golden-ratio from activating in simple window layouts."
   ;; Example: "DONE(d!)" logs timestamp when entering DONE
   ;;          "CANCEL(n@)" prompts for cancellation reason
   (setq org-todo-keywords
-     '((sequence "TODO(t)" "ONGOING(o)" "|" "CANCEL(n@)" "DONE(d!)")))
+     '((sequence "TODO(t)" "ONGOING(o)" "|" "CANCEL(c@)" "DONE(d!)")))
       ;; configure custom agenda views
       (setq org-agenda-custom-commands
        '(("d" "dashboard"
@@ -1685,33 +1685,45 @@ Personal knowledge management system using org-roam v2.
 *** custom functions
 #+BEGIN_SRC emacs-lisp
 (defun my/org-roam-filter-by-tag (tag-name)
-  "Return a predicate function that filters org-roam nodes by TAG-NAME.
+  "Return a predicate function that filters org-roam nodes by TAG-NAME (case-insensitive).
 The returned lambda checks if TAG-NAME is present in a node's tags list."
   (lambda (node)
-    (member tag-name (org-roam-node-tags node))))
+    (cl-some (lambda (node-tag)
+               (string-equal-ignore-case tag-name node-tag))
+             (org-roam-node-tags node))))
 
 (defun my/org-roam-list-notes-by-tag (tag-name)
-  "Return a list of file paths for all org-roam nodes tagged with TAG-NAME."
+  "Return a list of file paths for all org-roam nodes tagged with TAG-NAME (case-insensitive)."
   (mapcar #'org-roam-node-file
           (seq-filter (my/org-roam-filter-by-tag tag-name)
                       (org-roam-node-list))))
 
 (defun my/org-roam-filter-by-tags (wanted unwanted)
-  "Return a predicate that filters nodes having any tag in WANTED but none in UNWANTED.
+  "Return a predicate that filters nodes having any tag in WANTED but none in UNWANTED (case-insensitive).
 WANTED and UNWANTED should be lists of tag strings."
   (lambda (node)
     (let ((node-tags (org-roam-node-tags node)))
-      (and (cl-some (lambda (tag) (member tag node-tags)) wanted)
-           (not (cl-some (lambda (tag) (member tag node-tags)) unwanted))))))
+      (and (cl-some (lambda (tag) 
+                      (cl-some (lambda (node-tag)
+                                 (string-equal-ignore-case tag node-tag))
+                               node-tags))
+                    wanted)
+           (not (cl-some (lambda (tag)
+                           (cl-some (lambda (node-tag)
+                                      (string-equal-ignore-case tag node-tag))
+                                    node-tags))
+                         unwanted))))))
 
 (defun my/org-roam-refresh-agenda-list ()
-  "Add all org-roam files tagged with 'Project' to `org-agenda-files'.
+  "Add all org-roam files tagged with 'Project' to `org-agenda-files' (case-insensitive).
 This allows project files to appear in the org-agenda view."
   (interactive)
   (when (featurep 'org-roam)
     (setq org-agenda-files
           (delete-dups (append org-agenda-files
-                               (my/org-roam-list-notes-by-tag "Project"))))))
+                               (my/org-roam-list-notes-by-tag "Project"))))
+    (message "Refreshed agenda list: %d project files found" 
+             (length (my/org-roam-list-notes-by-tag "Project")))))
 
 (defun my/org-roam-db-diagnose ()
   "Clear and rebuild org-roam database to fix issues.
@@ -1732,9 +1744,27 @@ Prompts for date using org-mode's date picker."
   (let ((time (org-read-date nil t nil "Daily note date:")))
     (org-roam-dailies-capture-date time)))
 
-;; Only run after org-roam is loaded
+;; Initial setup: run after org-roam is loaded
 (with-eval-after-load 'org-roam
   (my/org-roam-refresh-agenda-list))
+
+;; Automatic refresh hooks
+(defun my/org-roam-auto-refresh-agenda ()
+  "Automatically refresh org-agenda-files when org-roam database updates."
+  (when (and (featurep 'org-roam)
+             (buffer-file-name)
+             (string-prefix-p (expand-file-name org-roam-directory)
+                              (file-truename (buffer-file-name))))
+    (my/org-roam-refresh-agenda-list)))
+
+;; Hook into org-roam database sync
+(add-hook 'org-roam-db-autosync-mode-hook 'my/org-roam-refresh-agenda-list)
+
+;; Hook into after saving org-roam files
+(add-hook 'after-save-hook 'my/org-roam-auto-refresh-agenda)
+
+;; Hook into after org-roam capture finalize
+(add-hook 'org-roam-capture-new-node-hook 'my/org-roam-refresh-agenda-list)
 #+END_SRC
 
 *** roam journal
@@ -1747,7 +1777,7 @@ Creates a note in the root directory with format YYYY-MMMM.org."
                      :node (org-roam-node-create)
                      :templates '(("m" "month" plain "\n* goals\n\n%?* summary\n\n"
                                    :if-new (file+head "%<%Y-%B>.org"
-                                                      "#+title: %<%Y-%B>\n#+filetags: project\n")
+                                                      "#+title: %<%Y-%B>\n#+filetags: :project:\n")
                                    :unnarrowed t))))
 
 (defun my/org-roam-goto-year ()
@@ -1758,7 +1788,7 @@ Creates a note in the root directory with format YYYY.org."
                      :node (org-roam-node-create)
                      :templates '(("y" "year" plain "\n* goals\n\n%?* summary\n\n"
                                    :if-new (file+head "%<%Y>.org"
-                                                      "#+title: %<%Y>\n#+filetags: project\n")
+                                                      "#+title: %<%Y>\n#+filetags: :project:\n")
                                    :unnarrowed t))))
 #+end_src
 
@@ -1884,7 +1914,7 @@ Sets up commonly used mathematical symbols and operators."
     (defvar my/org-roam-project-template 
       '("p" "project" plain "** TODO %?"
         :if-new (file+head+olp "projects/%<%Y%m%d%H%M%S>-${slug}.org"
-                               "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: :Project:\n"
+                               "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: :project:\n"
                                ("Tasks"))))
 
 #+end_src
