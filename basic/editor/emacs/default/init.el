@@ -179,7 +179,7 @@ This is useful when you've edited config.org and want to apply changes immediate
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal)
   ;; Bind Enter to project-aware consult-buffer in normal mode
-  (define-key evil-normal-state-map (kbd "RET") 'my/consult-project-buffer)
+  (define-key evil-normal-state-map (kbd "SPC RET") 'consult-project-buffer)
   ;; Bind t to ace-window in normal mode
   (define-key evil-normal-state-map (kbd "t") 'ace-window))
   
