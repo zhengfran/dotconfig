@@ -49,7 +49,6 @@
     (load bootstrap-file nil 'nomessage))
   (straight-use-package 'use-package)
   (setq straight-use-package-by-default t)
-  (setq use-package-always-ensure t)
 #+end_src
 
 ** Package path
@@ -563,7 +562,6 @@ Tab-bar provides multiple named workspaces for project separation.
 ** Windows number
 #+BEGIN_SRC emacs-lisp
   (use-package winum
-    :ensure t
     :config
     (winum-mode))
 #+END_SRC
@@ -571,7 +569,6 @@ Tab-bar provides multiple named workspaces for project separation.
 ** Golden Ratio - Automatic Window Resizing
 #+BEGIN_SRC emacs-lisp
 (use-package golden-ratio
-  :ensure t
   :diminish golden-ratio-mode
   :config
   ;; Widescreen support - auto-scale on wide monitors
@@ -684,13 +681,12 @@ This prevents golden-ratio from activating in simple window layouts."
     (zzc/leader-keys
       "bm"  '(:ignore t :which-key "bookmark")
       "bmm"  '(bookmark-set :which-key "Add current file/dir to bookmark")
-      "bml"  '(list-bookmarks :which-key "Open Bookmark List"))
+      "bml"  '(consult-bookmark :which-key "Open Bookmark List"))
 
 #+end_src
 ** Treemacs
 #+BEGIN_SRC emacs-lisp
   (use-package treemacs
-    :ensure t
     :defer t
     :init
     (with-eval-after-load 'winum
@@ -780,16 +776,13 @@ This prevents golden-ratio from activating in simple window layouts."
           ("C-x t M-t" . treemacs-find-tag)))
 
   (use-package treemacs-evil
-    :after (treemacs evil)
-    :ensure t)
+    :after (treemacs evil))
 
   (use-package treemacs-icons-dired
-    :hook (dired-mode . treemacs-icons-dired-enable-once)
-    :ensure t)
+    :hook (dired-mode . treemacs-icons-dired-enable-once))
 
   (use-package treemacs-tab-bar
     :after (treemacs)
-    :ensure t
     :config (treemacs-set-scope-type 'Tabs))
   (defun treemacs-adjust-width-to-fit ()
     "Adjust Treemacs window width to fit the longest filename."
@@ -978,7 +971,6 @@ This prevents golden-ratio from activating in simple window layouts."
 ** Multiple Cursors
 #+BEGIN_SRC emacs-lisp
 (use-package multiple-cursors
-  :ensure t
   :bind (("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
          ("C-c C-<" . mc/mark-all-like-this)
@@ -1163,9 +1155,6 @@ This prevents golden-ratio from activating in simple window layouts."
     (custom-set-faces
      '(region ((t (:background "yellow" :foreground "black" :weight bold)))))
 #+end_src
-
-#+RESULTS:
-
 ** EMOJI
 #+BEGIN_SRC emacs-lisp
   (use-package emojify
@@ -1883,7 +1872,6 @@ Sets up commonly used mathematical symbols and operators."
 ** org-anki
 #+BEGIN_SRC emacs-lisp
   (use-package org-anki
-    :ensure t
     :after org
     :config
     (setq org-anki-default-deck "Mega"))
@@ -1992,9 +1980,109 @@ Sets up commonly used mathematical symbols and operators."
   'org-babel-load-languages
   '((emacs-lisp . t)
     (plantuml . t)
-    (python . t)))
+    (python . t)
+    (shell . t)))
 (setq org-confirm-babel-evaluate nil)
 (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
+#+end_src
+
+** org-src code block formatting
+*** Basic org-src settings
+#+begin_src emacs-lisp
+;; Org source block editing behavior
+(setq org-src-preserve-indentation nil
+      org-edit-src-content-indentation 0  ; No extra indentation
+      org-src-tab-acts-natively t          ; TAB works in native mode
+      org-src-fontify-natively t           ; Syntax highlighting
+      org-src-window-setup 'current-window) ; Edit in current window
+#+end_src
+
+*** Auto-format on save in org-src-edit buffers
+#+begin_src emacs-lisp
+(defun my/org-src-format-buffer ()
+  "Format code in org-src-edit buffer based on major mode."
+  (when (and (derived-mode-p 'prog-mode)
+             (not org-src-preserve-indentation))
+    (condition-case err
+        (cond
+         ;; Emacs Lisp
+         ((eq major-mode 'emacs-lisp-mode)
+          (require 'elisp-autofmt)
+          (elisp-autofmt-buffer))
+         ;; Shell scripts
+         ((or (eq major-mode 'sh-mode) (eq major-mode 'shell-script-mode))
+          (when (executable-find "shfmt")
+            (shell-command-on-region (point-min) (point-max) 
+                                     "shfmt" 
+                                     (current-buffer) t 
+                                     "*shfmt errors*" t)))
+         ;; Fallback for other modes
+         (t (indent-region (point-min) (point-max))))
+      (error 
+       (message "Formatting failed: %s, using indent-region" err)
+       (indent-region (point-min) (point-max))))))
+
+;; Add formatting hook to org-src-mode
+(add-hook 'org-src-mode-hook
+          (lambda ()
+            (when (derived-mode-p 'prog-mode)
+              (add-hook 'before-save-hook #'my/org-src-format-buffer nil t))))
+#+end_src
+
+*** Manual formatting keybindings
+#+begin_src emacs-lisp
+;; Keybindings for formatting code blocks
+(with-eval-after-load 'org
+  ;; Format entire code block from org-mode (C-c f b)
+  (define-key org-mode-map (kbd "C-c f b") 
+    (lambda () 
+      (interactive)
+      (if (org-in-src-block-p)
+          (progn
+            (org-edit-special)
+            (my/org-src-format-buffer)
+            (org-edit-src-exit))
+        (message "Not in a source block"))))
+  
+  ;; Format region in code block (C-c f r)
+  (define-key org-mode-map (kbd "C-c f r")
+    (lambda ()
+      (interactive)
+      (when (org-in-src-block-p)
+        (org-edit-special)
+        (indent-region (region-beginning) (region-end))
+        (org-edit-src-exit)))))
+
+;; Keybindings when editing code blocks with C-c '
+(with-eval-after-load 'org-src
+  (define-key org-src-mode-map (kbd "C-c C-f") 
+    (lambda ()
+      (interactive)
+      (my/org-src-format-buffer)))
+  (define-key org-src-mode-map (kbd "C-c C-r")
+    (lambda ()
+      (interactive)
+      (when (use-region-p)
+        (indent-region (region-beginning) (region-end))))))
+
+;; Add to leader key (SPC f)
+(with-eval-after-load 'general
+  (zzc/leader-keys
+    "f"  '(:ignore t :which-key "format")
+    "fb" '((lambda () 
+             (interactive)
+             (if (and (eq major-mode 'org-mode) (org-in-src-block-p))
+                 (progn
+                   (org-edit-special)
+                   (my/org-src-format-buffer)
+                   (org-edit-src-exit))
+               (indent-region (point-min) (point-max))))
+           :which-key "format buffer")
+    "fr" '((lambda ()
+             (interactive)
+             (when (use-region-p)
+               (indent-region (region-beginning) (region-end))))
+           :which-key "format region")))
 #+end_src
 
 ** auto-tangle configuration file
@@ -2027,8 +2115,24 @@ Sets up commonly used mathematical symbols and operators."
 ** elisp
 *** format
 #+BEGIN_SRC emacs-lisp
-(use-package elisp-format
-      :ensure t)
+(use-package elisp-autofmt
+  :straight t
+  :demand t
+  :config
+  (setq elisp-autofmt-style 'native)
+  (setq elisp-autofmt-format-quoted t)
+  (setq elisp-autofmt-empty-line-max 2))
+#+END_SRC
+
+** Shell Scripts
+*** sh-mode and formatting
+#+BEGIN_SRC emacs-lisp
+(use-package sh-script
+  :mode (("\\.sh\\'" . sh-mode)
+         ("\\.bash\\'" . sh-mode))
+  :config
+  (setq sh-basic-offset 2
+        sh-indentation 2))
 #+END_SRC
 
 ** Rust 
@@ -2113,7 +2217,7 @@ Sets up commonly used mathematical symbols and operators."
   
   :bind
   (("C-`" . vterm-toggle)
-   ("C-~" . vterm-toggle-cd)))
+   ("c-~" . VTERM-Toggle-cd)))
 
 ;; Key bindings with leader key
 (zzc/leader-keys
@@ -2149,12 +2253,9 @@ Sets up commonly used mathematical symbols and operators."
 #+END_SRC
 
 * Chinese
-** rime
+**  rime
 #+begin_src emacs-lisp
   ;; (require 'posframe)
-  ;; (use-package rime)
-  ;; (require 'rime)
-  ;; (setq default-input-method "rime")
   ;; (setq rime-show-candidate 'posframe)
   (use-package rime
   :straight (rime :type git
