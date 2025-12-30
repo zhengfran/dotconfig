@@ -1040,8 +1040,10 @@ This prevents golden-ratio from activating in simple window layouts."
   ;; Disable line numbers for some modes
   (dolist (mode '(org-mode-hook
                   term-mode-hook
-                  eshell-mode-hook))
-    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+                  eshell-mode-hook
+                  dired-mode-hook
+                  helpful-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode -1))))
   (defun doom/toggle-line-numbers ()
     "Toggle line numbers.
     Cycles through regular, relative and no line numbers. The order depends on what
@@ -1415,51 +1417,94 @@ This prevents golden-ratio from activating in simple window layouts."
 ** agenda 
 #+begin_src emacs-lisp
   (setq org-agenda-dir "~/org/jira/")
-  (setq org-agenda-files (directory-files-recursively org-agenda-dir "\\.org$"))
+  ;; Initialize with jira files, org-roam projects will be added when org-roam loads
+  (setq org-agenda-files 
+        (when (file-exists-p org-agenda-dir)
+          (directory-files-recursively org-agenda-dir "\\.org$")))
 
   ;; Log timestamp when TODO state changes
-  (setq org-log-done 'time)              ; Log timestamp when marking DONE
-  (setq org-log-into-drawer t)           ; Store state changes in :LOGBOOK: drawer
-  (setq org-log-state-notes-insert-after-drawers nil)  ; Insert state changes after properties
+  (setq org-log-done 'time)
+  (setq org-log-into-drawer t)
+  (setq org-log-state-notes-insert-after-drawers nil)
   
-  ;; TODO keywords with logging:
-  ;; ! = log timestamp when entering state
-  ;; @ = prompt for note when entering state
-  ;; Example: "DONE(d!)" logs timestamp when entering DONE
-  ;;          "CANCEL(n@)" prompts for cancellation reason
+  ;; TODO keywords with logging
   (setq org-todo-keywords
      '((sequence "TODO(t)" "ONGOING(o)" "|" "CANCEL(c@)" "DONE(d!)")))
-      ;; configure custom agenda views
-      (setq org-agenda-custom-commands
-       '(("d" "dashboard"
-         ((agenda "" ((org-deadline-warning-days 7)))
-          (todo "ongoing"
-    	((org-agenda-overriding-header "next tasks")))
-            (tags-todo "agenda/active" ((org-agenda-overriding-header "active projects")))))
-         ("n" "ongoing tasks"
-          ((todo "next"
-     	((org-agenda-overriding-header "next tasks")))))))
 
-        ;; do not display done items in org-agenda
-        (setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo '("DONE" "CANCEL")))
-        ;;key-binds
-      (general-define-key
-       :prefix "C-c"
-       "a" 'org-agenda)
-      (add-hook 'org-agenda-mode-hook
-      	  (lambda ()
-      	    (local-set-key (kbd "k") 'org-agenda-previous-item)
-                  (local-set-key (kbd "j") 'org-agenda-next-item)))
-      ;; save all org files after change todo
-      (defmacro η (fnc)
-        "return function that ignores its arguments and invokes fnc."
-        `(lambda (&rest _rest)
-           (funcall ,fnc)))
-      (advice-add 'org-deadline       :after (η #'org-save-all-org-buffers))
-      (advice-add 'org-schedule       :after (η #'org-save-all-org-buffers))
-      (advice-add 'org-store-log-note :after (η #'org-save-all-org-buffers))
-      (advice-add 'org-todo           :after (η #'org-save-all-org-buffers))
-      (advice-add 'org-priority       :after (η #'org-save-all-org-buffers))
+  ;; Agenda appearance
+  (setq org-agenda-start-with-log-mode t)
+  (setq org-agenda-span 'week)
+  (setq org-agenda-window-setup 'current-window)
+  (setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo '("DONE" "CANCEL")))
+  (setq org-agenda-start-on-weekday 1)
+  (setq org-agenda-time-grid
+        '((daily today require-timed)
+          (800 1000 1200 1400 1600 1800 2000)
+          "......" "----------------"))
+  (setq org-agenda-current-time-string "← now")
+  (setq org-agenda-prefix-format
+        '((agenda . " %i %-12:c%?-12t% s")
+          (todo . " %i %-12:c")
+          (tags . " %i %-12:c")
+          (search . " %i %-12:c")))
+
+  ;; Custom agenda views
+  (setq org-agenda-custom-commands
+   '(("d" "Dashboard"
+      ((agenda "" ((org-deadline-warning-days 7)
+                   (org-agenda-overriding-header "Week Overview")))
+       (todo "ONGOING"
+             ((org-agenda-overriding-header "Active Tasks")))
+       (tags-todo "+PRIORITY=\"A\""
+                  ((org-agenda-overriding-header "High Priority")))))
+     
+     ("o" "Ongoing Tasks"
+      ((todo "ONGOING"
+             ((org-agenda-overriding-header "Currently Working On")))))
+     
+     ("p" "Priority View"
+      ((tags-todo "+PRIORITY=\"A\""
+                  ((org-agenda-overriding-header "Priority A")))
+       (tags-todo "+PRIORITY=\"B\""
+                  ((org-agenda-overriding-header "Priority B")))
+       (tags-todo "+PRIORITY=\"C\""
+                  ((org-agenda-overriding-header "Priority C")))))
+     
+     ("w" "Weekly Review"
+      ((agenda "" ((org-agenda-span 7)
+                   (org-agenda-start-day "-7d")
+                   (org-agenda-overriding-header "Past Week")))
+       (agenda "" ((org-agenda-span 7)
+                   (org-agenda-start-day "+0d")
+                   (org-agenda-overriding-header "Next Week")))))
+     
+     ("u" "Unscheduled TODO"
+      ((todo "TODO"
+             ((org-agenda-skip-function
+               '(org-agenda-skip-entry-if 'scheduled 'deadline))
+              (org-agenda-overriding-header "Unscheduled Tasks")))))))
+
+  ;; Key-binds
+  (general-define-key
+   :prefix "C-c"
+   "a" 'org-agenda)
+  
+  (add-hook 'org-agenda-mode-hook
+            (lambda ()
+              (local-set-key (kbd "k") 'org-agenda-previous-item)
+              (local-set-key (kbd "j") 'org-agenda-next-item)))
+  
+  ;; Save all org files after change todo
+  (defmacro η (fnc)
+    "return function that ignores its arguments and invokes fnc."
+    `(lambda (&rest _rest)
+       (funcall ,fnc)))
+  
+  (advice-add 'org-deadline       :after (η #'org-save-all-org-buffers))
+  (advice-add 'org-schedule       :after (η #'org-save-all-org-buffers))
+  (advice-add 'org-store-log-note :after (η #'org-save-all-org-buffers))
+  (advice-add 'org-todo           :after (η #'org-save-all-org-buffers))
+  (advice-add 'org-priority       :after (η #'org-save-all-org-buffers))
 
 #+end_src
 
@@ -1602,6 +1647,80 @@ Personal knowledge management system using org-roam v2.
 (setq my/daily-note-filename "%<%Y-%m-%d>.org")
 #+end_src
 
+*** custom functions
+#+BEGIN_SRC emacs-lisp
+(defun my/org-roam-filter-by-tag (tag-name)
+  "Return a predicate function that filters org-roam nodes by TAG-NAME (case-insensitive).
+The returned lambda checks if TAG-NAME is present in a node's tags list."
+  (lambda (node)
+    (cl-some (lambda (node-tag)
+               (string-equal-ignore-case tag-name node-tag))
+             (org-roam-node-tags node))))
+
+(defun my/org-roam-list-notes-by-tag (tag-name)
+  "Return a list of file paths for all org-roam nodes tagged with TAG-NAME (case-insensitive)."
+  (mapcar #'org-roam-node-file
+          (seq-filter (my/org-roam-filter-by-tag tag-name)
+                      (org-roam-node-list))))
+
+(defun my/org-roam-filter-by-tags (wanted unwanted)
+  "Return a predicate that filters nodes having any tag in WANTED but none in UNWANTED (case-insensitive).
+WANTED and UNWANTED should be lists of tag strings."
+  (lambda (node)
+    (let ((node-tags (org-roam-node-tags node)))
+      (and (cl-some (lambda (tag) 
+                      (cl-some (lambda (node-tag)
+                                 (string-equal-ignore-case tag node-tag))
+                               node-tags))
+                    wanted)
+           (not (cl-some (lambda (tag)
+                           (cl-some (lambda (node-tag)
+                                      (string-equal-ignore-case tag node-tag))
+                                    node-tags))
+                         unwanted))))))
+
+(defun my/org-roam-refresh-agenda-list ()
+  "Add all org-roam files tagged with 'Project' to `org-agenda-files' (case-insensitive).
+This allows project files to appear in the org-agenda view."
+  (interactive)
+  (when (featurep 'org-roam)
+    (let ((project-files (my/org-roam-list-notes-by-tag "Project")))
+      (setq org-agenda-files
+            (delete-dups (append (or org-agenda-files '())
+                                 project-files)))
+      (message "Refreshed agenda list: %d total files (%d projects)" 
+               (length org-agenda-files)
+               (length project-files)))))
+
+(defun my/org-roam-db-diagnose ()
+  "Clear and rebuild org-roam database to fix issues.
+Prompts for confirmation before clearing the database."
+  (interactive)
+  (when (yes-or-no-p "Clear and rebuild org-roam database? This may take a few minutes. Continue? ")
+    (message "Clearing org-roam database...")
+    (org-roam-db-clear-all)
+    (message "Rebuilding database from %s..." org-roam-directory)
+    (org-roam-db-sync)
+    (message "Org-roam database rebuilt successfully! Found %d nodes." 
+             (caar (org-roam-db-query "SELECT COUNT(*) FROM nodes")))))
+
+(defun my/org-roam-dailies-capture-date ()
+  "Capture to a daily note on a specific date selected from calendar.
+Prompts for date using org-mode's date picker."
+  (interactive)
+  (let ((time (org-read-date nil t nil "Daily note date:")))
+    (org-roam-dailies-capture-date time)))
+
+;; Automatic refresh hooks
+(defun my/org-roam-auto-refresh-agenda ()
+  "Automatically refresh org-agenda-files when org-roam database updates."
+  (when (and (featurep 'org-roam)
+             (buffer-file-name)
+             (string-prefix-p (expand-file-name org-roam-directory)
+                              (file-truename (buffer-file-name))))
+    (my/org-roam-refresh-agenda-list)))
+#+END_SRC
+
 *** roam
 #+begin_src emacs-lisp
   (use-package org-roam
@@ -1679,83 +1798,14 @@ Personal knowledge management system using org-roam v2.
                      (when (or (equal org-state "DONE")
     			   (equal org-state "COMPLETED"))
                        (my/org-roam-copy-todo-to-today)))))
-    (add-hook 'org-roam-mode-hook 'visual-line-mode) ; 自动换行
+    (add-hook 'org-roam-mode-hook 'visual-line-mode)
 #+end_src
 
-*** custom functions
+*** hooks and initialization
 #+BEGIN_SRC emacs-lisp
-(defun my/org-roam-filter-by-tag (tag-name)
-  "Return a predicate function that filters org-roam nodes by TAG-NAME (case-insensitive).
-The returned lambda checks if TAG-NAME is present in a node's tags list."
-  (lambda (node)
-    (cl-some (lambda (node-tag)
-               (string-equal-ignore-case tag-name node-tag))
-             (org-roam-node-tags node))))
-
-(defun my/org-roam-list-notes-by-tag (tag-name)
-  "Return a list of file paths for all org-roam nodes tagged with TAG-NAME (case-insensitive)."
-  (mapcar #'org-roam-node-file
-          (seq-filter (my/org-roam-filter-by-tag tag-name)
-                      (org-roam-node-list))))
-
-(defun my/org-roam-filter-by-tags (wanted unwanted)
-  "Return a predicate that filters nodes having any tag in WANTED but none in UNWANTED (case-insensitive).
-WANTED and UNWANTED should be lists of tag strings."
-  (lambda (node)
-    (let ((node-tags (org-roam-node-tags node)))
-      (and (cl-some (lambda (tag) 
-                      (cl-some (lambda (node-tag)
-                                 (string-equal-ignore-case tag node-tag))
-                               node-tags))
-                    wanted)
-           (not (cl-some (lambda (tag)
-                           (cl-some (lambda (node-tag)
-                                      (string-equal-ignore-case tag node-tag))
-                                    node-tags))
-                         unwanted))))))
-
-(defun my/org-roam-refresh-agenda-list ()
-  "Add all org-roam files tagged with 'Project' to `org-agenda-files' (case-insensitive).
-This allows project files to appear in the org-agenda view."
-  (interactive)
-  (when (featurep 'org-roam)
-    (setq org-agenda-files
-          (delete-dups (append org-agenda-files
-                               (my/org-roam-list-notes-by-tag "Project"))))
-    (message "Refreshed agenda list: %d project files found" 
-             (length (my/org-roam-list-notes-by-tag "Project")))))
-
-(defun my/org-roam-db-diagnose ()
-  "Clear and rebuild org-roam database to fix issues.
-Prompts for confirmation before clearing the database."
-  (interactive)
-  (when (yes-or-no-p "Clear and rebuild org-roam database? This may take a few minutes. Continue? ")
-    (message "Clearing org-roam database...")
-    (org-roam-db-clear-all)
-    (message "Rebuilding database from %s..." org-roam-directory)
-    (org-roam-db-sync)
-    (message "Org-roam database rebuilt successfully! Found %d nodes." 
-             (caar (org-roam-db-query "SELECT COUNT(*) FROM nodes")))))
-
-(defun my/org-roam-dailies-capture-date ()
-  "Capture to a daily note on a specific date selected from calendar.
-Prompts for date using org-mode's date picker."
-  (interactive)
-  (let ((time (org-read-date nil t nil "Daily note date:")))
-    (org-roam-dailies-capture-date time)))
-
 ;; Initial setup: run after org-roam is loaded
 (with-eval-after-load 'org-roam
   (my/org-roam-refresh-agenda-list))
-
-;; Automatic refresh hooks
-(defun my/org-roam-auto-refresh-agenda ()
-  "Automatically refresh org-agenda-files when org-roam database updates."
-  (when (and (featurep 'org-roam)
-             (buffer-file-name)
-             (string-prefix-p (expand-file-name org-roam-directory)
-                              (file-truename (buffer-file-name))))
-    (my/org-roam-refresh-agenda-list)))
 
 ;; Hook into org-roam database sync
 (add-hook 'org-roam-db-autosync-mode-hook 'my/org-roam-refresh-agenda-list)
