@@ -4,7 +4,7 @@
 sudo apt install -y shfmt 
 
 # Install debian/ubuntu packages
-sudo apt install -y git wl-clipboard zsh ffmpeg 7zip jq poppler-utils zoxide imagemagick
+sudo apt install -y git wl-clipboard zsh ffmpeg 7zip jq poppler-utils zoxide imagemagick graphviz
 
 # Install Homebrew if not present, certain debian packages are outdated
 if ! command -v brew >/dev/null 2>&1; then
