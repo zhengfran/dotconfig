@@ -1,0 +1,25 @@
+# -*- mode: snippet -*-
+# name: trade record
+# key: !td
+# --
+
+** `(format-time-string "%Y-%m-%d")`_trade_$1
+:PROPERTIES:
+    :DATE: `(format-time-string "%Y-%m-%d %H:%M:%S")`
+    :SYMBOL: $2 
+    :DIRECTION: $3
+    :STRATEGY: $4
+    :RESULT: 
+    :MOOD: 
+:END:
+
+*** 背景
+$5
+
+*** Setup
+
+*** 信号 K
+
+*** 管理
+
+

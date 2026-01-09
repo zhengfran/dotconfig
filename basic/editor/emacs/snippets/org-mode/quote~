@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: org quote 
+# key: !q 
+# --
+
+#+BEGIN_QUOTE emacs-lisp
+$0
+#+END_Q
