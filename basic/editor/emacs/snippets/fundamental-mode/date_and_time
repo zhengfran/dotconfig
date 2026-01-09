@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: date and time 
+# key: <dt
+# --
+`(fomat-time-string "%Y-%m-%d %H:%M:%S")`
