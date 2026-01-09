@@ -1,0 +1,22 @@
+# -*- mode: snippet -*-
+# name: trade record
+# key: !td
+# --
+
+** Trade `(fomat-time-string "%Y-%m-%d %H:%M:%S")`
+:PROPERTIES:
+    :SYMBOL:   
+    :DIRECTION: 
+    :RESULT: 
+    :MOOD: 
+:END:
+
+*** 背景
+
+*** Setup
+
+*** 信号 K
+
+*** 管理
+
+
