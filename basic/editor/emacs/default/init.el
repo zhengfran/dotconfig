@@ -2,6 +2,8 @@
 ;;show show errors
 (setq warning-minimum-level :error)
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file 'noerror))
 ;;disable bell
 (setq visible-bell 1)
 ;; The default is 800 kilobytes.  Measured in bytes.
@@ -33,8 +35,21 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
+
+;; Disable org-elpa recipe source to avoid pre-build issues on Windows
+(setq straight-recipe-repositories (delq 'org-elpa straight-recipe-repositories))
+
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
+
+;; Override org recipe (org-elpa disabled above)
+;; Use a simple recipe without problematic pre-build steps
+(straight-use-package
+ '(org :type git 
+       :host github 
+       :repo "emacs-straight/org-mode"
+       :local-repo "org"
+       :files (:defaults "lisp/*.el" ("etc/styles/" "etc/styles/*"))))
 
 ;; make sure shell PATH is same as emacs PATH 
 (use-package exec-path-from-shell
@@ -477,6 +492,12 @@ This is useful when you've edited config.org and want to apply changes immediate
 (global-set-key (kbd "C-c u") 'winner-undo)
 (global-set-key (kbd "C-c r") 'winner-redo)
 
+;; Font size adjustment keybindings
+(global-set-key (kbd "C-=") 'text-scale-increase)  ; Ctrl + = (same key as +)
+(global-set-key (kbd "C-+") 'text-scale-increase)  ; Ctrl + + (explicit)
+(global-set-key (kbd "C--") 'text-scale-decrease)  ; Ctrl + -
+(global-set-key (kbd "C-0") (lambda () (interactive) (text-scale-set 0)))  ; Ctrl + 0 to reset
+
 (use-package winum
   :config
   (winum-mode))
@@ -800,15 +821,17 @@ This prevents golden-ratio from activating in simple window layouts."
    (interactive "p")
    (if minibuffer-completing-file-name
        ;; Borrowed from https://github.com/raxod502/selectrum/issues/498#issuecomment-803283608
-       (if (string-match-p "/." (minibuffer-contents))
-           (zap-up-to-char (- arg) ?/)
-         (delete-minibuffer-contents))
-     (delete-word (- arg))))
- (setq completion-ignore-case 't) ; minibuffer ignore case
- (use-package vertico
+        (if (string-match-p "/." (minibuffer-contents))
+            (zap-up-to-char (- arg) ?/)
+          (delete-minibuffer-contents))
+      (delete-word (- arg))))
+
+(setq completion-ignore-case 't) ; minibuffer ignore case
+
+(use-package vertico
    :defer 1
    :custom
-   (verticle-cycle t)
+   (vertico-cycle t)
    :config
    (vertico-mode)
    :bind (:map minibuffer-local-map
@@ -839,7 +862,8 @@ This prevents golden-ratio from activating in simple window layouts."
 (use-package embark
    :bind
    ( "C-;" . 'embark-act))
- (use-package consult
+
+(use-package consult
    :defer 1
    :bind
    ( "C-s" . 'consult-line)
@@ -894,13 +918,6 @@ This prevents golden-ratio from activating in simple window layouts."
 (use-package embark-consult)
 
 (use-package hydra)
-(defhydra hydra-text-scale (:timeout 4)
-  "scale text"
-  ("j" text-scale-increase "in")
-  ("k" text-scale-decrease "out")
-  ("q" nil "finished" :exit t))
-(zzc/leader-keys
-  "ts" '(hydra-text-scale/body :which-key "scale text"))
 
 (use-package avy
   :demand 1
@@ -1056,20 +1073,38 @@ This prevents golden-ratio from activating in simple window layouts."
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package org-modern-indent
+  :after org
   :straight (:host github :repo "jdtsmith/org-modern-indent")
   :config
   (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 
-(use-package org-modern 
-  :custom
-  (org-modern-hide-stars nil) 
-  (org-modern-table t)
-  ;; (org-modern-list 
-  ;;  '((?- . "•")
-  ;;    (?* . "•")
-  ;;    (?+ . "•")))
+(use-package org-modern
+  :after org
+  :hook (org-mode . org-modern-mode)
   :init
-  (global-org-modern-mode))
+  ;; Set variables before org-modern loads (in :init block)
+  ;; This ensures they're available when org-modern-mode activates
+  
+  ;; Heading stars - use fold indicators (dynamic bullets showing document structure)
+  (setq org-modern-star 'fold)
+  (setq org-modern-hide-stars 'leading)  ; Hide leading stars
+  
+  ;; Fold indicators: (folded . expanded) pairs for each heading level
+  (setq org-modern-fold-stars
+        '(("▶" . "▼")   ; Level 1: ▶ when folded, ▼ when expanded
+          ("▷" . "▽")   ; Level 2
+          ("⯈" . "⯆")   ; Level 3  
+          ("▹" . "▿")   ; Level 4
+          ("▸" . "▾"))) ; Level 5+
+  
+  ;; List item bullets
+  (setq org-modern-list
+        '((?- . "•")    ; - becomes •
+          (?+ . "◦")    ; + becomes ◦
+          (?* . "▸")))  ; * becomes ▸
+  
+  ;; Hide leading stars in org-mode
+  (setq org-hide-leading-stars t))
 
 (use-package org-appear
   :after org
@@ -1179,7 +1214,8 @@ This prevents golden-ratio from activating in simple window layouts."
                                       (file . find-file)
                                       (wl . wl-other-frame)))))
     (org-open-at-point)))
-  (use-package org
+
+(use-package org
     :defer 10
     :custom
     (org-m-ret-may-split-line t)
@@ -1843,7 +1879,7 @@ Migrates all files tagged with :Project: or :project: or :projects:."
 ;; automatically tangle our emacs.org config file when we save it
 (defun zzc/org-babel-tangle-config ()
   (when (string-equal (file-truename (buffer-file-name))
-		      (file-truename (expand-file-name "~/.config/emacs/default/config.org")))
+		      (file-truename (expand-file-name "~/dotconfig/basic/editor/emacs/default/config.org")))
     ;; dynamic scoping to the rescue
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
