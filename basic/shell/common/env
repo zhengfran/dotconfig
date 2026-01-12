@@ -13,6 +13,7 @@ export PATH=$PATH:/opt/homebrew/bin
 export PATH=$PATH:/opt/homebrew/sbin
 export PATH=$PATH:$HOME/.cargo/bin
 export PATH=$PATH:/snap/bin
+export PATH=$PATH:$HOME/.opencode/bin
 export PATH="$HOME/.config/doomemacs/bin/:$PATH"
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
