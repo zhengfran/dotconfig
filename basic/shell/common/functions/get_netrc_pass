@@ -1,0 +1,6 @@
+function get_netrc_pass() {
+  awk -v machine="$1" \
+  '$1 == "machine" && \
+   $2 == machine { for(i=1;i<=NF;i++) if($i=="password") print $(i+1) }' ~/.netrc
+}
+
