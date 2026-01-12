@@ -11,4 +11,9 @@ autopair-init
 source ~/.zim/modules/fzf-tab/fzf-tab.plugin.zsh
 source ~/.config/zsh/prompt.zsh
 # opencode
-export PATH=/home/uie41442/.opencode/bin:$PATH
+
+# API Keys
+export GEMINI_API_KEY=$(get_netrc_pass "generativelanguage.googleapis.com")
+export OPENAI_API_KEY=$(get_netrc_pass "api.openai.com")
+export ANTHROPIC_API_KEY=$(get_netrc_pass "api.anthropic.com")
+export OPENROUTER_API_KEY=$(get_netrc_pass "openrouter.ai")
