@@ -57,7 +57,12 @@
   ;; make sure shell PATH is same as emacs PATH 
   (use-package exec-path-from-shell
     :config
-    (setq shell-file-name "/usr/bin/zsh")
+    (setq shell-file-name
+          (cond
+           ((eq system-type 'windows-nt) (or (executable-find "bash")
+                                             (executable-find "zsh")
+                                             "bash"))
+           (t "/usr/bin/zsh")))
     (setq exec-path-from-shell-arguments '("-l"))
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize)))
@@ -1193,7 +1198,7 @@ This prevents golden-ratio from activating in simple window layouts."
       (unless (and (integerp font-height) (> font-height 0))
         (setq font-height 200)) ; Fallback to default if invalid
       ;; 系统默认字体
-      (setq my/system-default-font (font-get-system-normal-font))
+      (setq my/system-default-font (face-attribute 'default :family))
       ;; Emacs 默认字体
       (setq my/default-font "Iosevka")
       (unless (find-font (font-spec :name my/default-font))
@@ -2307,76 +2312,77 @@ Migrates all files tagged with :Project: or :project: or :projects:."
 * Terminal
 ** vterm
 #+begin_src emacs-lisp
-(use-package vterm
-  :commands vterm
-  :config
-  ;; Speed up vterm
-  (setq vterm-max-scrollback 10000)
-  (setq vterm-buffer-name-string "vterm %s")
-  
-  ;; Disable line numbers in vterm
-  (add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode 0)))
-  
-  ;; Fix evil mode integration
-  (evil-set-initial-state 'vterm-mode 'emacs)
-  
-  ;; Keybindings for better navigation
-  (define-key vterm-mode-map (kbd "C-q") #'vterm-send-next-key)
-  (define-key vterm-mode-map (kbd "M-<left>") #'vterm-send-left)
-  (define-key vterm-mode-map (kbd "M-<right>") #'vterm-send-right)
-  
-  ;; Better copy mode
-  (define-key vterm-mode-map (kbd "C-c C-t") #'vterm-copy-mode)
-  
-  ;; Custom settings
-  :custom
-  (vterm-shell (or (executable-find "zsh") (getenv "SHELL") "/bin/bash"))
-  (vterm-kill-buffer-on-exit t)
-  (vterm-clear-scrollback-when-clearing t))
+(unless (eq system-type 'windows-nt)
+  (use-package vterm
+    :commands vterm
+    :config
+    ;; Speed up vterm
+    (setq vterm-max-scrollback 10000)
+    (setq vterm-buffer-name-string "vterm %s")
+    
+    ;; Disable line numbers in vterm
+    (add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode 0)))
+    
+    ;; Fix evil mode integration
+    (evil-set-initial-state 'vterm-mode 'emacs)
+    
+    ;; Keybindings for better navigation
+    (define-key vterm-mode-map (kbd "C-q") #'vterm-send-next-key)
+    (define-key vterm-mode-map (kbd "M-<left>") #'vterm-send-left)
+    (define-key vterm-mode-map (kbd "M-<right>") #'vterm-send-right)
+    
+    ;; Better copy mode
+    (define-key vterm-mode-map (kbd "C-c C-t") #'vterm-copy-mode)
+    
+    ;; Custom settings
+    :custom
+    (vterm-shell (or (executable-find "zsh") (getenv "SHELL") "/bin/bash"))
+    (vterm-kill-buffer-on-exit t)
+    (vterm-clear-scrollback-when-clearing t))
 
-;; Multi-vterm for managing multiple vterm buffers
-(use-package multi-vterm
-  :commands (multi-vterm multi-vterm-project)
-  :config
-  ;; Set the default shell
-  (setq multi-vterm-program (or (executable-find "zsh") (getenv "SHELL") "/bin/bash"))
-  
-  ;; Dedicated vterm window
-  (setq multi-vterm-dedicated-window-height-percent 30)
-  
-  :bind
-  (:map vterm-mode-map
-        ("C-c C-n" . multi-vterm-next)
-        ("C-c C-p" . multi-vterm-prev)))
+  ;; Multi-vterm for managing multiple vterm buffers
+  (use-package multi-vterm
+    :commands (multi-vterm multi-vterm-project)
+    :config
+    ;; Set the default shell
+    (setq multi-vterm-program (or (executable-find "zsh") (getenv "SHELL") "/bin/bash"))
+    
+    ;; Dedicated vterm window
+    (setq multi-vterm-dedicated-window-height-percent 30)
+    
+    :bind
+    (:map vterm-mode-map
+          ("C-c C-n" . multi-vterm-next)
+          ("C-c C-p" . multi-vterm-prev)))
 
-;; vterm-toggle for quick terminal popup
-(use-package vterm-toggle
-  :after vterm
-  :config
-  ;; Show vterm buffer in bottom side window
-  (setq vterm-toggle-fullscreen-p nil)
-  (add-to-list 'display-buffer-alist
-               '((lambda (buffer-or-name _)
-                   (let ((buffer (get-buffer buffer-or-name)))
-                     (with-current-buffer buffer
-                       (or (equal major-mode 'vterm-mode)
-                           (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
-                 (display-buffer-reuse-window display-buffer-at-bottom)
-                 (reusable-frames . visible)
-                 (window-height . 0.3)))
-  
-  :bind
-  (("C-`" . vterm-toggle)
-   ("c-~" . VTERM-Toggle-cd)))
+  ;; vterm-toggle for quick terminal popup
+  (use-package vterm-toggle
+    :after vterm
+    :config
+    ;; Show vterm buffer in bottom side window
+    (setq vterm-toggle-fullscreen-p nil)
+    (add-to-list 'display-buffer-alist
+                 '((lambda (buffer-or-name _)
+                     (let ((buffer (get-buffer buffer-or-name)))
+                       (with-current-buffer buffer
+                         (or (equal major-mode 'vterm-mode)
+                             (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                   (display-buffer-reuse-window display-buffer-at-bottom)
+                   (reusable-frames . visible)
+                   (window-height . 0.3)))
+    
+    :bind
+    (("C-`" . vterm-toggle)
+     ("c-~" . VTERM-Toggle-cd)))
 
-;; Key bindings with leader key
-(zzc/leader-keys
-  "v"  '(:ignore t :which-key "vterm")
-  "vv"  '(vterm :which-key "open vterm")
-  "vn"  '(multi-vterm :which-key "new vterm")
-  "vp"  '(multi-vterm-project :which-key "vterm in project")
-  "vt"  '(vterm-toggle :which-key "toggle vterm")
-  "vd"  '(vterm-toggle-cd :which-key "toggle vterm in current dir"))
+  ;; Key bindings with leader key
+  (zzc/leader-keys
+    "v"  '(:ignore t :which-key "vterm")
+    "vv"  '(vterm :which-key "open vterm")
+    "vn"  '(multi-vterm :which-key "new vterm")
+    "vp"  '(multi-vterm-project :which-key "vterm in project")
+    "vt"  '(vterm-toggle :which-key "toggle vterm")
+    "vd"  '(vterm-toggle-cd :which-key "toggle vterm in current dir")))
 #+end_src
 ** eee
 #+begin_src emacs-lisp
@@ -2408,24 +2414,25 @@ Migrates all files tagged with :Project: or :project: or :projects:."
 #+begin_src emacs-lisp
   ;; (require 'posframe)
   ;; (setq rime-show-candidate 'posframe)
-  (use-package rime
-  :straight (rime :type git
-                  :host github
-                  :repo "doglooksgood/emacs-rime"
-                  :files ("*.el" "Makefile" "lib.c"))
-  :custom
-  (default-input-method "rime")
-  (rime-show-candidate 'posframe)
-  (rime-user-data-dir "~/.config/rime")
-  (rime-disable-predicates '(rime-predicate-evil-mode-p
-                              rime-predicate-after-ascii-char-p
-                              rime-predicate-hydra-p
-                              rime-predicate-tex-math-or-command-p
-                              rime-predicate-prog-in-code-p))
-  :config
-  ;; prevent rime crash
-  (defun rime-lib-finalize() nil)
-  (add-hook 'kill-emacs-hook #'rime-lib-finalize))
+  (unless (eq system-type 'windows-nt)
+    (use-package rime
+      :straight (rime :type git
+                      :host github
+                      :repo "doglooksgood/emacs-rime"
+                      :files ("*.el" "Makefile" "lib.c"))
+      :custom
+      (default-input-method "rime")
+      (rime-show-candidate 'posframe)
+      (rime-user-data-dir "~/.config/rime")
+      (rime-disable-predicates '(rime-predicate-evil-mode-p
+                                  rime-predicate-after-ascii-char-p
+                                  rime-predicate-hydra-p
+                                  rime-predicate-tex-math-or-command-p
+                                  rime-predicate-prog-in-code-p))
+      :config
+      ;; prevent rime crash
+      (defun rime-lib-finalize() nil)
+      (add-hook 'kill-emacs-hook #'rime-lib-finalize)))
 #+end_src
 
 ** Paste chinese in windows
