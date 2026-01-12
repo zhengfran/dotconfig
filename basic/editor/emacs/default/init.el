@@ -63,7 +63,7 @@
 (unless (file-exists-p org_notes) (setq org_notes nil)) ; 防止文件不存在报错
 
 ;; Create org-roam subdirectories if they don't exist
-(dolist (subdir '("daily" "projects" "meetings" "concepts" "lit" "ref" "templates"))
+(dolist (subdir '("daily" "projects" "ref"))
   (let ((dir (expand-file-name subdir my/org-base-dir)))
     (unless (file-exists-p dir)
       (make-directory dir t))))
@@ -99,7 +99,6 @@
                    no-littering-etc-directory)) ; 屏蔽临时文件
 (recentf-max-menu-items 25)
 (recentf-max-saved-items 25)
-:bind ("C-x C-r" . 'recentf-open-files)
 :config
 (recentf-mode 1))
 
@@ -179,9 +178,7 @@ This is useful when you've edited config.org and want to apply changes immediate
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal)
   ;; Bind Enter to project-aware consult-buffer in normal mode
-  (define-key evil-normal-state-map (kbd "SPC RET") 'consult-project-buffer)
-  ;; Bind t to ace-window in normal mode
-  (define-key evil-normal-state-map (kbd "t") 'ace-window))
+  (define-key evil-normal-state-map (kbd "SPC RET") 'consult-project-buffer))
   
 (use-package evil-collection
   :after evil
@@ -220,7 +217,6 @@ This is useful when you've edited config.org and want to apply changes immediate
 (use-package evil-goggles
   :config
   (evil-goggles-mode)
-
   ;; optionally use diff-mode's faces; as a result, deleted text
   ;; will be highlighed with `diff-removed` face which is typically
   ;; some red color (as defined by the color theme)
@@ -271,11 +267,28 @@ This is useful when you've edited config.org and want to apply changes immediate
   (other-window 1))
 
 (use-package project
-  ;; Cannot use :hook because 'project-find-functions does not end in -hook
-  ;; Cannot use :init (must use :config) because otherwise
-  ;; project-find-functions is not yet initialized.
-  :config
-  (setq project-vc-extra-root-markers '(".project" "*.csproj")))
+    ;; Cannot use :hook because 'project-find-functions does not end in -hook
+    ;; Cannot use :init (must use :config) because otherwise
+    ;; project-find-functions is not yet initialized.
+    :config
+    (setq project-vc-extra-root-markers '(".project" "*.csproj")))
+
+;; Project leader key shortcuts
+(zzc/leader-keys
+  "p"   '(:ignore t :which-key "project")
+  "p p" '(project-switch-project :which-key "switch project")
+  "p f" '(project-find-file :which-key "find file")
+  "p d" '(project-find-dir :which-key "find directory")
+  "p b" '(project-switch-to-buffer :which-key "switch buffer")
+  "p k" '(project-kill-buffers :which-key "kill buffers")
+  "p c" '(project-compile :which-key "compile")
+  "p e" '(project-eshell :which-key "eshell")
+  "p s" '(project-shell :which-key "shell")
+  "p r" '(project-query-replace-regexp :which-key "replace regexp")
+  "p g" '(project-find-regexp :which-key "find regexp")
+  "p D" '(project-dired :which-key "dired root")
+  "p !" '(project-shell-command :which-key "shell command")
+  "p &" '(project-async-shell-command :which-key "async shell command"))
 
 (use-package desktop
   :init
@@ -294,13 +307,15 @@ This is useful when you've edited config.org and want to apply changes immediate
   ;; Auto-save every 5 minutes
   (setq desktop-auto-save-timeout 300)
   
-  ;; Restore frames and displays
-  (setq desktop-restore-frames t)
+  ;; Disable frame restoration to avoid reloading tab workspaces
+  (setq desktop-restore-frames nil)
   (setq desktop-restore-in-current-display t)
   (setq desktop-restore-forces-onscreen t)
   
   :config
-  (desktop-save-mode 1)
+  ;; Only enable desktop-save-mode in non-daemon mode
+  (unless (daemonp)
+    (desktop-save-mode 1))
   
   ;; Don't save certain buffer types
   (setq desktop-buffers-not-to-save
@@ -449,7 +464,7 @@ This is useful when you've edited config.org and want to apply changes immediate
   "bn"  '(switch-to-next-buffer :which-key "next buffer")
   "bb"  '(switch-to-buffer :which-key "list buffers")
   "bB"  '(ibuffer-list-buffers :which-key "list ibuffers")
-  "bd"  '(kill-current-buffer :which-key "kill current buffer")
+  "bk"  '(kill-current-buffer :which-key "kill current buffer")
   "bs"  '(save-buffer :which-key "save buffer")
   )
 
@@ -674,31 +689,105 @@ This prevents golden-ratio from activating in simple window layouts."
 ;; Hook into window selection to auto-adjust width
 (add-hook 'treemacs-select-window-hook 'treemacs-adjust-width-to-fit)
 
-(use-package company
-  :hook ((org-mode LaTeX-mode prog-mode) . company-mode)
-  :custom
-  (company-minimum-prefix-length 4)
-  (company-idle-delay 0.3)
-  (company-tootip-idle-delay 0.5)
-  (company-tooltip-offset-display 'line)
-  (company-tooltip-align-annotation t)
-  (company-show-quick-access t)
-  (company-backends
-   '((company-capf :with company-dabbrev-code company-keywords)
-     (company-dabbrev)
-     (company-ispell)
-     (company-files)))
-  (company-dabbrev-ignore-case nil) 
-  (company-dabbrev-downcase nil)
-  (company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance))
-  (company-show-quick-access 'left)
-  :bind
-  (:map company-active-map 
-        ("M-/" . company-complete)
-        ("<tab>" . company-indent-or-complete-common)
-        ("C-c C-/" . company-other-backend))
+(use-package yasnippet
+  :init
+  (add-hook 'yas-minor-mode-hook (lambda()
+(yas-activate-extra-mode 'fundamental-mode)))
   :config
-  (set-face-attribute 'company-tooltip nil :inherit 'fixed-pitch))
+  (setq yas-snippet-dirs '("~/.config/emacs/snippets")))
+(yas-global-mode 1)
+
+(use-package yasnippet-capf
+  :init
+  (defun my/yasnippet-capf-h ()
+    (add-to-list 'completion-at-point-functions    #'yasnippet-capf))
+  (add-hook 'prog-mode-hook #'my/yasnippet-capf-h)
+  (add-hook 'text-mode-hook #'my/yasnippet-capf-h))
+
+(zzc/leader-keys
+  "s"  '(:ignore t :which-key "snippet")
+  "sc"  '(yas-new-snippet :which-key "create new snippet")
+  "si"  '(yas-insert-snippet :which-key "insert snippet")
+  "sy"  '(yasnippet-capf :which-key "complete snippet"))
+
+(use-package
+ corfu
+ :custom
+ (corfu-auto t)
+ (corfu-auto-delay 0.1)
+ (corfu-auto-prefix 2)
+ (corfu-cycle t)
+ (corfu-separator ?\s)
+ (corfu-preview-current nil)
+ (corfu-on-exact-match nil)
+ (corfu-left-margin-width 1.0) ;; Fix clipping on left
+ (corfu-right-margin-width 1.0) ;; Fix clipping on right
+ :bind
+ (:map
+  corfu-map
+  ("M-/" . completion-at-point)
+  ("TAB" . corfu-next)
+  ("S-TAB" . corfu-previous)
+  ("RET" . corfu-insert))
+ :init
+ ;; Enable corfu globally for auto-completion
+ (global-corfu-mode)
+ :config
+ (set-face-attribute 'corfu-default nil :inherit 'fixed-pitch)
+ (set-face-attribute 'corfu-current nil :inherit 'fixed-pitch)
+ ;; Crucial for proper sizing of child frames
+ (setq frame-resize-pixelwise t))
+
+(with-eval-after-load 'corfu
+  (corfu-popupinfo-mode 1)
+  (setq corfu-popupinfo-delay 0.5)
+  (setq corfu-popupinfo-max-height 20)
+  (define-key corfu-map (kbd "M-p") #'corfu-popupinfo-scroll-down)
+  (define-key corfu-map (kbd "M-n") #'corfu-popupinfo-scroll-up)
+  (define-key corfu-map (kbd "M-d") #'corfu-popupinfo-toggle))
+;; (use-package
+;;  kind-icon
+;;  :after corfu
+;;  :custom
+;;  (kind-icon-default-face 'corfu-default)
+;;  (kind-icon-blend-background nil)
+;;  (kind-icon-blend-frac 0.08)
+;;  (kind-icon-default-style
+;;       '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 0.8))
+;;  :config
+;;  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
+
+(use-package
+ cape
+ :init
+ ;; Define hook functions (runs at startup, before cape loads)
+ (defun my/cape-setup-prog-mode ()
+   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+   (add-to-list 'completion-at-point-functions #'cape-keyword)
+   (add-to-list 'completion-at-point-functions #'cape-file))
+
+ (defun my/cape-setup-text-mode ()
+   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+   (add-to-list 'completion-at-point-functions #'cape-dict)
+   (add-to-list 'completion-at-point-functions #'cape-file))
+
+ ;; Register hooks immediately at startup
+ (add-hook 'prog-mode-hook #'my/cape-setup-prog-mode)
+ (add-hook 'text-mode-hook #'my/cape-setup-text-mode)
+
+ 
+ :config
+ ;; Configuration that needs cape loaded
+ (setq cape-dabbrev-check-other-buffers nil)
+ (require 'cape-keyword)
+
+ :bind
+ (("C-c p d" . cape-dabbrev)
+  ("C-c p f" . cape-file)
+  ("C-c p w" . cape-dict)
+  ("C-c p k" . cape-keyword)
+  ("C-c p s" . cape-elisp-symbol)
+  ("C-c p a" . cape-abbrev)))
 
 (defun my/minibuffer-backward-kill (arg)
    "When minibuffer is completing a file name delete up to parent
@@ -749,6 +838,7 @@ This prevents golden-ratio from activating in simple window layouts."
    :defer 1
    :bind
    ( "C-s" . 'consult-line)
+   ( "C-x C-r" . 'consult-recent-file)
    ;; Enable automatic preview at point in the *Completions* buffer. This is
    ;; relevant when you use the default completion UI.
    :hook (completion-list-mode . consult-preview-at-point-mode)
@@ -847,19 +937,8 @@ This prevents golden-ratio from activating in simple window layouts."
    (while (search-forward "\r" nil :noerror)
       (replace-match ""))))
 
-(use-package yasnippet
-  :init
-  (add-hook 'yas-minor-mode-hook (lambda()
-				       (yas-activate-extra-mode 'fundamental-mode)))
-  :config
-  (setq yas-snippet-dirs '("~/.config/emacs/snippets")))
-(yas-global-mode 1)
-(zzc/leader-keys
-  "s"  '(:ignore t :which-key "snippet")
-  "sc"  '(yas-new-snippet :which-key "create new snippet")
-  "si"  '(yas-insert-snippet :which-key "insert snippet"))
-
 (setq inhibit-startup-message t)
+(setq frame-resize-pixelwise t)
 (scroll-bar-mode -1) ;;disable visusal scroll bar
 (tool-bar-mode -1) ;;disable tool bar
 (tooltip-mode -1) ;;disable tool tips
@@ -871,11 +950,12 @@ This prevents golden-ratio from activating in simple window layouts."
 (global-display-line-numbers-mode t)
 (setq-default display-line-numbers-width-start t)
 ;; Disable line numbers for some modes
-(dolist (mode '(org-mode-hook
-                term-mode-hook
-                eshell-mode-hook
-                dired-mode-hook
-                helpful-mode-hook))
+(dolist (mode
+         '(org-mode-hook
+           term-mode-hook
+           eshell-mode-hook
+           dired-mode-hook
+           helpful-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode -1))))
 (defun doom/toggle-line-numbers ()
   "Toggle line numbers.
@@ -885,12 +965,21 @@ This prevents golden-ratio from activating in simple window layouts."
   See `display-line-numbers' for what these values mean."
   (interactive)
   (defvar doom--line-number-style display-line-numbers-type)
-  (let* ((styles `(t ,(if visual-line-mode 'visual 'relative) nil))
-         (order (cons display-line-numbers-type (remq display-line-numbers-type styles)))
+  (let* ((styles
+          `(t
+            ,(if visual-line-mode
+                 'visual
+               'relative)
+            nil))
+         (order
+          (cons
+           display-line-numbers-type
+           (remq display-line-numbers-type styles)))
          (queue (memq doom--line-number-style order))
-         (next (if (= (length queue) 1)
-                   (car order)
-                 (car (cdr queue)))))
+         (next
+          (if (= (length queue) 1)
+              (car order)
+            (car (cdr queue)))))
     (setq doom--line-number-style next)
     (setq display-line-numbers next)
     (setq display-line-numbers-width-start t)
@@ -901,86 +990,107 @@ This prevents golden-ratio from activating in simple window layouts."
                (_ (symbol-name next))))))
 
 (zzc/leader-keys
-  "tl" '(doom/toggle-line-numbers :which-key "toggle line numbers"))
+ "tl"
+ '(doom/toggle-line-numbers :which-key "toggle line numbers"))
 
 (prefer-coding-system 'utf-8)
 (setq-default buffer-file-coding-system 'utf-8-unix)
 
 (defvar my/font-height 200)
-(defvar my/latex-preview-scale 1.3)
-(defvar my/mm-char-height 3.2) ;4.2mm
-;; 当字体高度为 4.2 mm 时, 对应的字体大小 1080p: 15.5; 2K: 18; 4K: 22
-(defun my/get-font-height (&optional frame)
-  (let* ((attrs (frame-monitor-attributes frame))
-	 (geometry (alist-get 'geometry attrs)) 
-	 (size (alist-get 'mm-size attrs)) 
-	 (pixel-width (caddr geometry)) ; ????????
-	 (mm-width  (car size))
-	 (round (* 10 (/ pixel-width  (/ mm-width my/mm-char-height)))))))
+    (defvar my/latex-preview-scale 1.3)
+    (defvar my/mm-char-height 3.2) ;4.2mm
+    ;; 当字体高度为 4.2 mm 时, 对应的字体大小 1080p: 15.5; 2K: 18; 4K: 22
+    (defun my/get-font-height (&optional frame)
+      (let* ((attrs (frame-monitor-attributes frame))
+    	 (geometry (alist-get 'geometry attrs)) 
+    	 (size (alist-get 'mm-size attrs)) 
+    	 (pixel-width (caddr geometry)) ; ????????
+    	 (mm-width  (car size))
+    	 (round (* 10 (/ pixel-width  (/ mm-width my/mm-char-height)))))))
 
-(defun my/set-font-size ()
-  (interactive)
-  (let* ((font-size (my/get-font-height)))
-    (message "font size: %s" font-size)
-    (setq my/font-height font-size)
-    (setq my/latex-preview-scale
-	  (/ font-size 80.0))))
+    (defun my/set-font-size ()
+      (interactive)
+      (let* ((font-size (my/get-font-height)))
+        (message "font size: %s" font-size)
+        (setq my/font-height font-size)
+        (setq my/latex-preview-scale
+    	  (/ font-size 80.0))))
 
-(defun my/set-font (font-height &optional frame)
-  (interactive)
-  ;; Ensure font-height is a valid integer
-  (unless (and (integerp font-height) (> font-height 0))
-    (setq font-height 200)) ; Fallback to default if invalid
-  ;; 系统默认字体
-  (setq my/system-default-font (font-get-system-normal-font))
-  ;; Emacs 默认字体
-  (setq my/default-font "Iosevka")
-  (unless (find-font (font-spec :name my/default-font))
-    (message (format "cannot find %s for the default font" my/default-font))
-    (setq my/default-font my/system-default-font))
+    (defun my/set-font (font-height &optional frame)
+      (interactive)
+      ;; Ensure font-height is a valid integer
+      (unless (and (integerp font-height) (> font-height 0))
+        (setq font-height 200)) ; Fallback to default if invalid
+      ;; 系统默认字体
+      (setq my/system-default-font (font-get-system-normal-font))
+      ;; Emacs 默认字体
+      (setq my/default-font "Iosevka")
+      (unless (find-font (font-spec :name my/default-font))
+        (message (format "cannot find %s for the default font" my/default-font))
+        (setq my/default-font my/system-default-font))
 
-  ;; LaTeX 默认字体
-  (setq my/math-font "Latin Modern Math")
-  (unless (find-font (font-spec :name my/math-font))
-    (message (format "cannot find %s for the math font. Use system default instead"  my/math-font))
-    (setq my/math-font my/system-default-font))
+      ;; LaTeX 默认字体
+      (setq my/math-font "Latin Modern Math")
+      (unless (find-font (font-spec :name my/math-font))
+        (message (format "cannot find %s for the math font. Use system default instead"  my/math-font))
+        (setq my/math-font my/system-default-font))
 
-  ;; 中文字体
-  (setq my/chinese-font "LXGW WenKai")
-  (unless (find-font (font-spec :name my/chinese-font))
-    (message (format "cannot find %s for the chinese font. Use system default instead"  my/chinese-font))
-    (setq my/chinese-font my/system-default-font))
+      ;; 中文字体
+      (setq my/chinese-font "LXGW WenKai")
+      (unless (find-font (font-spec :name my/chinese-font))
+        (message (format "cannot find %s for the chinese font. Use system default instead"  my/chinese-font))
+        (setq my/chinese-font my/system-default-font))
 
-  (setq my/variable-pitch-font "Cantarell")
-  (unless (find-font (font-spec :name my/variable-pitch-font))
-    (message (format "cannot find %s for the variable-pitch font. Use system default instead"  my/variable-pitch-font))
-    (setq my/variable-pitch-font my/system-default-font))
+      (setq my/variable-pitch-font "Cantarell")
+      (unless (find-font (font-spec :name my/variable-pitch-font))
+        (message (format "cannot find %s for the variable-pitch font. Use system default instead"  my/variable-pitch-font))
+        (setq my/variable-pitch-font my/system-default-font))
 
-  ;; 等宽字体
-  (setq my/fixed-pitch-font "JetBrains Mono Nerd Font") ; fonts-jetbrains-mono (ubuntu) ; ttf-jetbrains-mono (manjaro)
-  (unless (find-font (font-spec :name my/fixed-pitch-font))
-    (message (format "cannot find %s for the fixed-pitch font. Use system default instead"  my/fixed-pitch-font))
-    (setq my/fixed-pitch-font my/system-default-font))
+      ;; 等宽字体
+      (setq my/fixed-pitch-font "JetBrains Mono Nerd Font") ; fonts-jetbrains-mono (ubuntu) ; ttf-jetbrains-mono (manjaro)
+      (unless (find-font (font-spec :name my/fixed-pitch-font))
+        (message (format "cannot find %s for the fixed-pitch font. Use system default instead"  my/fixed-pitch-font))
+        (setq my/fixed-pitch-font my/system-default-font))
 
-  (set-face-attribute 'default frame :font my/default-font :height font-height)  ; 默认字体 字号
-  (set-face-attribute 'variable-pitch frame :font my/variable-pitch-font :height font-height) ; 比例字体
-  (set-face-attribute 'fixed-pitch frame :font my/fixed-pitch-font :height font-height) ; 等宽体
-  (set-face-attribute 'bold nil :foreground "Salmon")
+      (set-face-attribute 'default frame :font my/default-font :height font-height)  ; 默认字体 字号
+      (set-face-attribute 'variable-pitch frame :font my/variable-pitch-font :height font-height) ; 比例字体
+      (set-face-attribute 'fixed-pitch frame :font my/fixed-pitch-font :height font-height) ; 等宽体
+      (set-face-attribute 'bold nil :foreground "Salmon")
 
-  (set-fontset-font "fontset-default" 'mathematical my/math-font) 
-  (set-fontset-font "fontset-default" 'han my/chinese-font) 
-  (set-fontset-font "fontset-default" 'unicode my/chinese-font) 
-  (setq inhibit-compacting-font-caches t) 
-  (setq auto-window-vscroll nil))
+      (set-fontset-font "fontset-default" 'mathematical my/math-font) 
+      (set-fontset-font "fontset-default" 'han my/chinese-font) 
+      (set-fontset-font "fontset-default" 'unicode my/chinese-font) 
+      (setq inhibit-compacting-font-caches t) 
+      (setq auto-window-vscroll nil))
 
-(defun my/set-font-current-frame ()
-  (interactive)
-  (my/set-font (my/get-font-height) (selected-frame)))
-(global-set-key (kbd "C-x 9") #'my/set-font-current-frame)
-(add-hook 'window-setup-hook #'my/set-font-current-frame)
+    (defun my/set-font-current-frame ()
+      "Manually apply fonts to current frame. Bound to C-x 9."
+      (interactive)
+      (when (display-graphic-p)
+        (my/set-font (my/get-font-height) (selected-frame))))
 
-(custom-set-faces
- '(region ((t (:background "yellow" :foreground "black" :weight bold)))))
+    (defun my/setup-frame-fonts (frame)
+      "Apply fonts to FRAME based on its monitor DPI.
+Called automatically for new frames in daemon/client mode."
+      (when (display-graphic-p frame)
+        (with-selected-frame frame
+          (my/set-font (my/get-font-height frame) frame))))
+
+    ;; Manual keybinding (kept as fallback)
+    (global-set-key (kbd "C-x 9") #'my/set-font-current-frame)
+
+    ;; Automatic font setup for daemon/client frames
+    (add-hook 'server-after-make-frame-hook 
+              (lambda () (my/setup-frame-fonts (selected-frame))))
+
+    ;; Automatic font setup for initial frame (non-daemon startup)
+    (add-hook 'after-init-hook
+              (lambda ()
+                (when (display-graphic-p)
+                  (my/setup-frame-fonts (selected-frame)))))
+
+    (custom-set-faces
+     '(region ((t (:background "yellow" :foreground "black" :weight bold)))))
 
 (use-package emojify
   :hook (after-init . global-emojify-mode))
@@ -1043,10 +1153,10 @@ This prevents golden-ratio from activating in simple window layouts."
   :custom
   (org-modern-hide-stars nil) 
   (org-modern-table t)
-  (org-modern-list 
-   '((?- . "•")
-     (?* . "•")
-     (?+ . "•")))
+  ;; (org-modern-list 
+  ;;  '((?- . "•")
+  ;;    (?* . "•")
+  ;;    (?+ . "•")))
   :init
   (global-org-modern-mode))
 
@@ -1131,7 +1241,7 @@ This prevents golden-ratio from activating in simple window layouts."
   :after org
   :bind (:map org-mode-map
               ("C-c i y" . org-download-yank)
-              ("C-c i d" . org-download-delete)
+	      ("C-c i d" . org-download-delete)
               ("C-c i e" . org-download-edit)
               ("C-M-y" . my/org-download-clipboard)))
 
@@ -1147,7 +1257,7 @@ This prevents golden-ratio from activating in simple window layouts."
                                       (gnus . gnus)
                                       (file . find-file)
                                       (wl . wl-other-frame)))))
-
+    
     (org-open-at-point)))
 (defun my/follow-link-at-current-window-mouse (event)
   (interactive (list last-command-event))
@@ -1163,8 +1273,8 @@ This prevents golden-ratio from activating in simple window layouts."
     :custom
     (org-m-ret-may-split-line t)
     (org-priority-highest ?A) ; org-agenda 的最高优先级设为 A
-    (org-priority-lowest ?C) ; org-agenda 的优先级设为 A-E
-    (org-priority-default ?C) ; org-agenda 的默认优先级设为 D
+    (org-priority-lowest ?C) ; org-agenda 的优先级设为 A-C
+    (org-priority-default ?C) ; org-agenda 的默认优先级设为 C
     ;; (org-startup-with-latex-preview t) ; 设为 t 则创建新笔记时会出错.
     :bind
     (:map org-mode-map
@@ -1181,27 +1291,9 @@ This prevents golden-ratio from activating in simple window layouts."
     (add-hook 'org-mode-hook 'my-org-hook)
     (add-to-list 'org-babel-load-languages '(shell . t)))
 
-;; (use-package org-jira
-;;   :config
-;;   (setq org-jira-working-dir "~/Documents/org/jira/")
-;;   (setq jiralib-url "https://jira.vni.agileci.conti.de")
-;;   (setq jiralib-token
-;;     (cons "Authorization"
-;;       (concat "Bearer " (auth-source-pick-first-password
-;; 			 :host "jira.vni.agileci.conti.de"))))
-;;   (setq org-jira-use-status-as-todo nil)
-;;   (setq org-jira-jira-status-to-org-keyword-alist 
-;;      '(("Working" . "ONGOING")
-;;        ("New" . "TODO")
-;;        ("Ready" . "TODO")
-;;        ("Closed" . "DONE")
-;;        ("Verifying" . "DONE"))))
-
-(setq org-agenda-dir "~/org/jira/")
-;; Initialize with jira files, org-roam projects will be added when org-roam loads
-(setq org-agenda-files 
-      (when (file-exists-p org-agenda-dir)
-        (directory-files-recursively org-agenda-dir "\\.org$")))
+(setq org-agenda-dir "~/org/notes/projects/")
+;; Initialize with org roam project files
+(setq org-agenda-files (list org-agenda-dir))
 
 ;; Log timestamp when TODO state changes
 (setq org-log-done 'time)
@@ -1288,64 +1380,74 @@ This prevents golden-ratio from activating in simple window layouts."
 (advice-add 'org-priority       :after (η #'org-save-all-org-buffers))
 
 (defun my/org-roam-get-daily-note-file ()
-    "Get the file path for today's daily note."
-    (let* ((time (current-time))
-           (dailies-dir (expand-file-name org-roam-dailies-directory org-roam-directory))
-           (filename (format-time-string "%Y-%m-%d.org" time)))
-      (expand-file-name filename dailies-dir)))
+  "Get the file path for today's daily note."
+  (let* ((time (current-time))
+         (dailies-dir
+          (expand-file-name org-roam-dailies-directory
+                            org-roam-directory))
+         (filename (format-time-string "%Y-%m-%d.org" time)))
+    (expand-file-name filename dailies-dir)))
 
-  (defun my/org-roam-ensure-daily-note-exists ()
-    "Ensure today's daily note exists, creating it if necessary."
-    (let ((daily-file (my/org-roam-get-daily-note-file)))
-      (unless (file-exists-p daily-file)
-        ;; Create the daily note using org-roam-dailies
-        (save-window-excursion
-          (org-roam-dailies-goto-today)))
-      daily-file))
 
-  (defun my/refile-completed-task-to-daily ()
-    "Refile completed task to today's daily note under Tasks > Completed heading.
-This function is called automatically when a task is marked as DONE."
-    (when (and (eq major-mode 'org-mode)
-               (member (org-get-todo-state) '("DONE" "CANCEL")))
-      (let* ((daily-file (my/org-roam-ensure-daily-note-exists))
-             (task-heading (org-get-heading t t t t))
-             (task-body (save-excursion
-                          (org-back-to-heading t)
-                          (let ((start (point)))
-                            (org-end-of-subtree t t)
-                            (buffer-substring-no-properties start (point))))))
-        ;; Only refile if not already in daily note
-        (unless (string= (buffer-file-name) daily-file)
+(defun my/org-roam-ensure-daily-note-exists ()
+  "Ensure today's daily note exists, creating it if necessary."
+  (let ((daily-file (my/org-roam-get-daily-note-file)))
+    (unless (file-exists-p daily-file)
+      (save-window-excursion (org-roam-dailies-goto-today)))
+    daily-file))
+
+(defun my/copy-completed-task-to-daily ()
+  "Copy completed task to today's daily note under 'What's done today?' heading.
+The original task remains in its original file. A backlink is added to the copy.
+This function is called automatically when a task is marked as DONE or CANCEL."
+  (when (and (eq major-mode 'org-mode)
+             (member (org-get-todo-state) '("DONE" "CANCEL"))
+             (buffer-file-name))
+    (let* ((dailies-dir
+            (expand-file-name org-roam-dailies-directory
+                              org-roam-directory))
+           (current-file (file-truename (buffer-file-name))))
+      ;; Only process if NOT already in a daily note
+      (unless (string-prefix-p
+               (file-truename dailies-dir) current-file)
+        (let* ((daily-file (my/org-roam-ensure-daily-note-exists))
+               (task-heading (org-get-heading t t t t))
+               (original-file (buffer-file-name))
+               (original-link
+                (format "[[file:%s][%s]]"
+                        original-file
+                        (file-name-nondirectory original-file)))
+               (task-body
+                (save-excursion
+                  (org-back-to-heading t)
+                  (let ((start (point)))
+                    (org-end-of-subtree t t)
+                    (buffer-substring-no-properties start (point))))))
           (save-excursion
-            ;; Find and append to Tasks > Completed in daily note
             (with-current-buffer (find-file-noselect daily-file)
               (goto-char (point-min))
-              ;; Find "Tasks" heading
-              (if (re-search-forward "^\\* Tasks" nil t)
+              ;; Find "What's done today?" heading
+              (if (re-search-forward "^\\* What's done today\\?"
+                                     nil
+                                     t)
                   (progn
-                    ;; Find or create "Completed" subheading
-                    (let ((tasks-end (save-excursion
-                                       (org-end-of-subtree t t)
-                                       (point))))
-                      (if (re-search-forward "^\\*\\* Completed" tasks-end t)
-                          (progn
-                            ;; Go to end of Completed section
-                            (org-end-of-subtree t t)
-                            (insert "\n" task-body))
-                        ;; Create Completed subheading
-                        (org-end-of-subtree t t)
-                        (insert "\n** Completed\n" task-body)))
+                    ;; Go to end of this section (before next top-level heading)
+                    (org-end-of-subtree t t)
+                    ;; Insert task directly under heading
+                    (insert "\n" task-body)
+                    ;; Add backlink as visible line after the heading
+                    (forward-line -1)
+                    (org-end-of-line)
+                    (insert "\n/Original: " original-link "/")
                     (save-buffer))
-                (message "Warning: Could not find 'Tasks' heading in daily note"))))
-          ;; Delete the original task
-          (org-back-to-heading t)
-          (org-cut-subtree)
-          (save-buffer)
-          (message "Task refiled to daily note: %s" task-heading)))))
+                (message
+                 "Warning: Could not find 'What's done today?' heading in daily note"))))
+          (message "Task copied to daily note (original kept): %s"
+                   task-heading))))))
 
-  ;; Hook to auto-refile when TODO state changes to DONE/CANCEL
-  (add-hook 'org-after-todo-state-change-hook 'my/refile-completed-task-to-daily)
+;; Hook to auto-copy when TODO state changes to DONE/CANCEL
+(add-hook
+ 'org-after-todo-state-change-hook 'my/copy-completed-task-to-daily)
 
 (use-package org-pomodoro)
 (setq org-pomodoro-audio-player "mpv"
@@ -1495,22 +1597,9 @@ Prompts for date using org-mode's date picker."
                                 "#+title: ${title}\n#+date: %U\n#+filetags: \n\n")
              :unnarrowed t)
             
-            ("l" "literature" plain
-             "* Source\n\n%?\n\n* Summary\n\n* Key Points\n- \n\n* Personal Notes\n\n* Related\n"
-             :target (file+head "lit/%<%Y%m%d%H%M%S>-${slug}.org"
-                                "#+title: ${title}\n#+filetags: :literature:\n#+date: %U\n\n")
-             :unnarrowed t)
-            
-            ("m" "meeting" plain
-             "* Attendees\n- %?\n\n* Agenda\n- \n\n* Discussion\n\n* Action Items\n- [ ] \n\n* Follow-up\n"
-             :target (file+head "meetings/%<%Y%m%d%H%M%S>-${slug}.org"
-                                "#+title: ${title}\n#+filetags: :meeting:\n#+date: %U\n\n")
-             :unnarrowed t)
-            
-            ("c" "concept" plain
-             "* Definition\n\n%?\n\n* Examples\n- \n\n* Properties\n- \n\n* Related Concepts\n- \n\n* References\n"
-             :target (file+head "concepts/%<%Y%m%d%H%M%S>-${slug}.org"
-                                "#+title: ${title}\n#+filetags: :concept:\n#+date: %U\n\n")
+            ("p" "project" plain "** TODO %?\n"
+             :target (file+head "projects/%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: :Project:\n\n* Tasks\n")
              :unnarrowed t)
             
             ("r" "reference" plain
@@ -1519,12 +1608,7 @@ Prompts for date using org-mode's date picker."
                                 "#+title: ${title}\n#+filetags: :reference:\n#+date: %U\n\n")
              :unnarrowed t)))
     (org-roam-db-autosync-mode) 
-    (my/org-roam-refresh-agenda-list)
-    (add-to-list 'org-after-todo-state-change-hook 
-                 (lambda ()
-                   (when (or (equal org-state "DONE")
-  			   (equal org-state "COMPLETED"))
-                     (my/org-roam-copy-todo-to-today)))))
+    (my/org-roam-refresh-agenda-list))
   (add-hook 'org-roam-mode-hook 'visual-line-mode)
 
 ;; Initial setup: run after org-roam is loaded
@@ -1660,12 +1744,6 @@ Sets up commonly used mathematical symbols and operators."
   :config
   (setq org-anki-default-deck "Mega"))
 
-(defvar my/org-roam-project-template 
-  '("p" "project" plain "** TODO %?"
-    :if-new (file+head+olp "projects/%<%Y%m%d%H%M%S>-${slug}.org"
-                           "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: :project:\n"
-                           ("Tasks"))))
-
 (defun my/org-roam-project-finalize-hook ()
   "adds the captured project file to `org-agenda-files' if the
   capture was not aborted."
@@ -1681,10 +1759,10 @@ Sets up commonly used mathematical symbols and operators."
   ;; add the project file to the agenda after capture is finished
   (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
   ;; select a project file to open, creating it if necessary
-  (org-roam-capture- :node (org-roam-node-read
+  (org-roam-capture- :keys "p"
+                     :node (org-roam-node-read
                             nil
-                            (my/org-roam-filter-by-tag "Project"))
-                     :templates (list my/org-roam-project-template)))
+                            (my/org-roam-filter-by-tag "Project"))))
 
 (defun my/org-roam-find-project ()
   (interactive)
@@ -1697,34 +1775,14 @@ Sets up commonly used mathematical symbols and operators."
    (my/org-roam-filter-by-tags '("Project") '("Archived"))))
 
 (defun my/org-roam-capture-task ()
-(interactive)
-;; update org-agenda list after adding projects
-(add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-;; new todo
-(org-roam-capture- :node (org-roam-node-read
-                          nil
-                          (my/org-roam-filter-by-tag "Project"))
-                   :templates (list my/org-roam-project-template)))
-
-(defun my/org-roam-copy-todo-to-today ()
   (interactive)
-  (unless (or (string= (buffer-name) "*habit*") ; do nothing in habit buffer
-          (string= (org-entry-get nil "STYLE") "habit")) ; skip if the task is a habit
-    (let ((org-refile-keep t) ; set this to nil to delete the original!
-          (org-roam-dailies-capture-templates
-           '(("t" "tasks" entry "%?"
-              :if-new (file+head+olp "%<%Y-%m-%d>.org" "#+title: %<%Y-%d-%d>\n" ("Done")))))
-          (org-after-refile-insert-hook #'save-buffer)
-          today-file
-          pos)
-      (save-window-excursion
-        (org-roam-dailies--capture (current-time) t)
-        (setq today-file (buffer-file-name))
-        (setq pos (point)))
-      ;; only refile if the target file is different than the current file
-      (unless (equal (file-truename today-file)
-                     (file-truename (buffer-file-name)))
-        (org-refile nil nil (list "Done" today-file nil pos))))))
+  ;; update org-agenda list after adding projects
+  (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+  ;; new todo
+  (org-roam-capture- :keys "p"
+                     :node (org-roam-node-read
+                            nil
+                            (my/org-roam-filter-by-tag "Project"))))
 
 (defun my/org-refile-update-targets ()
   "Update `org-refile-targets` to match `org-agenda-files`."
@@ -1736,6 +1794,42 @@ Sets up commonly used mathematical symbols and operators."
 
 ;; Update targets when project finalize hook runs (only when projects change)
 (advice-add 'my/org-roam-project-finalize-hook :after #'my/org-refile-update-targets)
+
+(defun my/org-roam-migrate-project-files ()
+  "Move existing project files from root to projects/ subdirectory.
+Migrates all files tagged with :Project: or :project: or :projects:."
+  (interactive)
+  (let* ((projects-dir (expand-file-name "projects/" org-roam-directory))
+         (moved-count 0)
+         (skipped-count 0)
+         (root-dir (expand-file-name org-roam-directory)))
+    
+    (unless (file-exists-p projects-dir)
+      (make-directory projects-dir t))
+    
+    ;; Find all project files in root directory
+    (dolist (file (directory-files root-dir t "\\.org$"))
+      (when (and (file-regular-p file)
+                 (not (string-prefix-p "." (file-name-nondirectory file))))
+        (with-temp-buffer
+          (insert-file-contents file)
+          (goto-char (point-min))
+          ;; Check for Project tag (case-insensitive)
+          (when (re-search-forward "^#\\+filetags:.*:[Pp]rojects?:" nil t)
+            (let* ((filename (file-name-nondirectory file))
+                   (new-path (expand-file-name filename projects-dir)))
+              (if (file-exists-p new-path)
+                  (progn
+                    (message "Skipped (already exists): %s" filename)
+                    (setq skipped-count (1+ skipped-count)))
+                (rename-file file new-path)
+                (setq moved-count (1+ moved-count))
+                (message "Moved: %s -> projects/%s" filename filename)))))))
+    
+    (message "Migration complete. Moved: %d, Skipped: %d" moved-count skipped-count)
+    (when (> moved-count 0)
+      (org-roam-db-sync)
+      (my/org-roam-refresh-agenda-list))))
 
 (org-babel-do-load-languages
   'org-babel-load-languages
@@ -1838,7 +1932,7 @@ Sets up commonly used mathematical symbols and operators."
 ;; automatically tangle our emacs.org config file when we save it
 (defun zzc/org-babel-tangle-config ()
   (when (string-equal (file-truename (buffer-file-name))
-		      (file-truename (expand-file-name "~/dotconfig/basic/editor/emacs/default/config.org")))
+		      (file-truename (expand-file-name "~/.config/emacs/default/config.org")))
     ;; dynamic scoping to the rescue
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
@@ -2000,3 +2094,176 @@ Sets up commonly used mathematical symbols and operators."
 (require 'pangu-spacing)
 (global-pangu-spacing-mode 1)
 (setq pangu-spacing-real-insert-separtor t)
+
+(use-package gptel
+  :straight t
+  :init
+  ;; Helper function to read API keys from environment variables
+  (defun my/gptel-api-key-from-env (var-name)
+    "Read API key from environment variable VAR-NAME."
+    (let ((key (getenv var-name)))
+      (if (and key (not (string-empty-p key)))
+          key
+        (progn
+          (message "Warning: %s not set in environment" var-name)
+          nil))))
+  :config
+  ;; Enable streaming for faster responses
+  (setq gptel-stream t)
+
+  ;; Backend: Gemini
+  (gptel-make-gemini "Gemini"
+    :key (lambda () (my/gptel-api-key-from-env "GEMINI_API_KEY"))
+    :stream t)
+
+  ;; Backend: ChatGPT (OpenAI)
+  (gptel-make-openai "ChatGPT"
+    :key (lambda () (my/gptel-api-key-from-env "OPENAI_API_KEY"))
+    :models '(gpt-4o gpt-4o-mini gpt-4-turbo)
+    :stream t)
+
+  ;; Backend: Claude (Anthropic)
+  (gptel-make-anthropic "Claude"
+    :key (lambda () (my/gptel-api-key-from-env "ANTHROPIC_API_KEY"))
+    :stream t)
+
+  ;; Backend: OpenRouter (Default) - supports many models
+  (setq gptel-backend
+        (gptel-make-openai "OpenRouter"
+          :host "openrouter.ai"
+          :endpoint "/api/v1/chat/completions"
+          :stream t
+          :key (lambda () (my/gptel-api-key-from-env "OPENROUTER_API_KEY"))
+          :models '(google/gemini-2.5-flash
+		    google/gemini-2.5-pro
+		    google/gemini-3-pro-preview
+		    anthropic/claude-sonnet-4.5
+		    anthropic/claude-opus-4.5
+		    anthropic/claude-haiku-4.5
+		    openai/gpt-4o-mini
+		    openai/gpt-5.2)))
+
+  ;; Org-mode integration
+  (setq gptel-org-branching-context t)
+
+  ;; Custom directives for various tasks
+  (add-to-list 'gptel-directives
+               '(code-review . "You are an expert code reviewer. Analyze code for quality, potential bugs, security issues, and adherence to best practices. Provide constructive, actionable feedback."))
+
+  (add-to-list 'gptel-directives
+               '(explain-code . "You are a programming teacher. Explain code clearly and concisely, focusing on what it does, how it works, and why it's structured that way. Use simple language."))
+
+  (add-to-list 'gptel-directives
+               '(debug-help . "You are a debugging expert. Help identify the root cause of bugs, suggest fixes, and explain why the issue occurred. Be systematic and thorough."))
+
+  (add-to-list 'gptel-directives
+               '(refactor . "You are a refactoring specialist. Suggest improvements to code structure, readability, and maintainability while preserving functionality. Explain the benefits of each suggestion."))
+
+  (add-to-list 'gptel-directives
+               '(write-tests . "You are a test engineer. Generate comprehensive unit tests that cover edge cases, normal cases, and error handling. Use appropriate testing frameworks."))
+
+  (add-to-list 'gptel-directives
+               '(commit-msg . "You are a git expert. Generate clear, concise commit messages following conventional commits format. Focus on the 'why' not just the 'what'."))
+
+  (add-to-list 'gptel-directives
+               '(translate-zh . "You are a translator. Translate the text to Chinese (简体中文). Maintain the original tone and meaning. Be natural and idiomatic."))
+
+  (add-to-list 'gptel-directives
+               '(summarize . "You are a summarization expert. Create concise summaries that capture the key points and essential information. Be clear and structured."))
+  
+  (add-to-list 'gptel-directives
+               '(journal . "You are a supportive and understanding life coach. I want you to review my daily journal ang give your thoughts and suggestions(maximum 2 suggestions), be concise, respond in simplifies chinese and org format under the AI Summary Heading"))
+
+  ;; Display gptel chat buffers in right split
+  (add-to-list 'display-buffer-alist
+               '("\\*gptel.*\\*"
+                 (display-buffer-in-direction)
+                 (direction . right)
+                 (window-width . 0.5)))
+
+  ;; Helper: Explain selected code
+  (defun my/gptel-explain-code ()
+    "Explain the selected code or code at point."
+    (interactive)
+    (if (use-region-p)
+        (let ((code (buffer-substring-no-properties (region-beginning) (region-end)))
+              (mode major-mode))
+          (gptel-request code
+                         :system (format "Explain this %s code clearly and concisely. Focus on what it does, why, and any important details." mode)))
+      (message "No region selected")))
+
+  ;; Helper: Add org heading as context
+  (defun my/gptel-add-org-heading ()
+    "Add current org heading and its content as context for gptel."
+    (interactive)
+    (when (derived-mode-p 'org-mode)
+      (let* ((element (org-element-at-point))
+             (headline (org-element-property :raw-value element))
+             (begin (org-element-property :begin element))
+             (end (org-element-property :end element))
+             (content (buffer-substring-no-properties begin end)))
+        (with-current-buffer (gptel-buffer-name)
+          (goto-char (point-max))
+          (insert (format "\n\n--- Context: %s ---\n%s\n---\n" headline content)))
+        (message "Added org heading '%s' as context" headline))))
+
+  ;; Helper: Add buffer as context
+  (defun my/gptel-add-context-buffer ()
+    "Add entire current buffer as context for gptel."
+    (interactive)
+    (let ((content (buffer-substring-no-properties (point-min) (point-max)))
+          (buf-name (buffer-name)))
+      (with-current-buffer (gptel-buffer-name)
+        (goto-char (point-max))
+        (insert (format "\n\n--- Context: Buffer %s ---\n%s\n---\n" buf-name content)))
+      (message "Added buffer '%s' as context" buf-name)))
+
+  ;; Helper: Add region as context
+  (defun my/gptel-add-context-region ()
+    "Add selected region as context for gptel."
+    (interactive)
+    (if (use-region-p)
+        (let ((content (buffer-substring-no-properties (region-beginning) (region-end))))
+          (with-current-buffer (gptel-buffer-name)
+            (goto-char (point-max))
+            (insert (format "\n\n--- Context: Region ---\n%s\n---\n" content)))
+          (message "Added region as context"))
+      (message "No region selected")))
+
+  ;; Helper: Add file as context
+  (defun my/gptel-add-context-file ()
+    "Add external file as context for gptel."
+    (interactive)
+    (let* ((file (read-file-name "File to add as context: "))
+           (content (with-temp-buffer
+                      (insert-file-contents file)
+                      (buffer-string))))
+      (with-current-buffer (gptel-buffer-name)
+        (goto-char (point-max))
+        (insert (format "\n\n--- Context: File %s ---\n%s\n---\n" file content)))
+      (message "Added file '%s' as context" file)))
+
+  ;; Helper: Clear all context
+  (defun my/gptel-clear-context ()
+    "Clear all manually added context in gptel buffer."
+    (interactive)
+    (with-current-buffer (gptel-buffer-name)
+      (goto-char (point-min))
+      (while (re-search-forward "^--- Context:.*?^---$" nil t)
+        (delete-region (match-beginning 0) (match-end 0))))
+    (message "Cleared all context")))
+
+;; Key bindings
+(zzc/leader-keys
+  "a"   '(:ignore t :which-key "ai/llm")
+  "aa"  '(gptel :which-key "gptel chat")
+  "am"  '(gptel-menu :which-key "gptel menu")
+  "as"  '(gptel-send :which-key "send")
+  "ar"  '(gptel-rewrite-menu :which-key "rewrite")
+  "ae"  '(my/gptel-explain-code :which-key "explain code")
+  "ac"  '(:ignore t :which-key "context")
+  "ach" '(my/gptel-add-org-heading :which-key "add org heading")
+  "acb" '(my/gptel-add-context-buffer :which-key "add buffer")
+  "acr" '(my/gptel-add-context-region :which-key "add region")
+  "acf" '(my/gptel-add-context-file :which-key "add file")
+  "acc" '(my/gptel-clear-context :which-key "clear context"))
