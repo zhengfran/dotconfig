@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 ;; early-init.el - Loaded before init.el and GUI initialization
-
+(setq debug-on-error t)
 ;; Disable package.el in favor of straight.el
 (setq package-enable-at-startup nil)
 
@@ -10,7 +10,7 @@
 ;; Platform-specific font sizes
 (defvar my/font-size
   (pcase system-type
-    ('windows-nt 140)  ; 14pt for Windows
+    ('windows-nt 160)  ; 14pt for Windows
     ('darwin 160)      ; 16pt for macOS
     ('gnu/linux 160)   ; 16pt for Linux
     (_ 140))           ; Fallback
@@ -22,9 +22,9 @@
 
 ;; Preferred font names
 (defvar my/preferred-fonts
-  '((default . "Iosevka")
-    (variable-pitch . "Cantarell")
-    (fixed-pitch . "JetBrainsMono Nerd Font")
+  '((default . "Iosevka NFP")
+    (variable-pitch . "Iosevka NFP")
+    (fixed-pitch . "Iosevka NF")
     (math . "Latin Modern Math")
     (chinese . "LXGW WenKai"))
   "Preferred font families for different use cases.")
@@ -73,11 +73,3 @@
 (add-hook 'server-after-make-frame-hook
           (lambda ()
             (my/setup-frame-fonts (selected-frame))))
-
-;; Manual font refresh keybinding (C-x 9)
-(with-eval-after-load 'emacs
-  (global-set-key (kbd "C-x 9")
-                  (lambda ()
-                    (interactive)
-                    (my/setup-frame-fonts (selected-frame))
-                    (message "Fonts refreshed for current frame"))))
