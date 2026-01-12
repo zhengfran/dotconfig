@@ -1,28 +1,28 @@
 #+AUTHOR: Zheng Zhicheng(ZZC)
 #+DESCRIPTION: Just another Emacs config from scratch
 #+STARTUP: overview
-#+PROPERTY: header-args:emacs-lisp :tangle ~/dotconfig/basic/editor/emacs/default/init.el
+#+PROPERTY: header-args:emacs-lisp :tangle ~/.config/emacs/default/init.el
 
 * Startup
 
 #+begin_src emacs-lisp
-  ;; -*- lexical-binding: t; -*-
-  ;;show show errors
-  (setq warning-minimum-level :error)
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-  ;;disable bell
-  (setq visible-bell 1)
-  ;; The default is 800 kilobytes.  Measured in bytes.
-  (setq gc-cons-threshold (* 50 1000 1000))
+;; -*- lexical-binding: t; -*-
+;;show show errors
+(setq warning-minimum-level :error)
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+;;disable bell
+(setq visible-bell 1)
+;; The default is 800 kilobytes.  Measured in bytes.
+(setq gc-cons-threshold (* 50 1000 1000))
 
-  ;; Profile emacs startup
-  (add-hook 'emacs-startup-hook
-  	  (lambda ()
-  	    (message "*** Emacs loaded in %s seconds with %d garbage collections."
-  		     (emacs-init-time "%.2f")
-  		     gcs-done)))
+;; Profile emacs startup
+(add-hook 'emacs-startup-hook
+	  (lambda ()
+	    (message "*** Emacs loaded in %s seconds with %d garbage collections."
+		     (emacs-init-time "%.2f")
+		     gcs-done)))
 
-  (defvar native-comp-deferred-compilation-deny-list nil)
+(defvar native-comp-deferred-compilation-deny-list nil)
 
 #+end_src
 
@@ -30,73 +30,90 @@
 * Package Management
 ** Straight
 #+begin_src emacs-lisp
-  (defvar bootstrap-version)
-  ;; ?? Emacs 29 ??? native-compile ??????? bug
-  (unless (version<= emacs-version "28.2")
-    (setq straight-repository-branch "develop"))
-  (setq straight-check-for-modifications '(check-on-save find-when-checking))
+(defvar bootstrap-version)
+;; ?? Emacs 29 ??? native-compile ??????? bug
+(unless (version<= emacs-version "28.2")
+  (setq straight-repository-branch "develop"))
+(setq straight-check-for-modifications '(check-on-save find-when-checking))
 
-  (let ((bootstrap-file
-         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-        (bootstrap-version 6))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
-  (straight-use-package 'use-package)
-  (setq straight-use-package-by-default t)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+;; Disable org-elpa recipe source to avoid pre-build issues on Windows
+(setq straight-recipe-repositories (delq 'org-elpa straight-recipe-repositories))
+
+(straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
+#+end_src
+
+** Org Recipe Override
+Fix org-mode recipe to avoid Windows pre-build issues
+#+begin_src emacs-lisp
+;; Override org recipe (org-elpa disabled above)
+;; Use a simple recipe without problematic pre-build steps
+(straight-use-package
+ '(org :type git 
+       :host github 
+       :repo "emacs-straight/org-mode"
+       :local-repo "org"
+       :files (:defaults "lisp/*.el" ("etc/styles/" "etc/styles/*"))))
 #+end_src
 
 ** Package path
 
 #+begin_src emacs-lisp
-  ;; make sure shell PATH is same as emacs PATH 
-  (use-package exec-path-from-shell
-    :config
-    (setq shell-file-name
-          (cond
-           ((eq system-type 'windows-nt) (or (executable-find "bash")
-                                             (executable-find "zsh")
-                                             "bash"))
-           (t "/usr/bin/zsh")))
-    (setq exec-path-from-shell-arguments '("-l"))
-    (when (memq window-system '(mac ns x))
-      (exec-path-from-shell-initialize)))
+;; make sure shell PATH is same as emacs PATH 
+(use-package exec-path-from-shell
+  :config
+  (setq shell-file-name
+        (cond
+         ((eq system-type 'windows-nt) (or (executable-find "bash")
+                                           (executable-find "zsh")
+                                           "bash"))
+         (t "/usr/bin/zsh")))
+  (setq exec-path-from-shell-arguments '("-l"))
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
 #+end_src
 
 ** Starup Profiling
 #+BEGIN_SRC emacs-lisp
-  (use-package esup
-    :config
-    (setq esup-depth 0))
+(use-package esup
+  :config
+  (setq esup-depth 0))
 #+END_SRC
 
 
 * Path
 #+BEGIN_SRC emacs-lisp
-  ;; Centralized path configuration
-  (defvar my/org-base-dir (expand-file-name "~/org/notes/")
-    "Base directory for all org-roam notes.")
+;; Centralized path configuration
+(defvar my/org-base-dir (expand-file-name "~/org/notes/")
+  "Base directory for all org-roam notes.")
 
-  (setq org_notes_dir my/org-base-dir
-        zot_bib "~/Nutstore/1/Nutstore/Zotero-Library/Main.bib"; Zotero .bib 文件
-        zot_pdf "~/Nutstore/1/Nutstore/Zotero-Library" ; Zotero 同步文件
-        org_notes (expand-file-name "ref/" my/org-base-dir)) ; org-roam 文献笔记目录
+(setq org_notes_dir my/org-base-dir
+      zot_bib "~/Nutstore/1/Nutstore/Zotero-Library/Main.bib"; Zotero .bib 文件
+      zot_pdf "~/Nutstore/1/Nutstore/Zotero-Library" ; Zotero 同步文件
+      org_notes (expand-file-name "ref/" my/org-base-dir)) ; org-roam 文献笔记目录
 
-  (unless (file-exists-p org_notes_dir) (setq org_notes_dir nil))
-  (unless (file-exists-p zot_bib) (setq zot_bib nil))
-  (unless (file-exists-p zot_pdf) (setq zot_pdf nil))
-  (unless (file-exists-p org_notes) (setq org_notes nil)) ; 防止文件不存在报错
+(unless (file-exists-p org_notes_dir) (setq org_notes_dir nil))
+(unless (file-exists-p zot_bib) (setq zot_bib nil))
+(unless (file-exists-p zot_pdf) (setq zot_pdf nil))
+(unless (file-exists-p org_notes) (setq org_notes nil)) ; 防止文件不存在报错
 
-  ;; Create org-roam subdirectories if they don't exist
-  (dolist (subdir '("daily" "projects" "ref"))
-    (let ((dir (expand-file-name subdir my/org-base-dir)))
-      (unless (file-exists-p dir)
-        (make-directory dir t))))
+;; Create org-roam subdirectories if they don't exist
+(dolist (subdir '("daily" "projects" "ref"))
+  (let ((dir (expand-file-name subdir my/org-base-dir)))
+    (unless (file-exists-p dir)
+      (make-directory dir t))))
 #+END_SRC
 
 
@@ -154,15 +171,18 @@
   :defer 1
   :config
     (save-place-mode 1))
+
 (use-package savehist
   :defer 1
   :config (savehist-mode))
+
 (use-package super-save
   :defer 1
   :custom
   (super-save-auto-save-when-idle t)
   :config
   (super-save-mode +1))
+
 (global-auto-revert-mode 1)
 (setq global-auto-revert-non-file-buffers nil)
 #+END_SRC
@@ -577,6 +597,12 @@ Tab-bar provides multiple named workspaces for project separation.
   (global-set-key (kbd "C-c u") 'winner-undo)
   (global-set-key (kbd "C-c r") 'winner-redo)
 
+  ;; Font size adjustment keybindings
+  (global-set-key (kbd "C-=") 'text-scale-increase)  ; Ctrl + = (same key as +)
+  (global-set-key (kbd "C-+") 'text-scale-increase)  ; Ctrl + + (explicit)
+  (global-set-key (kbd "C--") 'text-scale-decrease)  ; Ctrl + -
+  (global-set-key (kbd "C-0") (lambda () (interactive) (text-scale-set 0)))  ; Ctrl + 0 to reset
+
 #+end_src
 
 ** Windows number
@@ -931,14 +957,16 @@ This prevents golden-ratio from activating in simple window layouts."
      (if minibuffer-completing-file-name
          ;; Borrowed from https://github.com/raxod502/selectrum/issues/498#issuecomment-803283608
          (if (string-match-p "/." (minibuffer-contents))
-             (zap-up-to-char (- arg) ?/)
-           (delete-minibuffer-contents))
-       (delete-word (- arg))))
-   (setq completion-ignore-case 't) ; minibuffer ignore case
-   (use-package vertico
-     :defer 1
-     :custom
-     (verticle-cycle t)
+            (zap-up-to-char (- arg) ?/)
+          (delete-minibuffer-contents))
+      (delete-word (- arg))))
+
+  (setq completion-ignore-case 't) ; minibuffer ignore case
+
+  (use-package vertico
+    :defer 1
+    :custom
+    (vertico-cycle t)
      :config
      (vertico-mode)
      :bind (:map minibuffer-local-map
@@ -976,10 +1004,11 @@ This prevents golden-ratio from activating in simple window layouts."
 ** emark and consult
 
 #+BEGIN_SRC emacs-lisp
-    (use-package embark
-      :bind
-      ( "C-;" . 'embark-act))
-    (use-package consult
+  (use-package embark
+    :bind
+    ( "C-;" . 'embark-act))
+
+  (use-package consult
       :defer 1
       :bind
       ( "C-s" . 'consult-line)
@@ -1034,18 +1063,6 @@ This prevents golden-ratio from activating in simple window layouts."
    (use-package embark-consult)
 #+end_src
 
-** hydra 
-
-#+begin_src emacs-lisp
-  (use-package hydra)
-  (defhydra hydra-text-scale (:timeout 4)
-    "scale text"
-    ("j" text-scale-increase "in")
-    ("k" text-scale-decrease "out")
-    ("q" nil "finished" :exit t))
-  (zzc/leader-keys
-    "ts" '(hydra-text-scale/body :which-key "scale text"))
-#+end_src
 
 
 
@@ -1169,7 +1186,6 @@ This prevents golden-ratio from activating in simple window layouts."
   (setq-default buffer-file-coding-system 'utf-8-unix)
 #+END_SRC
 
-
 ** EMOJI
 #+BEGIN_SRC emacs-lisp
   (use-package emojify
@@ -1242,23 +1258,42 @@ This prevents golden-ratio from activating in simple window layouts."
 * Org
 
 ** org ui
-*** org modern
+*** org-modern
+
 #+begin_src emacs-lisp
 (use-package org-modern-indent
+  :after org
   :straight (:host github :repo "jdtsmith/org-modern-indent")
   :config
   (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 
-(use-package org-modern 
-  :custom
-  (org-modern-hide-stars nil) 
-  (org-modern-table t)
-  ;; (org-modern-list 
-  ;;  '((?- . "•")
-  ;;    (?* . "•")
-  ;;    (?+ . "•")))
+(use-package org-modern
+  :after org
+  :hook (org-mode . org-modern-mode)
   :init
-  (global-org-modern-mode))
+  ;; Set variables before org-modern loads (in :init block)
+  ;; This ensures they're available when org-modern-mode activates
+  
+  ;; Heading stars - use fold indicators (dynamic bullets showing document structure)
+  (setq org-modern-star 'fold)
+  (setq org-modern-hide-stars 'leading)  ; Hide leading stars
+  
+  ;; Fold indicators: (folded . expanded) pairs for each heading level
+  (setq org-modern-fold-stars
+        '(("▶" . "▼")   ; Level 1: ▶ when folded, ▼ when expanded
+          ("▷" . "▽")   ; Level 2
+          ("⯈" . "⯆")   ; Level 3  
+          ("▹" . "▿")   ; Level 4
+          ("▸" . "▾"))) ; Level 5+
+  
+  ;; List item bullets
+  (setq org-modern-list
+        '((?- . "•")    ; - becomes •
+          (?+ . "◦")    ; + becomes ◦
+          (?* . "▸")))  ; * becomes ▸
+  
+  ;; Hide leading stars in org-mode
+  (setq org-hide-leading-stars t))
 #+end_src
 
 *** auto hide and appear
@@ -1385,7 +1420,8 @@ This prevents golden-ratio from activating in simple window layouts."
                                       (file . find-file)
                                       (wl . wl-other-frame)))))
     (org-open-at-point)))
-  (use-package org
+
+(use-package org
     :defer 10
     :custom
     (org-m-ret-may-split-line t)
@@ -2309,6 +2345,9 @@ Migrates all files tagged with :Project: or :project: or :projects:."
       "tg"  '(ee-lazygit :which-key "lazygit")
       "ty"  '(ee-yazi :which-key "yazi")))
 #+END_SRC
+
+#+RESULTS:
+: t
 
 
 * Chinese
