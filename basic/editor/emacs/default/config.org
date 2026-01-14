@@ -730,6 +730,137 @@ This prevents golden-ratio from activating in simple window layouts."
 
 #+end_src
 
+** Custom Bookmark Search - URL Launcher
+#+begin_src emacs-lisp
+;; Bookmark search in popup frame with fuzzy matching
+;; Opens org-mode bookmarks in Windows default browser
+;; Keybinding: SPC b u
+
+(defun my/parse-org-bookmarks ()
+  "Extract HTTP(S) links from ~/org/bookmarks.org.
+Returns alist of (DESCRIPTION . URL) pairs.
+Only includes HTTP/HTTPS URLs, skips file: and elisp: links."
+  (let ((bookmark-file (expand-file-name "~/org/bookmarks.org")))
+    ;; Check file exists
+    (unless (file-exists-p bookmark-file)
+      (error "Bookmark file not found: %s" bookmark-file))
+    
+    (with-temp-buffer
+      (insert-file-contents bookmark-file)
+      (goto-char (point-min))
+      (let (bookmarks)
+        ;; Regex: [[http(s)://URL][Description]] or [[http(s)://URL]]
+        (while (re-search-forward
+                "\\[\\[\\(https?://[^]]+\\)\\]\\(?:\\[\\([^]]+\\)\\]\\)?\\]"
+                nil t)
+          (let ((url (match-string 1))
+                (desc (or (match-string 2)  ; Use description if present
+                          (match-string 1)))) ; Otherwise use URL as description
+            (push (cons desc url) bookmarks)))
+        
+        ;; Error if no bookmarks found
+        (unless bookmarks
+          (error "No HTTP(S) bookmarks found in %s" bookmark-file))
+        
+        (nreverse bookmarks)))))
+
+(defun my/consult-bookmarks ()
+  "Fuzzy search bookmarks from ~/org/bookmarks.org.
+Returns selected URL or nil if cancelled."
+  (interactive)
+  (let* ((bookmarks (my/parse-org-bookmarks))
+         (selected (consult--read
+                    bookmarks
+                    :prompt "Bookmark: "
+                    :sort nil                           ; Keep org file order
+                    :require-match t                    ; Must select valid bookmark
+                    :category 'bookmark                 ; For completion annotations
+                    :lookup #'consult--lookup-cdr       ; Return URL (cdr), not description
+                    :history 'my/bookmark-history)))    ; Remember recent selections
+    selected))
+
+(defun my/create-centered-bookmark-frame ()
+  "Create a centered popup frame for bookmark search.
+Frame size: 100 chars wide × 30 lines tall."
+  (let* ((screen-width (display-pixel-width))
+         (screen-height (display-pixel-height))
+         (char-width (frame-char-width))
+         (char-height (frame-char-height))
+         ;; Frame dimensions in pixels
+         (frame-width-chars 100)
+         (frame-height-chars 30)
+         (frame-pixel-width (* frame-width-chars char-width))
+         (frame-pixel-height (* frame-height-chars char-height))
+         ;; Center calculations
+         (left (max 0 (/ (- screen-width frame-pixel-width) 2)))
+         (top (max 0 (/ (- screen-height frame-pixel-height) 2))))
+    
+    (make-frame `((name . "Bookmark Search")
+                  (width . ,frame-width-chars)
+                  (height . ,frame-height-chars)
+                  (left . ,left)
+                  (top . ,top)
+                  (minibuffer . t)           ; Need minibuffer for consult
+                  (unsplittable . t)         ; Single window only
+                  (auto-raise . t)           ; Bring to front
+                  (tool-bar-lines . 0)       ; No toolbar
+                  (menu-bar-lines . 0)       ; No menu bar
+                  (tab-bar-lines . 0)        ; No tab bar
+                  (vertical-scroll-bars . nil))))) ; No scrollbars
+
+(defun my/open-url-in-browser (url)
+  "Open URL in Windows default browser.
+Uses w32-shell-execute for native Windows."
+  (if (eq system-type 'windows-nt)
+      (w32-shell-execute "open" url)
+    (error "Not running on native Windows. System type: %s" system-type)))
+
+(defun my/search-bookmarks-in-frame ()
+  "Open bookmark search in popup frame.
+Searches ~/org/bookmarks.org and opens selected URL in browser.
+Frame auto-closes after selection or cancellation."
+  (interactive)
+  (let ((original-frame (selected-frame))
+        (bookmark-frame nil))
+    (unwind-protect
+        (condition-case err
+            (progn
+              ;; Step 1: Create and focus popup frame
+              (setq bookmark-frame (my/create-centered-bookmark-frame))
+              (select-frame-set-input-focus bookmark-frame)
+              
+              ;; Step 2: Run consult search
+              (let ((url (my/consult-bookmarks)))
+                
+                ;; Step 3: Open URL if selected (nil if C-g cancelled)
+                (when url
+                  (my/open-url-in-browser url)
+                  (message "Opened: %s" url))))
+          
+          ;; Handle errors gracefully
+          (error
+           (message "Bookmark search error: %s" (error-message-string err))))
+      
+      ;; Cleanup: ALWAYS delete frame and restore focus
+      (when (and bookmark-frame (frame-live-p bookmark-frame))
+        (delete-frame bookmark-frame))
+      (when (frame-live-p original-frame)
+        (select-frame-set-input-focus original-frame)))))
+
+;; Keybinding: SPC b u (bookmark → URL)
+(zzc/leader-keys
+  "bu" '(my/search-bookmarks-in-frame :which-key "url bookmarks"))
+
+;; Future enhancements (documented, not implemented):
+;; - Preview: Show URL in minibuffer before opening
+;; - Categories: Narrow by org heading (Development, Documentation, etc.)
+;; - Edit: C-c C-e to open bookmarks.org at selected entry
+;; - Add: Quick-add command to append new bookmark to file
+;; - Recent: Sort by access frequency/recency
+;; - Multiple files: Search across multiple bookmark files
+
+#+end_src
+
 ** Treemacs
 #+BEGIN_SRC emacs-lisp
   (use-package treemacs
