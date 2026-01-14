@@ -607,86 +607,6 @@ This prevents golden-ratio from activating in simple window layouts."
   "bmm"  '(bookmark-set :which-key "Add current file/dir to bookmark")
   "bml"  '(consult-bookmark :which-key "Open Bookmark List"))
 
-;; Linkmarks provides org-mode based bookmarks with rich link support
-;; Bookmark System Overview:
-;; - Standard Emacs bookmarks (SPC b m): Quick position markers, auto-saved to binary format
-;; - Linkmarks (SPC b l): Org-mode based, supports any link type (files, URLs, elisp, etc.)
-;;                        Manually organized in ~/org/bookmarks.org
-
-(use-package linkmarks
-  :straight (linkmarks :type git :host github :repo "dustinlacewell/linkmarks")
-  :custom
-  ;; Use existing bookmarks.org file
-  (linkmarks-file "~/org/bookmarks.org")
-  :config
-  ;; Helper function to quickly edit the linkmarks file
-  (defun my/linkmarks-edit ()
-    "Open the linkmarks file for editing."
-    (interactive)
-    (find-file linkmarks-file))
-  
-  ;; Keybindings under SPC b l (bookmarks → linkmarks)
-  (zzc/leader-keys
-    "bl"  '(:ignore t :which-key "linkmarks")
-    "bll" '(linkmarks-select :which-key "select linkmark")
-    "blc" '(linkmarks-capture :which-key "capture linkmark")
-    "ble" '(my/linkmarks-edit :which-key "edit linkmarks file")))
-
-;; Add specialized capture templates for different linkmark types
-;; These extend the default linkmarks-capture with more specific options
-
-(with-eval-after-load 'linkmarks
-  ;; Ensure org-capture is loaded before referencing its variables
-  (require 'org-capture nil t)
-  
-  ;; Store original org-capture-templates (only if it exists)
-  (defvar my/org-capture-templates-backup 
-    (when (boundp 'org-capture-templates) org-capture-templates)
-    "Backup of original capture templates before linkmarks enhancement.")
-  
-  ;; Enhanced linkmarks capture templates
-  (defun my/linkmarks-capture-file ()
-    "Capture a file linkmark with file selection."
-    (interactive)
-    (let ((org-capture-templates
-           '(("f" "File Linkmark" entry (file linkmarks-file)
-              "* %^{Title}\n[[file:%^{File path}]]\n  added: %U\n  :PROPERTIES:\n  :TYPE: file\n  :END:" 
-              :kill-buffer t))))
-      (linkmarks--setup)
-      (org-capture)))
-  
-  (defun my/linkmarks-capture-url ()
-    "Capture a URL linkmark."
-    (interactive)
-    (let ((org-capture-templates
-           '(("u" "URL Linkmark" entry (file linkmarks-file)
-              "* %^{Title}\n[[%^{URL}]]\n  added: %U\n  :PROPERTIES:\n  :TYPE: url\n  :END:" 
-              :kill-buffer t))))
-      (linkmarks--setup)
-      (org-capture)))
-  
-  (defun my/linkmarks-capture-elisp ()
-    "Capture an elisp linkmark."
-    (interactive)
-    (let ((org-capture-templates
-           '(("e" "Elisp Linkmark" entry (file linkmarks-file)
-              "* %^{Title}\n[[elisp:(%^{Elisp expression})]]\n  added: %U\n  :PROPERTIES:\n  :TYPE: elisp\n  :END:" 
-              :kill-buffer t))))
-      (linkmarks--setup)
-      (org-capture)))
-  
-  ;; Add keybindings for enhanced capture templates
-  (zzc/leader-keys
-    "blf" '(my/linkmarks-capture-file :which-key "capture file linkmark")
-    "blu" '(my/linkmarks-capture-url :which-key "capture url linkmark")
-    "blx" '(my/linkmarks-capture-elisp :which-key "capture elisp linkmark"))
-  
-  ;; Add keybindings for enhanced capture templates
-  (zzc/leader-keys
-    "blf" '(my/linkmarks-capture-file :which-key "capture file linkmark")
-    "blu" '(my/linkmarks-capture-url :which-key "capture url linkmark")
-    "blx" '(my/linkmarks-capture-elisp :which-key "capture elisp linkmark")))
-
 ;; Custom Bookmark Search - URL Launcher
 ;; Bookmark search in popup frame with fuzzy matching
 ;; Opens org-mode bookmarks in Windows default browser
@@ -695,7 +615,26 @@ This prevents golden-ratio from activating in simple window layouts."
 (defun my/parse-org-bookmarks ()
   "Extract HTTP(S) links from ~/org/bookmarks.org.
 Returns alist of (DESCRIPTION . URL) pairs.
-Only includes HTTP/HTTPS URLs, skips file: and elisp: links."
+
+Description priority:
+  1. Explicit [Description] in link syntax
+  2. Nearest org heading text (preserves tags)
+  3. URL itself (fallback)
+
+Only includes HTTP/HTTPS URLs, skips file: and elisp: links.
+
+Examples:
+  ** GitHub
+  [[https://github.com]]
+  → Description: \"GitHub\"
+
+  ** GitHub :work:
+  [[https://github.com][My Account]]
+  → Description: \"My Account\" (explicit priority)
+
+  ** Development :tag:
+  [[https://github.com]]
+  → Description: \"Development :tag:\" (tags preserved)"
   (let ((bookmark-file (expand-file-name "~/org/bookmarks.org")))
     ;; Check file exists
     (unless (file-exists-p bookmark-file)
@@ -705,14 +644,26 @@ Only includes HTTP/HTTPS URLs, skips file: and elisp: links."
       (insert-file-contents bookmark-file)
       (goto-char (point-min))
       (let (bookmarks)
-        ;; Regex: [[http(s)://URL][Description]] or [[http(s)://URL]]
+        ;; Find all HTTP(S) links
         (while (re-search-forward
                 "\\[\\[\\(https?://[^]]+\\)\\]\\(?:\\[\\([^]]+\\)\\]\\)?\\]"
                 nil t)
           (let ((url (match-string 1))
-                (desc (or (match-string 2)  ; Use description if present
-                          (match-string 1)))) ; Otherwise use URL as description
-            (push (cons desc url) bookmarks)))
+                (explicit-desc (match-string 2))
+                (heading-desc nil))
+            
+            ;; If no explicit description, search backwards for nearest heading
+            (unless explicit-desc
+              (save-excursion
+                (beginning-of-line)
+                ;; Find nearest heading at any level (*, **, ***, etc.)
+                ;; Captures heading text including any org tags (:tag:)
+                (when (re-search-backward "^\\*+\\s-+\\(.+\\)$" nil t)
+                  (setq heading-desc (string-trim (match-string 1))))))
+            
+            ;; Priority: explicit > heading > URL
+            (let ((desc (or explicit-desc heading-desc url)))
+              (push (cons desc url) bookmarks))))
         
         ;; Error if no bookmarks found
         (unless bookmarks
