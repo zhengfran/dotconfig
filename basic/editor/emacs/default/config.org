@@ -890,6 +890,55 @@ Frame auto-closes after selection or cancellation."
 ;; - Recent: Sort by access frequency/recency
 ;; - Multiple files: Search across multiple bookmark files
 
+;; Validation helper: Check for plain-text URLs that need org-link format
+(defun my/validate-bookmarks ()
+  "Validate ~/org/bookmarks.org for plain-text HTTP(S) URLs.
+Reports URLs that need to be wrapped in [[ ]] brackets for parsing.
+Returns count of issues found (0 if all URLs properly formatted)."
+  (interactive)
+  (let* ((org-file (expand-file-name "~/org/bookmarks.org"))
+         (issues '())
+         (issue-count 0))
+    (unless (file-exists-p org-file)
+      (user-error "Bookmarks file not found: %s" org-file))
+    
+    (with-temp-buffer
+      (insert-file-contents org-file)
+      (goto-char (point-min))
+      
+      ;; Search for plain HTTP(S) URLs (not in org-link format)
+      (while (re-search-forward "^[[:space:]]*\\(https?://[^[:space:]]+\\)[[:space:]]*$" nil t)
+        (let ((url (match-string 1))
+              (line-num (line-number-at-pos)))
+          ;; Verify it's NOT already in org-link format
+          (save-excursion
+            (beginning-of-line)
+            (unless (looking-at "^[[:space:]]*\\[\\[https?://")
+              (push (cons line-num url) issues)
+              (setq issue-count (1+ issue-count))))))
+      
+      ;; Report results
+      (if (zerop issue-count)
+          (message "✓ All URLs properly formatted in %s" org-file)
+        (with-output-to-temp-buffer "*Bookmark Validation*"
+          (princ (format "Found %d plain-text URL%s in %s:\n\n"
+                         issue-count
+                         (if (= issue-count 1) "" "s")
+                         org-file))
+          (dolist (issue (nreverse issues))
+            (princ (format "Line %d: %s\n" (car issue) (cdr issue))))
+          (princ "\nThese URLs should be wrapped in [[ ]] brackets:\n")
+          (princ "  Plain:  https://example.com\n")
+          (princ "  Fixed:  [[https://example.com]]\n")))
+        (message "Found %d issue%s - see *Bookmark Validation* buffer"
+                 issue-count
+                 (if (= issue-count 1) "" "s"))))
+    issue-count))
+
+;; Keybinding: SPC b m v (bookmark → validate)
+(zzc/leader-keys
+  "bmv" '(my/validate-bookmarks :which-key "validate bookmarks"))
+
 #+end_src
 
 ** Treemacs
