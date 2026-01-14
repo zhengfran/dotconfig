@@ -100,14 +100,14 @@ Fix org-mode recipe to avoid Windows pre-build issues
   "Base directory for all org-roam notes.")
 
 (setq org_notes_dir my/org-base-dir
-      zot_bib "~/Nutstore/1/Nutstore/Zotero-Library/Main.bib"; Zotero .bib 文件
-      zot_pdf "~/Nutstore/1/Nutstore/Zotero-Library" ; Zotero 同步文件
-      org_notes (expand-file-name "ref/" my/org-base-dir)) ; org-roam 文献笔记目录
+      zot_bib "~/Nutstore/1/Nutstore/Zotero-Library/Main.bib"; Zotero .bib æ–‡ä»¶
+      zot_pdf "~/Nutstore/1/Nutstore/Zotero-Library" ; Zotero åŒæ­¥æ–‡ä»¶
+      org_notes (expand-file-name "ref/" my/org-base-dir)) ; org-roam æ–‡çŒ®ç¬”è®°ç›®å½•
 
 (unless (file-exists-p org_notes_dir) (setq org_notes_dir nil))
 (unless (file-exists-p zot_bib) (setq zot_bib nil))
 (unless (file-exists-p zot_pdf) (setq zot_pdf nil))
-(unless (file-exists-p org_notes) (setq org_notes nil)) ; 防止文件不存在报错
+(unless (file-exists-p org_notes) (setq org_notes nil)) ; é˜²æ­¢æ–‡ä»¶ä¸å­˜åœ¨æŠ¥é”™
 
 ;; Create org-roam subdirectories if they don't exist
 (dolist (subdir '("daily" "projects" "ref"))
@@ -151,19 +151,18 @@ Fix org-mode recipe to avoid Windows pre-build issues
   (use-package no-littering
     :demand t
     :custom
-    (auto-save-file-name-transforms `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))) ; 设置自动保存文件目录
+    (auto-save-file-name-transforms `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))) ; è®¾ç½®è‡ªåŠ¨ä¿å­˜æ–‡ä»¶ç›®å½•
   (use-package recentf
   :after no-littering
   :demand t 
   :custom
   (recentf-exclude '(no-littering-var-directory
-                     no-littering-etc-directory)) ; 屏蔽临时文件
+                     no-littering-etc-directory)) ; å±è”½ä¸´æ—¶æ–‡ä»¶
   (recentf-max-menu-items 25)
   (recentf-max-saved-items 25)
   :config
   (recentf-mode 1))
 #+END_SRC
-
 
 * History and save 
 #+BEGIN_SRC emacs-lisp
@@ -277,9 +276,10 @@ This is useful when you've edited config.org and want to apply changes immediate
     :after evil
     :diminish
     :config
+    (setq undo-tree-history-directory-alist 
+          `(("." . ,(expand-file-name "undo" user-emacs-directory))))
     (evil-set-undo-system 'undo-tree)
     (global-undo-tree-mode 1))
-  (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
   (use-package evil-escape
     :init (evil-escape-mode)
     :after evil
@@ -317,22 +317,22 @@ This is useful when you've edited config.org and want to apply changes immediate
   (setq
    display-buffer-alist
    '(;; Help windows
-     ("^\\*[Hh]elp"                            ;正则匹配 buffer name
+     ("^\\*[Hh]elp"                            ;æ­£åˆ™åŒ¹é… buffer name
       (display-buffer-reuse-window
-     ;入口函数，一个个调用直到有返回值，参数是：1.buffer 2.剩下的这些 alist
+     ;å…¥å£å‡½æ•°ï¼Œä¸€ä¸ªä¸ªè°ƒç”¨ç›´åˆ°æœ‰è¿”å›žå€¼ï¼Œå‚æ•°æ˜¯ï¼š1.buffer 2.å‰©ä¸‹çš„è¿™äº› alist
        display-buffer-in-side-window)
-      (side . right)                        ;参数 alist 从这里开始。这个 side 会被 display-buffer-in-side-window 使用
-      (window-width . 0.5)                     ;emacs 会自动把这个设置到 window-parameter 里
-      (window-height . 0.33)                   ;同上
-      (slot . 1)                               ;这个会被 display-buffer-in-side-window 使用，控制 window 位置
-      (reusable-frames . visible)              ;这个参数看第三个链接的 display-buffer
-      (haha . whatever)                        ;当然随你放什么
-      (window-parameters                       ;emacs 26 及以上会自动把下面的设置到 window-parameter 里
-       (select . t)                            ;自定义的 param
-       (quit . t)                              ;同上
-       (popup . t)                             ;同上
-       (mode-line-format . none)               ;emacs version > 25， none 会隐藏 mode line，nil 会显示...
-       (no-other-window . t)                   ;随你设置其他的 window-parameter，看文档
+      (side . right)                        ;å‚æ•° alist ä»Žè¿™é‡Œå¼€å§‹ã€‚è¿™ä¸ª side ä¼šè¢« display-buffer-in-side-window ä½¿ç”¨
+      (window-width . 0.5)                     ;emacs ä¼šè‡ªåŠ¨æŠŠè¿™ä¸ªè®¾ç½®åˆ° window-parameter é‡Œ
+      (window-height . 0.33)                   ;åŒä¸Š
+      (slot . 1)                               ;è¿™ä¸ªä¼šè¢« display-buffer-in-side-window ä½¿ç”¨ï¼ŒæŽ§åˆ¶ window ä½ç½®
+      (reusable-frames . visible)              ;è¿™ä¸ªå‚æ•°çœ‹ç¬¬ä¸‰ä¸ªé“¾æŽ¥çš„ display-buffer
+      (haha . whatever)                        ;å½“ç„¶éšä½ æ”¾ä»€ä¹ˆ
+      (window-parameters                       ;emacs 26 åŠä»¥ä¸Šä¼šè‡ªåŠ¨æŠŠä¸‹é¢çš„è®¾ç½®åˆ° window-parameter é‡Œ
+       (select . t)                            ;è‡ªå®šä¹‰çš„ param
+       (quit . t)                              ;åŒä¸Š
+       (popup . t)                             ;åŒä¸Š
+       (mode-line-format . none)               ;emacs version > 25ï¼Œ none ä¼šéšè— mode lineï¼Œnil ä¼šæ˜¾ç¤º...
+       (no-other-window . t)                   ;éšä½ è®¾ç½®å…¶ä»–çš„ window-parameterï¼Œçœ‹æ–‡æ¡£
        ))))
 
 #+END_SRC
@@ -470,7 +470,7 @@ Tab-bar provides multiple named workspaces for project separation.
   ;; Helper function: Name tab after project
   (defun my/tab-bar-name-from-project ()
     "Name tab after current project root or directory."
-    (if-let ((project (project-current)))
+    (if-let* ((project (project-current)))
         (file-name-nondirectory
          (directory-file-name
           (project-root project)))
@@ -485,7 +485,7 @@ Tab-bar provides multiple named workspaces for project separation.
     (call-interactively 'project-switch-project)
     (tab-bar-rename-tab (my/tab-bar-name-from-project))
     ;; Store project root in tab configuration
-    (when-let ((project (project-current)))
+    (when-let* ((project (project-current)))
       (set-frame-parameter nil 
                           (intern (format "tab-project-%s" (tab-bar--current-tab-index)))
                           (project-root project))))
@@ -499,7 +499,7 @@ Tab-bar provides multiple named workspaces for project separation.
   (defun my/consult-project-buffer ()
     "Show buffers filtered by current workspace's project."
     (interactive)
-    (if-let ((project-root (my/workspace-project-root)))
+    (if-let* ((project-root (my/workspace-project-root)))
         (let ((default-directory project-root)
               (consult-buffer-sources '(consult--source-project-buffer-hidden
                                        consult--source-project-buffer
@@ -716,19 +716,20 @@ This prevents golden-ratio from activating in simple window layouts."
 
 
 * File
-** Bookmarks
+** Bookmarks - Standard Emacs Bookmarks
 #+begin_src emacs-lisp
     ;; save bookmark on change
     (setq bookmark-save-flag 1)
     (require 'bookmark)
     ;; set bookmark file to sync across difference device
-    (setq bookmark-default-file "~/.config/emacs/default/bookmarks")
+    (setq bookmark-default-file (expand-file-name "bookmarks" user-emacs-directory))
     (zzc/leader-keys
       "bm"  '(:ignore t :which-key "bookmark")
       "bmm"  '(bookmark-set :which-key "Add current file/dir to bookmark")
       "bml"  '(consult-bookmark :which-key "Open Bookmark List"))
 
 #+end_src
+
 ** Treemacs
 #+BEGIN_SRC emacs-lisp
   (use-package treemacs
@@ -850,7 +851,7 @@ This prevents golden-ratio from activating in simple window layouts."
   (add-hook 'yas-minor-mode-hook (lambda()
 (yas-activate-extra-mode 'fundamental-mode)))
   :config
-  (setq yas-snippet-dirs '("~/.config/emacs/snippets")))
+  (setq yas-snippet-dirs (list (expand-file-name "~/org/snippets"))))
 (yas-global-mode 1)
 
 (use-package yasnippet-capf
@@ -1218,7 +1219,14 @@ This prevents golden-ratio from activating in simple window layouts."
           doom-themes-enable-italic t) ; if nil, italics is universally disabled
     (load-theme 'doom-gruvbox t) ; ????
     (doom-themes-visual-bell-config) ; Enable flashing mode-line on errors
-    (doom-themes-org-config))
+    (doom-themes-org-config)
+    ;; Fix Corfu face inheritance cycle error with Gnus faces
+    ;; Reset problematic Gnus faces since we don't use Gnus
+    (custom-set-faces
+     '(gnus-group-news-low ((t :inherit default)))
+     '(gnus-group-news-low-empty ((t :inherit default)))
+     '(gnus-group-mail-1 ((t :inherit default)))
+     '(gnus-group-mail-low ((t :inherit default)))))
   (zzc/leader-keys
     "t"  '(:ignore t :which-key "toggle")
     "tt" '(my/load-doom-theme :which-kei "themes")
@@ -1282,7 +1290,7 @@ This prevents golden-ratio from activating in simple window layouts."
   (setq org-modern-fold-stars
         '(("▶" . "▼")   ; Level 1: ▶ when folded, ▼ when expanded
           ("▷" . "▽")   ; Level 2
-          ("⯈" . "⯆")   ; Level 3  
+          ("⯆" . "⯀")   ; Level 3  
           ("▹" . "▿")   ; Level 4
           ("▸" . "▾"))) ; Level 5+
   
@@ -1307,9 +1315,7 @@ This prevents golden-ratio from activating in simple window layouts."
 #+begin_src emacs-lisp
 (defun my/set-org-font ()
   (interactive)
-  ;; org 字体美化
   (require 'org-faces)
-  ;; 标题字体大小优化
   (set-face-attribute 'org-document-title nil :weight 'bold :height 1.2)
   (dolist (face '((org-level-1 . 1.15)
                   (org-level-2 . 1.1)
@@ -1333,22 +1339,11 @@ This prevents golden-ratio from activating in simple window layouts."
   (set-face-attribute 'org-drawer nil :inherit '(font-lock-comment-face fixed-pitch))
   (set-face-attribute 'org-document-info-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
   (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
-  (setq org-fontify-quote-and-verse-blocks t) ; 启用 org-qoute 变量为 quote 设置不同的字体
+  (setq org-fontify-quote-and-verse-blocks t)  
   (set-face-attribute 'org-quote nil :inherit 'fixed-pitch)
-  (require 'org-indent) ;; 开启 org-indent 并设设置缩进字体
+  (require 'org-indent) 
   (set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch)))
 #+end_src
-*** org visual column fill
-#+begin_src emacs-lisp
-(defun my/org-mode-visual-fill ()
-(interactive)
-  (setq visual-fill-column-width 150
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
-(use-package visual-fill-column
-  :hook (org-mode . my/org-mode-visual-fill ))
-#+end_src
-
 *** org-download
 #+begin_src emacs-lisp
 (defun my/org-download-method (link) 
@@ -1395,8 +1390,8 @@ This prevents golden-ratio from activating in simple window layouts."
 *** org hooks
 #+begin_src emacs-lisp
 (defun my-org-hook ()
-  (org-indent-mode) ; 自动缩进
-  (variable-pitch-mode 1) ; 比例字体
+  (org-indent-mode) 
+  (variable-pitch-mode 1)
   (visual-line-mode 1))
 #+end_src
 
@@ -1425,19 +1420,19 @@ This prevents golden-ratio from activating in simple window layouts."
     :defer 10
     :custom
     (org-m-ret-may-split-line t)
-    (org-priority-highest ?A) ; org-agenda 的最高优先级设为 A
-    (org-priority-lowest ?C) ; org-agenda 的优先级设为 A-C
-    (org-priority-default ?C) ; org-agenda 的默认优先级设为 C
-    ;; (org-startup-with-latex-preview t) ; 设为 t 则创建新笔记时会出错.
+    (org-priority-highest ?A) 
+    (org-priority-lowest ?C) 
+    (org-priority-default ?C)
+    ;; (org-startup-with-latex-preview t) ; è®¾ä¸º t åˆ™åˆ›å»ºæ–°ç¬”è®°æ—¶ä¼šå‡ºé”™.
     :bind
     (:map org-mode-map
-          ("C-c n" . nil) ; 用于 org-roam 快捷键
-          ("C-c o" . my/follow-link-at-current-window) ; 在当前窗口打开 org 文件
-          ("C-<down-mouse-1>" . my/follow-link-at-current-window-mouse) ; ctrl+鼠标点击时, 在当前窗口打开 org 文件
+          ("C-c n" . nil) 
+          ("C-c o" . my/follow-link-at-current-window)
+          ("C-<down-mouse-1>" . my/follow-link-at-current-window-mouse) 
           ("C-<drag-mouse-1>" . my/follow-link-at-current-window-mouse))
     :config
     (require 'org-download)
-    (setq org-ellipsis " ▾"); 用小箭头代替...表示折叠
+    ;; (setq org-ellipsis " ▾"); 用小箭头代替...表示折叠
     (setq org-startup-folded 'content) ; 开启时折叠大纲
 
     (my/set-org-font)
@@ -1524,16 +1519,16 @@ This prevents golden-ratio from activating in simple window layouts."
             (local-set-key (kbd "j") 'org-agenda-next-item)))
 
 ;; Save all org files after change todo
-(defmacro η (fnc)
+(defmacro Î· (fnc)
   "return function that ignores its arguments and invokes fnc."
   `(lambda (&rest _rest)
      (funcall ,fnc)))
 
-(advice-add 'org-deadline       :after (η #'org-save-all-org-buffers))
-(advice-add 'org-schedule       :after (η #'org-save-all-org-buffers))
-(advice-add 'org-store-log-note :after (η #'org-save-all-org-buffers))
-(advice-add 'org-todo           :after (η #'org-save-all-org-buffers))
-(advice-add 'org-priority       :after (η #'org-save-all-org-buffers))
+(advice-add 'org-deadline       :after (Î· #'org-save-all-org-buffers))
+(advice-add 'org-schedule       :after (Î· #'org-save-all-org-buffers))
+(advice-add 'org-store-log-note :after (Î· #'org-save-all-org-buffers))
+(advice-add 'org-todo           :after (Î· #'org-save-all-org-buffers))
+(advice-add 'org-priority       :after (Î· #'org-save-all-org-buffers))
 
 #+end_src
 
@@ -1775,8 +1770,6 @@ Prompts for date using org-mode's date picker."
              ("C-c n u" . org-roam-ui-mode)
              ("C-c n g" . org-roam-graph)
              ("C-c n a" . org-roam-alias-add)
-             ("C-c n T" . org-roam-tag-add)
-             ("C-c n D" . org-roam-tag-remove)
              ("C-c n m" . org-roam-buffer-display-dedicated)
              ("C-c n s" . org-roam-db-sync)
              ("C-c n S" . my/org-roam-db-diagnose)
@@ -1935,7 +1928,7 @@ Sets up commonly used mathematical symbols and operators."
 #+END_SRC
 *** window management
 #+BEGIN_SRC emacs-lisp
-;; org-roam capture 与 *Org-Select* 默认右侧打开
+;; org-roam capture ä¸Ž *Org-Select* é»˜è®¤å³ä¾§æ‰“å¼€
 (add-to-list 'display-buffer-alist '("\\(^CAPTURE.*\.org$\\|\\*Org.*Select\\*$\\)"
                                      (display-buffer-in-side-window)
                                      (side . right)
@@ -2183,7 +2176,7 @@ Migrates all files tagged with :Project: or :project: or :projects:."
 ;; automatically tangle our emacs.org config file when we save it
 (defun zzc/org-babel-tangle-config ()
   (when (string-equal (file-truename (buffer-file-name))
-		      (file-truename (expand-file-name "~/.config/emacs/default/config.org")))
+		      (file-truename (expand-file-name "config.org" user-emacs-directory)))
     ;; dynamic scoping to the rescue
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
@@ -2468,7 +2461,7 @@ Migrates all files tagged with :Project: or :project: or :projects:."
                '(commit-msg . "You are a git expert. Generate clear, concise commit messages following conventional commits format. Focus on the 'why' not just the 'what'."))
 
   (add-to-list 'gptel-directives
-               '(translate-zh . "You are a translator. Translate the text to Chinese (简体中文). Maintain the original tone and meaning. Be natural and idiomatic."))
+               '(translate-zh . "You are a translator. Translate the text to Chinese (ç®€ä½“ä¸­æ–‡). Maintain the original tone and meaning. Be natural and idiomatic."))
 
   (add-to-list 'gptel-directives
                '(summarize . "You are a summarization expert. Create concise summaries that capture the key points and essential information. Be clear and structured."))
