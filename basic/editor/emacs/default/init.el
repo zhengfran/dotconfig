@@ -1646,7 +1646,16 @@ Error handling:
     ((todo "TODO"
            ((org-agenda-skip-function
              '(org-agenda-skip-entry-if 'scheduled 'deadline))
-            (org-agenda-overriding-header "Unscheduled Tasks")))))))
+            (org-agenda-overriding-header "Unscheduled Tasks")))))
+   
+   ("k" "Work Dashboard"
+    ((agenda ""
+             ((org-agenda-span 7)
+              (org-agenda-tag-filter-preset '("+work"))
+              (org-agenda-overriding-header "📅 Work Schedule (This Week)")))
+     (tags-todo "+work/+TODO|+ONGOING"
+                ((org-agenda-overriding-header "⚡ Active Work Tasks")
+                 (org-agenda-sorting-strategy '(priority-down time-up))))))))
 
 ;; Key-binds
 (general-define-key
