@@ -796,19 +796,20 @@ Returns count of issues found (0 if all URLs properly formatted)."
       ;; Report results
       (if (zerop issue-count)
           (message "✓ All URLs properly formatted in %s" org-file)
-        (with-output-to-temp-buffer "*Bookmark Validation*"
-          (princ (format "Found %d plain-text URL%s in %s:\n\n"
-                         issue-count
-                         (if (= issue-count 1) "" "s")
-                         org-file))
-          (dolist (issue (nreverse issues))
-            (princ (format "Line %d: %s\n" (car issue) (cdr issue))))
-          (princ "\nThese URLs should be wrapped in [[ ]] brackets:\n")
-          (princ "  Plain:  https://example.com\n")
-          (princ "  Fixed:  [[https://example.com]]\n")))
-        (message "Found %d issue%s - see *Bookmark Validation* buffer"
-                 issue-count
-                 (if (= issue-count 1) "" "s"))))
+        (progn
+          (with-output-to-temp-buffer "*Bookmark Validation*"
+            (princ (format "Found %d plain-text URL%s in %s:\n\n"
+                           issue-count
+                           (if (= issue-count 1) "" "s")
+                           org-file))
+            (dolist (issue (nreverse issues))
+              (princ (format "Line %d: %s\n" (car issue) (cdr issue))))
+            (princ "\nThese URLs should be wrapped in [[ ]] brackets:\n")
+            (princ "  Plain:  https://example.com\n")
+            (princ "  Fixed:  [[https://example.com]]\n")))
+          (message "Found %d issue%s - see *Bookmark Validation* buffer"
+                   issue-count
+                   (if (= issue-count 1) "" "s")))))
     issue-count))
 
 ;; Keybinding: SPC b m v (bookmark → validate)
