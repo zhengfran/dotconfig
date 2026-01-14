@@ -878,17 +878,179 @@ Frame auto-closes after selection or cancellation."
       (when (frame-live-p original-frame)
         (select-frame-set-input-focus original-frame)))))
 
-;; Keybinding: SPC b u (bookmark → URL)
+;; Keybinding: SPC b u (bookmark → URL), SPC b c (bookmark → capture)
 (zzc/leader-keys
-  "bu" '(my/search-bookmarks-in-frame :which-key "url bookmarks"))
+  "bu" '(my/search-bookmarks-in-frame :which-key "url bookmarks")
+  "bc" '(my/capture-url-bookmark :which-key "capture url"))
 
 ;; Future enhancements (documented, not implemented):
 ;; - Preview: Show URL in minibuffer before opening
 ;; - Categories: Narrow by org heading (Development, Documentation, etc.)
 ;; - Edit: C-c C-e to open bookmarks.org at selected entry
-;; - Add: Quick-add command to append new bookmark to file
 ;; - Recent: Sort by access frequency/recency
 ;; - Multiple files: Search across multiple bookmark files
+
+;;; URL Bookmark Capture System
+;; Keybinding: SPC b c (bookmark → capture)
+;; Intelligently captures URLs to ~/org/bookmarks.org under Inbox heading
+
+(defun my/get-clipboard-content ()
+  "Get clipboard content on Windows using PowerShell.
+Returns trimmed string or nil if clipboard is empty/inaccessible."
+  (condition-case nil
+      (let ((content (string-trim
+                      (shell-command-to-string "powershell.exe -command \"Get-Clipboard\""))))
+        (if (string-empty-p content) nil content))
+    (error nil)))
+
+(defun my/is-valid-url-p (text)
+  "Check if TEXT is a valid HTTP(S) URL.
+Basic format check: must start with http:// or https:// and have no whitespace.
+Case-sensitive check."
+  (and (stringp text)
+       (not (string-empty-p text))
+       (string-match-p "^https?://[^\s]+$" text)))
+
+(defun my/find-duplicate-bookmark (url)
+  "Search ~/org/bookmarks.org for duplicate URL.
+Returns (LINE-NUM . HEADING-TEXT) if URL exists, nil otherwise.
+Case-sensitive URL comparison."
+  (let ((org-file (expand-file-name "~/org/bookmarks.org"))
+        (duplicate-info nil))
+    (when (file-exists-p org-file)
+      (with-temp-buffer
+        (insert-file-contents org-file)
+        (goto-char (point-min))
+        ;; Search for exact [[URL]] pattern (case-sensitive)
+        (when (search-forward (format "[[%s]]" url) nil t)
+          (let ((line-num (line-number-at-pos))
+                (heading-text nil))
+            ;; Find nearest heading above the URL
+            (save-excursion
+              (when (re-search-backward "^\\*+\\s-+\\(.+\\)$" nil t)
+                (setq heading-text (string-trim (match-string 1)))))
+            (setq duplicate-info (cons line-num heading-text))))))
+    duplicate-info))
+
+(defun my/extract-domain-from-url (url)
+  "Extract domain name from URL as description suggestion.
+Example: https://github.com/user/repo → github.com
+Returns domain string or nil if extraction fails."
+  (when (string-match "^https?://\\([^/]+\\)" url)
+    (match-string 1 url)))
+
+(defun my/append-bookmark-to-inbox (url description)
+  "Append bookmark entry to Inbox heading in ~/org/bookmarks.org.
+Creates file with proper structure if it doesn't exist.
+Creates Inbox heading if missing.
+Format: ** DESCRIPTION\\n[[URL]]\\n
+
+Inserts at end of Inbox section (before next top-level heading or EOF)."
+  (let ((org-file (expand-file-name "~/org/bookmarks.org")))
+    
+    ;; Ensure file exists with proper structure
+    (unless (file-exists-p org-file)
+      (with-temp-file org-file
+        (insert "#+TITLE: Linkmarks Bookmarks\n")
+        (insert "#+DESCRIPTION: Emacs Linkmarks - Org-mode based bookmarks\n\n")
+        (insert "* Inbox\n\n")))
+    
+    ;; Append bookmark under Inbox
+    (with-current-buffer (find-file-noselect org-file)
+      (save-excursion
+        (goto-char (point-min))
+        
+        ;; Find or create Inbox heading
+        (unless (re-search-forward "^\\* Inbox$" nil t)
+          (goto-char (point-min))
+          ;; Skip file headers
+          (when (re-search-forward "^#\\+.*$" nil t)
+            (forward-line 1))
+          (insert "\n* Inbox\n"))
+        
+        ;; Move to end of Inbox section (before next top-level heading or EOF)
+        (forward-line 1)
+        (if (re-search-forward "^\\* [^*]" nil t)
+            (progn
+              (beginning-of-line)
+              (insert "\n"))
+          (goto-char (point-max))
+          (unless (bolp) (insert "\n")))
+        
+        ;; Insert bookmark entry
+        (insert (format "** %s\n[[%s]]\n" description url)))
+      
+      ;; Save file
+      (save-buffer))))
+
+(defun my/capture-url-bookmark ()
+  "Capture URL bookmark to ~/org/bookmarks.org under Inbox heading.
+
+Workflow:
+1. Check clipboard for HTTP(S) URL
+   - If valid URL found: prompt for description only
+   - If no URL: prompt for URL first, then description
+2. Validate URL format (must start with http:// or https://)
+3. Check for duplicate URL (case-sensitive)
+   - If duplicate exists: show error with location and abort
+4. Extract domain name from URL as default description suggestion
+5. Prompt for description with domain as default
+6. Append to Inbox as subheading: ** DESCRIPTION\\n[[URL]]
+7. Show success message with description and URL
+
+Error handling:
+- User cancels (C-g): Show \"Bookmark capture cancelled\"
+- Invalid URL format: Show error and abort
+- Duplicate URL: Show existing location and abort
+- Empty description: Show error and abort"
+  (interactive)
+  (condition-case err
+      (let* ((clipboard (my/get-clipboard-content))
+             (clipboard-is-url (my/is-valid-url-p clipboard))
+             (url nil)
+             (description nil)
+             (domain-suggestion nil))
+        
+        ;; Step 1: Get URL (from clipboard or prompt)
+        (if clipboard-is-url
+            (setq url clipboard)
+          ;; Prompt for URL
+          (setq url (read-string "URL: "))
+          (unless (my/is-valid-url-p url)
+            (user-error "Invalid URL format. Must start with http:// or https://")))
+        
+        ;; Step 2: Check for duplicates (case-sensitive)
+        (let ((duplicate (my/find-duplicate-bookmark url)))
+          (when duplicate
+            (user-error "URL already exists at line %d under heading: %s"
+                        (car duplicate)
+                        (or (cdr duplicate) "unknown"))))
+        
+        ;; Step 3: Extract domain for suggestion
+        (setq domain-suggestion (my/extract-domain-from-url url))
+        
+        ;; Step 4: Prompt for description
+        (setq description
+              (read-string
+               (format "Description%s: "
+                       (if domain-suggestion
+                           (format " (default: %s)" domain-suggestion)
+                         ""))
+               nil nil domain-suggestion))
+        
+        ;; Step 5: Validate description
+        (when (or (not description) (string-empty-p description))
+          (user-error "Description cannot be empty"))
+        
+        ;; Step 6: Append to bookmarks.org under Inbox
+        (my/append-bookmark-to-inbox url description)
+        
+        ;; Step 7: Show success message with both description and URL
+        (message "✓ Captured bookmark: %s → %s" description url))
+    
+    ;; Error handling
+    (quit (message "Bookmark capture cancelled"))
+    (error (message "Error capturing bookmark: %s" (error-message-string err)))))
 
 #+end_src
 
