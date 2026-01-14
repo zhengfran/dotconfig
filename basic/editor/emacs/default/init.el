@@ -1612,6 +1612,16 @@ Error handling:
         (tags . " %i %-12:c")
         (search . " %i %-12:c")))
 
+;; Helper function for agenda filtering
+(defun my/skip-non-work-tasks ()
+  "Skip agenda entries that don't have :work: tag.
+Respects tag inheritance from parent headings.
+Returns position to skip to if item should be skipped, nil otherwise."
+  (let ((tags (org-get-tags)))
+    (if (not (member "work" tags))
+        (org-entry-end-position)
+      nil)))
+
 ;; Custom agenda views
 (setq org-agenda-custom-commands
  '(("d" "Dashboard"
@@ -1651,7 +1661,7 @@ Error handling:
    ("k" "Work Dashboard"
     ((agenda ""
              ((org-agenda-span 7)
-              (org-agenda-tag-filter-preset '("+work"))
+              (org-agenda-skip-function 'my/skip-non-work-tasks)
               (org-agenda-overriding-header "📅 Work Schedule (This Week)")))
      (tags-todo "+work/+TODO|+ONGOING"
                 ((org-agenda-overriding-header "⚡ Active Work Tasks")
