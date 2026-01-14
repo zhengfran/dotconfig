@@ -49,6 +49,7 @@ session.*
 .last-package-update-day
 
 # Undo tree history
+undo/
 undo-tree-hist/
 .undo-tree-history
 
