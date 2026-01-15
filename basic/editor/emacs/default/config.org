@@ -1089,26 +1089,68 @@ Error handling:
 ;;   - Frequently used snippets tracking
 ;;   - Cloud sync for snippets across machines
 
+(defun my/evaluate-snippet-expressions (text)
+  "Evaluate Emacs Lisp expressions in backticks and replace with results.
+
+Searches for patterns like `(elisp-code)` and evaluates the code,
+replacing the entire backtick expression with its string result.
+
+This allows dynamic snippet content (dates, times, calculations) to work
+when copied via global snippet search, matching yasnippet's normal behavior.
+
+Examples:
+  Input:  \"Today is `(format-time-string \\\"%Y-%m-%d\\\")`\"
+  Output: \"Today is 2026-01-15\"
+
+  Input:  \"`(+ 1 2)` plus `(* 3 4)` equals `(+ 3 12)`\"
+  Output: \"3 plus 12 equals 15\"
+
+If evaluation fails, replaces with error message:
+  Input:  \"`(undefined-function)`\"
+  Output: \"ERROR: (void-function undefined-function)\"
+
+Note: Only evaluates expressions when snippet is SELECTED, not during
+initial search loading, for optimal performance."
+  (let ((result text))
+    ;; Find all backtick expressions
+    (while (string-match "`\\([^`]+\\)`" result)
+      (let* ((expr-str (match-string 1 result))
+             (value
+              (condition-case err
+                  ;; Try to evaluate the expression
+                  (let* ((expr (read expr-str))
+                         (eval-result (eval expr)))
+                    ;; Convert result to string
+                    (format "%s" eval-result))
+                ;; If evaluation fails, show error
+                (error
+                 (format "ERROR: %s" (error-message-string err))))))
+        ;; Replace the backtick expression with the value
+        (setq result (replace-match value t t result))))
+    result))
+
 (defun my/strip-snippet-variables (text)
   "Remove yasnippet placeholder syntax from TEXT.
-Replaces $N, ${N:default}, and backtick expressions with ___ placeholder.
+Replaces $N and ${N:default} patterns with ___ placeholder.
+
+Note: Backtick expressions are NOT stripped by this function.
+They should be evaluated first using `my/evaluate-snippet-expressions'.
 
 Handles:
   $0, $1, $2, etc.          -> ___
   ${1:default}              -> ___
   ${2:$(elisp-expression)}  -> ___
-  `(lisp-expression)`       -> ___
+
+Does NOT strip backtick expressions - those are evaluated separately.
 
 Example:
-  Input:  \"Hello $1, your ${2:item} is ready. `(current-time-string)`\"
+  Input:  \"Hello $1, your ${2:item} is ready. $0\"
   Output: \"Hello ___, your ___ is ready. ___\""
   (let ((cleaned text))
     ;; Strip ${N:...} patterns (non-greedy to handle nested braces)
     (setq cleaned (replace-regexp-in-string "${[0-9]+:[^}]*}" "___" cleaned))
     ;; Strip $N simple placeholders
     (setq cleaned (replace-regexp-in-string "\\$[0-9]+" "___" cleaned))
-    ;; Strip backtick expressions `(...)`
-    (setq cleaned (replace-regexp-in-string "`[^`]*`" "___" cleaned))
     cleaned))
 
 (defun my/parse-snippet-file (file-path)
@@ -1122,7 +1164,8 @@ The parser looks for:
   # --
   [content after # --]
 
-Content has yasnippet variables stripped using `my/strip-snippet-variables'."
+Content is stored RAW with backtick expressions and variables intact.
+They will be evaluated/stripped when the snippet is selected, not during parsing."
   (condition-case err
       (with-temp-buffer
         (insert-file-contents file-path)
@@ -1154,9 +1197,10 @@ Content has yasnippet variables stripped using `my/strip-snippet-variables'."
             ;; No separator found, use entire buffer as content
             (setq content (buffer-string)))
           
-          ;; Strip yasnippet variables from content
+          ;; Keep content RAW - don't evaluate or strip yet
+          ;; That happens on selection for optimal performance
           (when content
-            (setq content (string-trim (my/strip-snippet-variables content))))
+            (setq content (string-trim content)))
           
           ;; Only return if we have content
           (if (and content (not (string-empty-p content)))
@@ -1214,7 +1258,10 @@ Returns snippet content if selected, nil if cancelled (C-g or ESC).
 Display format: [mode] name (key)
 Preview shows full snippet content as you navigate.
 
-Uses orderless fuzzy matching for flexible search."
+Uses orderless fuzzy matching for flexible search.
+
+When a snippet is selected, backtick expressions are evaluated and
+yasnippet variables are stripped before returning the content."
   (let* ((snippets (my/collect-all-snippets))
          (candidates
           (mapcar (lambda (snippet)
@@ -1238,14 +1285,21 @@ Uses orderless fuzzy matching for flexible search."
           (message "No snippets found. Add snippets to ~/org/snippets/")
           nil)
       ;; Use consult with preview
-      (consult--read candidates
-                     :prompt "Search snippets: "
-                     :lookup 'consult--lookup-cdr
-                     :sort nil
-                     :require-match t
-                     :category 'snippet
-                     :history 'my/snippet-search-history
-                     :preview-key 'any))))
+      (let ((selected-content (consult--read candidates
+                                             :prompt "Search snippets: "
+                                             :lookup 'consult--lookup-cdr
+                                             :sort nil
+                                             :require-match t
+                                             :category 'snippet
+                                             :history 'my/snippet-search-history
+                                             :preview-key 'any)))
+        ;; Process selected snippet: evaluate expressions then strip variables
+        (when selected-content
+          ;; Step 1: Evaluate backtick expressions (e.g., `(format-time-string ...)`)
+          (setq selected-content (my/evaluate-snippet-expressions selected-content))
+          ;; Step 2: Strip yasnippet variables (e.g., $0, $1, ${2:default})
+          (setq selected-content (my/strip-snippet-variables selected-content)))
+        selected-content))))
 
 (defun my/copy-to-clipboard (text)
   "Copy TEXT to Windows system clipboard using PowerShell.
