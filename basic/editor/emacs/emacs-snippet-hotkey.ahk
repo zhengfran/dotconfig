@@ -1,6 +1,6 @@
+#Requires AutoHotkey v2.0
 #SingleInstance Force
-#NoEnv
-SetWorkingDir %A_ScriptDir%
+SetWorkingDir(A_ScriptDir)
 
 ; =============================================================================
 ; EMACS GLOBAL SNIPPET SEARCH
@@ -8,41 +8,26 @@ SetWorkingDir %A_ScriptDir%
 ; Hotkey: Ctrl+Shift+Space
 ; Opens Emacs popup frame for snippet search from any Windows application
 ; Selected snippet is copied to clipboard for immediate pasting
+; 
+; IMPORTANT: Emacs server must be running first!
+; Start Emacs with: runemacs.exe (server-start is in init.el)
+; Or manually run: runemacs --daemon
+; 
+; NOTE: Server file location changed due to no-littering package
 ; =============================================================================
 
 ; Configuration
 EmacsclientPath := "C:\Users\uie41442\scoop\shims\emacsclient.exe"
-EmacsPath := "C:\Users\uie41442\scoop\shims\runemacs.exe"
+ServerFile := "C:\Users\uie41442\.config\emacs\default\var\server\auth\default"
 
 ; Ctrl+Shift+Space - Global Snippet Search
-^+Space::
-{
-    ; Check if Emacs server is running
-    ; emacsclient returns 0 if server is running, non-zero otherwise
-    RunWait, %ComSpec% /c "%EmacsclientPath%" -e "(+ 1 1)" > nul 2>&1, , Hide, ServerCheckResult
-    
-    ; If server not running, start Emacs daemon
-    if (ErrorLevel != 0)
-    {
-        ToolTip, Starting Emacs daemon...
-        RunWait, %EmacsPath% --daemon, , Hide
-        Sleep, 3000  ; Wait for daemon to initialize
-        ToolTip  ; Clear tooltip
+^+Space:: {
+    ; Try to open snippet search
+    ; If server not running, emacsclient will fail and we show error
+    ; NOTE: -c flag creates frame, my/global-snippet-search configures and closes it
+    try {
+        Run(EmacsclientPath . ' -f "' . ServerFile . '" -c -e "(my/global-snippet-search)"')
+    } catch {
+        MsgBox("Emacs server is not running!`n`nPlease start Emacs first.`n`nThe server will auto-start when you open Emacs.", "Emacs Server Error", "Icon!")
     }
-    
-    ; Open snippet search in new frame
-    ; -c creates new frame, -e evaluates expression
-    Run, %EmacsclientPath% -c -e "(my/global-snippet-search)", , Hide
-    
-    return
-}
-
-; Optional: Ctrl+Shift+Alt+Space - Kill Emacs server (for debugging)
-^+!Space::
-{
-    Run, %EmacsclientPath% -e "(kill-emacs)", , Hide
-    ToolTip, Emacs server stopped
-    Sleep, 1500
-    ToolTip
-    return
 }

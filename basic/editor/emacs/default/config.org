@@ -1327,61 +1327,99 @@ properly. Shows informative message with character count on success."
      (message "Clipboard copy failed: %s" (error-message-string err))
      nil)))
 
-(defun my/create-snippet-frame ()
-  "Create a large centered popup frame (120x40) for snippet search.
-Frame is positioned in the center of the screen with no toolbars or scrollbars.
-Used for distraction-free snippet search interface."
+(defun my/configure-snippet-frame (frame)
+  "Configure FRAME for snippet search with multi-monitor aware centering.
+Centers frame on primary monitor and applies styling (size, no toolbars, etc.).
+
+This function handles:
+- Multi-monitor setups: always centers on PRIMARY monitor
+- Proper sizing (120x40 characters)
+- Clean appearance (no toolbars, menu bars, scrollbars)
+- Taskbar avoidance (uses workarea instead of full screen dimensions)
+
+Parameters:
+  FRAME - The frame to configure (created by emacsclient -c)"
   (let* ((frame-width-chars 120)
          (frame-height-chars 40)
-         (char-width (frame-char-width))
-         (char-height (frame-char-height))
+         
+         ;; Multi-monitor aware centering on PRIMARY monitor
+         (monitor-attrs (car (display-monitor-attributes-list)))
+         (workarea (assq 'workarea monitor-attrs))
+         (monitor-x (nth 1 workarea))       ; Left edge of primary monitor
+         (monitor-y (nth 2 workarea))       ; Top edge of primary monitor
+         (monitor-width (nth 3 workarea))   ; Width (excluding taskbar)
+         (monitor-height (nth 4 workarea))  ; Height (excluding taskbar)
+         
+         ;; Calculate pixel dimensions
+         (char-width (frame-char-width frame))
+         (char-height (frame-char-height frame))
          (frame-pixel-width (* frame-width-chars char-width))
          (frame-pixel-height (* frame-height-chars char-height))
-         (screen-width (display-pixel-width))
-         (screen-height (display-pixel-height))
-         ;; Center calculations
-         (left (max 0 (/ (- screen-width frame-pixel-width) 2)))
-         (top (max 0 (/ (- screen-height frame-pixel-height) 2))))
+         
+         ;; Center on primary monitor
+         (left (+ monitor-x (max 0 (/ (- monitor-width frame-pixel-width) 2))))
+         (top (+ monitor-y (max 0 (/ (- monitor-height frame-pixel-height) 2)))))
     
-    (make-frame `((name . "Snippet Search")
-                  (width . ,frame-width-chars)
-                  (height . ,frame-height-chars)
-                  (left . ,left)
-                  (top . ,top)
-                  (minibuffer . t)           ; Need minibuffer for consult
-                  (unsplittable . t)         ; Single window only
-                  (auto-raise . t)           ; Bring to front
-                  (tool-bar-lines . 0)       ; No toolbar
-                  (menu-bar-lines . 0)       ; No menu bar
-                  (tab-bar-lines . 0)        ; No tab bar
-                  (vertical-scroll-bars . nil))))) ; No scrollbars
+    ;; Apply frame configuration
+    (set-frame-size frame frame-width-chars frame-height-chars)
+    (set-frame-position frame left top)
+    (set-frame-parameter frame 'name "Snippet Search")
+    (set-frame-parameter frame 'unsplittable t)
+    (set-frame-parameter frame 'auto-raise t)
+    (set-frame-parameter frame 'tool-bar-lines 0)
+    (set-frame-parameter frame 'menu-bar-lines 0)
+    (set-frame-parameter frame 'tab-bar-lines 0)
+    (set-frame-parameter frame 'vertical-scroll-bars nil)))
 
-(defun my/global-snippet-search ()
-  "Global snippet search with popup frame and clipboard copy.
-Entry point for system-wide snippet access via emacsclient.
+(defun my/consult-snippets-inline ()
+  "Search and copy snippet in current window (no frame creation).
+Opens fuzzy search interface in the current Emacs window, allows
+selection of a snippet, and copies it to the system clipboard.
+
+Designed for use within Emacs via 'SPC s g' keybinding.
 
 Workflow:
-  1. Creates centered popup frame (120x40)
+  1. Opens consult fuzzy search in current window
+  2. Shows live preview of snippet content
+  3. On selection: evaluates expressions, strips variables, copies to clipboard
+  4. On cancel (C-g): shows cancellation message
+
+No frame management - runs in current Emacs window/frame."
+  (interactive)
+  (condition-case err
+      (let ((content (my/consult-snippets)))
+        (if content
+            (progn
+              (my/copy-to-clipboard content)
+              (message "Snippet copied to clipboard"))
+          (message "Snippet search cancelled")))
+    (error
+     (message "Snippet search error: %s" (error-message-string err)))))
+
+(defun my/global-snippet-search ()
+  "Global snippet search with frame management for emacsclient.
+This function is designed to be called via 'emacsclient -c' which creates
+a frame. It configures that frame (centers on primary monitor, sets size),
+runs snippet search, and closes the frame after selection.
+
+Intended use: System-wide via AutoHotkey Ctrl+Shift+Space hotkey
+
+Workflow:
+  1. Configures the emacsclient-created frame (centers on primary monitor)
   2. Opens fuzzy search interface with all snippets
   3. Shows live preview of snippet content
-  4. On selection: copies to clipboard, closes frame
-  5. On cancel (C-g/ESC): closes frame without copying
+  4. On selection: evaluates expressions, strips variables, copies to clipboard
+  5. Closes frame (whether selection succeeded, cancelled, or errored)
 
-Keybinding:
-  SPC s g           - In Emacs (for testing)
-  Ctrl+Shift+Space  - System-wide (via AutoHotkey)
-
-The frame always closes and returns focus to the original frame, even if
-errors occur during search or clipboard operations."
+The frame ALWAYS closes after the search completes, ensuring no leftover
+frames remain on screen. Focus returns to the previously active application."
   (interactive)
-  (let ((original-frame (selected-frame))
-        (snippet-frame nil))
+  (let ((client-frame (selected-frame)))
     (unwind-protect
         (condition-case err
             (progn
-              ;; Step 1: Create and focus popup frame
-              (setq snippet-frame (my/create-snippet-frame))
-              (select-frame-set-input-focus snippet-frame)
+              ;; Step 1: Configure the emacsclient frame
+              (my/configure-snippet-frame client-frame)
               
               ;; Step 2: Run consult search with preview
               (let ((content (my/consult-snippets)))
@@ -1395,15 +1433,13 @@ errors occur during search or clipboard operations."
           (error
            (message "Snippet search error: %s" (error-message-string err))))
       
-      ;; Cleanup: ALWAYS delete frame and restore focus
-      (when (and snippet-frame (frame-live-p snippet-frame))
-        (delete-frame snippet-frame))
-      (when (frame-live-p original-frame)
-        (select-frame-set-input-focus original-frame)))))
+      ;; Cleanup: ALWAYS close the frame
+      (when (frame-live-p client-frame)
+        (delete-frame client-frame t)))))
 
-;; Add keybinding: SPC s g for global snippet search
+;; Add keybinding: SPC s g for inline snippet search (no frame creation)
 (zzc/leader-keys
-  "sg" '(my/global-snippet-search :which-key "global snippets"))
+  "sg" '(my/consult-snippets-inline :which-key "snippet to clipboard"))
 
 (use-package
  corfu
