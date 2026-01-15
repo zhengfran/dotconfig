@@ -1058,6 +1058,299 @@ Error handling:
   "si"  '(yas-insert-snippet :which-key "insert snippet")
   "sy"  '(yasnippet-capf :which-key "complete snippet"))
 
+;;; Global Snippet Search Engine
+;; System-wide snippet access via Ctrl+Shift+Space
+;;
+;; Architecture:
+;;   1. Emacs server runs in background (configured at end of init.el)
+;;   2. AutoHotkey captures global hotkey (Ctrl+Shift+Space)
+;;   3. emacsclient opens popup frame (120x40, centered)
+;;   4. Fuzzy search with consult/vertico/orderless
+;;   5. Selected snippet copied to clipboard (yasnippet variables stripped)
+;;   6. Frame auto-closes after selection or cancel
+;;
+;; Keybindings:
+;;   SPC s g           - Test snippet search in Emacs
+;;   Ctrl+Shift+Space  - Global snippet search (system-wide via AutoHotkey)
+;;
+;; Snippet Format:
+;;   ~/org/snippets/MODE-NAME/snippet-file
+;;   Yasnippet format with # name:, # key:, # --
+;;
+;; Setup:
+;;   1. This config enables Emacs server (see bottom of init.el)
+;;   2. Install AutoHotkey script: ~/Documents/emacs-snippet-hotkey.ahk
+;;   3. Add AHK script to Windows Startup folder for auto-launch
+;;
+;; Future Enhancements:
+;;   - Snippet creation from selection (SPC s n)
+;;   - Snippet editing with C-c C-e to open file
+;;   - Tag-based filtering for snippet organization
+;;   - Frequently used snippets tracking
+;;   - Cloud sync for snippets across machines
+
+(defun my/strip-snippet-variables (text)
+  "Remove yasnippet placeholder syntax from TEXT.
+Replaces $N, ${N:default}, and backtick expressions with ___ placeholder.
+
+Handles:
+  $0, $1, $2, etc.          -> ___
+  ${1:default}              -> ___
+  ${2:$(elisp-expression)}  -> ___
+  `(lisp-expression)`       -> ___
+
+Example:
+  Input:  \"Hello $1, your ${2:item} is ready. `(current-time-string)`\"
+  Output: \"Hello ___, your ___ is ready. ___\""
+  (let ((cleaned text))
+    ;; Strip ${N:...} patterns (non-greedy to handle nested braces)
+    (setq cleaned (replace-regexp-in-string "${[0-9]+:[^}]*}" "___" cleaned))
+    ;; Strip $N simple placeholders
+    (setq cleaned (replace-regexp-in-string "\\$[0-9]+" "___" cleaned))
+    ;; Strip backtick expressions `(...)`
+    (setq cleaned (replace-regexp-in-string "`[^`]*`" "___" cleaned))
+    cleaned))
+
+(defun my/parse-snippet-file (file-path)
+  "Parse a single yasnippet file at FILE-PATH.
+Returns plist with :name, :key, :content, :file.
+Returns nil if file cannot be parsed or content is empty.
+
+The parser looks for:
+  # name: snippet-name
+  # key: trigger-key
+  # --
+  [content after # --]
+
+Content has yasnippet variables stripped using `my/strip-snippet-variables'."
+  (condition-case err
+      (with-temp-buffer
+        (insert-file-contents file-path)
+        (goto-char (point-min))
+        
+        (let ((name nil)
+              (key "")
+              (content nil))
+          
+          ;; Extract # name: line
+          (when (re-search-forward "^#\\s-*name:\\s-*\\(.+\\)$" nil t)
+            (setq name (string-trim (match-string 1))))
+          
+          ;; If no name found, use filename
+          (unless name
+            (setq name (file-name-nondirectory file-path)))
+          
+          ;; Extract # key: line
+          (goto-char (point-min))
+          (when (re-search-forward "^#\\s-*key:\\s-*\\(.+\\)$" nil t)
+            (setq key (string-trim (match-string 1))))
+          
+          ;; Find # -- separator and extract content after it
+          (goto-char (point-min))
+          (if (re-search-forward "^#\\s-*--\\s-*$" nil t)
+              (progn
+                (forward-line 1)
+                (setq content (buffer-substring-no-properties (point) (point-max))))
+            ;; No separator found, use entire buffer as content
+            (setq content (buffer-string)))
+          
+          ;; Strip yasnippet variables from content
+          (when content
+            (setq content (string-trim (my/strip-snippet-variables content))))
+          
+          ;; Only return if we have content
+          (if (and content (not (string-empty-p content)))
+              (list :name name
+                    :key key
+                    :content content
+                    :file file-path)
+            (progn
+              (message "Skipping empty snippet: %s" (file-name-nondirectory file-path))
+              nil))))
+    (error
+     (message "Failed to parse snippet file %s: %s"
+              (file-name-nondirectory file-path)
+              (error-message-string err))
+     nil)))
+
+(defun my/collect-all-snippets ()
+  "Collect and parse all snippets from ~/org/snippets/.
+Returns list of snippet plists with :name, :key, :mode, :content, :file.
+
+Scans all mode subdirectories (fundamental-mode/, org-mode/, etc.) and
+parses each snippet file. Skips backup files (ending with ~) and hidden files.
+
+Returns empty list if snippets directory doesn't exist or no snippets found."
+  (let* ((snippets-dir (expand-file-name "~/org/snippets"))
+         (snippets '()))
+    
+    (unless (file-directory-p snippets-dir)
+      (error "Snippet directory not found: %s" snippets-dir))
+    
+    ;; Scan each mode subdirectory
+    (dolist (mode-dir (directory-files snippets-dir t "^[^.]"))
+      (when (file-directory-p mode-dir)
+        (let ((mode-name (file-name-nondirectory mode-dir)))
+          ;; Parse each snippet file in this mode directory
+          (dolist (snippet-file (directory-files mode-dir t "^[^.]"))
+            (when (and (file-regular-p snippet-file)
+                      (not (string-suffix-p "~" snippet-file)))
+              (let ((snippet (my/parse-snippet-file snippet-file)))
+                (when snippet
+                  ;; Add mode information
+                  (plist-put snippet :mode mode-name)
+                  (push snippet snippets))))))))
+    
+    (if (null snippets)
+        (message "No snippets found in %s" snippets-dir)
+      (message "Loaded %d snippets from %s" (length snippets) snippets-dir))
+    
+    (nreverse snippets)))
+
+(defun my/consult-snippets ()
+  "Fuzzy search for snippets with preview using consult.
+Returns snippet content if selected, nil if cancelled (C-g or ESC).
+
+Display format: [mode] name (key)
+Preview shows full snippet content as you navigate.
+
+Uses orderless fuzzy matching for flexible search."
+  (let* ((snippets (my/collect-all-snippets))
+         (candidates
+          (mapcar (lambda (snippet)
+                    (let* ((name (plist-get snippet :name))
+                           (key (plist-get snippet :key))
+                           (mode (plist-get snippet :mode))
+                           (content (plist-get snippet :content))
+                           ;; Display format: [mode] name (key)
+                           (display (format "[%s] %s%s"
+                                           mode
+                                           name
+                                           (if (string-empty-p key)
+                                               ""
+                                             (format " (%s)" key)))))
+                      ;; Return cons: (display . content)
+                      (cons display content)))
+                  snippets)))
+    
+    (if (null candidates)
+        (progn
+          (message "No snippets found. Add snippets to ~/org/snippets/")
+          nil)
+      ;; Use consult with preview
+      (consult--read candidates
+                     :prompt "Search snippets: "
+                     :lookup 'consult--lookup-cdr
+                     :sort nil
+                     :require-match t
+                     :category 'snippet
+                     :history 'my/snippet-search-history
+                     :preview-key 'any))))
+
+(defun my/copy-to-clipboard (text)
+  "Copy TEXT to Windows system clipboard using PowerShell.
+Returns t on success, nil on failure.
+
+Uses a temporary file to handle multi-line content and special characters
+properly. Shows informative message with character count on success."
+  (condition-case err
+      (let ((temp-file (make-temp-file "emacs-clipboard-" nil ".txt")))
+        (unwind-protect
+            (progn
+              ;; Write text to temp file (handles special characters)
+              (with-temp-file temp-file
+                (insert text))
+              ;; Use PowerShell to set clipboard from file
+              (shell-command
+               (format "powershell.exe -command \"Get-Content '%s' -Raw | Set-Clipboard\""
+                      temp-file))
+              (message "Snippet copied! (%d chars) Paste with Ctrl+V" (length text))
+              t)
+          ;; Cleanup: always delete temp file
+          (when (file-exists-p temp-file)
+            (delete-file temp-file))))
+    (error
+     (message "Clipboard copy failed: %s" (error-message-string err))
+     nil)))
+
+(defun my/create-snippet-frame ()
+  "Create a large centered popup frame (120x40) for snippet search.
+Frame is positioned in the center of the screen with no toolbars or scrollbars.
+Used for distraction-free snippet search interface."
+  (let* ((frame-width-chars 120)
+         (frame-height-chars 40)
+         (char-width (frame-char-width))
+         (char-height (frame-char-height))
+         (frame-pixel-width (* frame-width-chars char-width))
+         (frame-pixel-height (* frame-height-chars char-height))
+         (screen-width (display-pixel-width))
+         (screen-height (display-pixel-height))
+         ;; Center calculations
+         (left (max 0 (/ (- screen-width frame-pixel-width) 2)))
+         (top (max 0 (/ (- screen-height frame-pixel-height) 2))))
+    
+    (make-frame `((name . "Snippet Search")
+                  (width . ,frame-width-chars)
+                  (height . ,frame-height-chars)
+                  (left . ,left)
+                  (top . ,top)
+                  (minibuffer . t)           ; Need minibuffer for consult
+                  (unsplittable . t)         ; Single window only
+                  (auto-raise . t)           ; Bring to front
+                  (tool-bar-lines . 0)       ; No toolbar
+                  (menu-bar-lines . 0)       ; No menu bar
+                  (tab-bar-lines . 0)        ; No tab bar
+                  (vertical-scroll-bars . nil))))) ; No scrollbars
+
+(defun my/global-snippet-search ()
+  "Global snippet search with popup frame and clipboard copy.
+Entry point for system-wide snippet access via emacsclient.
+
+Workflow:
+  1. Creates centered popup frame (120x40)
+  2. Opens fuzzy search interface with all snippets
+  3. Shows live preview of snippet content
+  4. On selection: copies to clipboard, closes frame
+  5. On cancel (C-g/ESC): closes frame without copying
+
+Keybinding:
+  SPC s g           - In Emacs (for testing)
+  Ctrl+Shift+Space  - System-wide (via AutoHotkey)
+
+The frame always closes and returns focus to the original frame, even if
+errors occur during search or clipboard operations."
+  (interactive)
+  (let ((original-frame (selected-frame))
+        (snippet-frame nil))
+    (unwind-protect
+        (condition-case err
+            (progn
+              ;; Step 1: Create and focus popup frame
+              (setq snippet-frame (my/create-snippet-frame))
+              (select-frame-set-input-focus snippet-frame)
+              
+              ;; Step 2: Run consult search with preview
+              (let ((content (my/consult-snippets)))
+                
+                ;; Step 3: Copy to clipboard if snippet was selected
+                (if content
+                    (my/copy-to-clipboard content)
+                  (message "Snippet search cancelled"))))
+          
+          ;; Handle errors gracefully
+          (error
+           (message "Snippet search error: %s" (error-message-string err))))
+      
+      ;; Cleanup: ALWAYS delete frame and restore focus
+      (when (and snippet-frame (frame-live-p snippet-frame))
+        (delete-frame snippet-frame))
+      (when (frame-live-p original-frame)
+        (select-frame-set-input-focus original-frame)))))
+
+;; Add keybinding: SPC s g for global snippet search
+(zzc/leader-keys
+  "sg" '(my/global-snippet-search :which-key "global snippets"))
+
 (use-package
  corfu
  :custom
@@ -2579,3 +2872,11 @@ Migrates all files tagged with :Project: or :project: or :projects:."
   "acr" '(my/gptel-add-context-region :which-key "add region")
   "acf" '(my/gptel-add-context-file :which-key "add file")
   "acc" '(my/gptel-clear-context :which-key "clear context"))
+
+;;; Emacs Server for Global Snippet Access
+;; Enables emacsclient to connect for system-wide snippet search
+;; Required for AutoHotkey integration (Ctrl+Shift+Space global hotkey)
+(require 'server)
+(unless (server-running-p)
+  (server-start)
+  (message "Emacs server started for snippet engine"))
