@@ -188,6 +188,11 @@ Prompts for date using org-mode's date picker."
 ;; Ensure emacsql is available (includes sqlite-builtin support)
 (use-package emacsql)
 
+;; Explicitly load emacsql-sqlite to ensure the interface is available
+;; This is needed because org-roam requires it internally but the autoloads
+;; might not be ready on first startup with fresh packages
+(require 'emacsql-sqlite)
+
 (use-package org-roam
     :after emacsql 
     :custom

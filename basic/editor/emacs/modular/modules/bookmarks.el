@@ -3,9 +3,11 @@
 ;;; Commentary:
 ;; Standard Emacs bookmarks plus custom URL bookmark system:
 ;; - Parse bookmarks from ~/org/bookmarks.org
-;; - Fuzzy search with consult
-;; - Centered popup frame for selection
+;; - Fuzzy search with consult integration
+;; - System-wide access via Raycast (Alt+Space -> 'bs' search, 'bc' capture)
+;; - Centered popup frame for selection (100x30 for search, 80x20 for capture)
 ;; - URL capture with clipboard detection and duplicate checking
+;; - Windows browser integration via w32-shell-execute
 ;;
 ;; DEPENDENCIES: keybindings (zzc/leader-keys), completion (consult-*)
 ;; USED BY: None
@@ -110,35 +112,6 @@ Returns selected URL or nil if cancelled."
                     :history 'my/bookmark-history)))    ; Remember recent selections
     selected))
 
-(defun my/create-centered-bookmark-frame ()
-  "Create a centered popup frame for bookmark search.
-Frame size: 100 chars wide × 30 lines tall."
-  (let* ((screen-width (display-pixel-width))
-         (screen-height (display-pixel-height))
-         (char-width (frame-char-width))
-         (char-height (frame-char-height))
-         ;; Frame dimensions in pixels
-         (frame-width-chars 100)
-         (frame-height-chars 30)
-         (frame-pixel-width (* frame-width-chars char-width))
-         (frame-pixel-height (* frame-height-chars char-height))
-         ;; Center calculations
-         (left (max 0 (/ (- screen-width frame-pixel-width) 2)))
-         (top (max 0 (/ (- screen-height frame-pixel-height) 2))))
-    
-    (make-frame `((name . "Bookmark Search")
-                  (width . ,frame-width-chars)
-                  (height . ,frame-height-chars)
-                  (left . ,left)
-                  (top . ,top)
-                  (minibuffer . t)           ; Need minibuffer for consult
-                  (unsplittable . t)         ; Single window only
-                  (auto-raise . t)           ; Bring to front
-                  (tool-bar-lines . 0)       ; No toolbar
-                  (menu-bar-lines . 0)       ; No menu bar
-                  (tab-bar-lines . 0)        ; No tab bar
-                  (vertical-scroll-bars . nil))))) ; No scrollbars
-
 (defun my/open-url-in-browser (url)
   "Open URL in Windows default browser.
 Uses w32-shell-execute for native Windows."
@@ -146,21 +119,96 @@ Uses w32-shell-execute for native Windows."
       (w32-shell-execute "open" url)
     (error "Not running on native Windows. System type: %s" system-type)))
 
-(defun my/search-bookmarks-in-frame ()
-  "Open bookmark search in popup frame.
-Searches ~/org/bookmarks.org and opens selected URL in browser.
-Frame auto-closes after selection or cancellation."
+(defun my/bookmark-search-inline ()
+  "Search and open bookmark in current window (no frame creation).
+Opens fuzzy search interface in the current Emacs window, allows
+selection of a bookmark, and opens it in the default browser.
+
+Designed for use within Emacs via 'SPC b u' keybinding.
+
+Workflow:
+  1. Opens consult fuzzy search in current window
+  2. Shows bookmark descriptions with fuzzy matching
+  3. On selection: opens URL in default browser
+  4. On cancel (C-g): shows cancellation message
+
+No frame management - runs in current Emacs window/frame."
   (interactive)
-  (let ((original-frame (selected-frame))
-        (bookmark-frame nil))
+  (condition-case err
+      (let ((url (my/consult-bookmarks)))
+        (if url
+            (progn
+              (my/open-url-in-browser url)
+              (message "Opened: %s" url))
+          (message "Bookmark search cancelled")))
+    (error
+     (message "Bookmark search error: %s" (error-message-string err)))))
+
+(defun my/configure-bookmark-search-frame (frame)
+  "Configure FRAME for bookmark search with multi-monitor aware centering.
+Size: 100x30 characters (optimized for bookmark descriptions).
+Centers on primary monitor, clean appearance.
+
+Parameters:
+  FRAME - The frame to configure (created by emacsclient -c)"
+  (let* ((frame-width-chars 100)
+         (frame-height-chars 30)
+         
+         ;; Multi-monitor aware centering on PRIMARY monitor
+         (monitor-attrs (car (display-monitor-attributes-list)))
+         (workarea (assq 'workarea monitor-attrs))
+         (monitor-x (nth 1 workarea))
+         (monitor-y (nth 2 workarea))
+         (monitor-width (nth 3 workarea))
+         (monitor-height (nth 4 workarea))
+         
+         ;; Calculate pixel dimensions
+         (char-width (frame-char-width frame))
+         (char-height (frame-char-height frame))
+         (frame-pixel-width (* frame-width-chars char-width))
+         (frame-pixel-height (* frame-height-chars char-height))
+         
+         ;; Center on primary monitor
+         (left (+ monitor-x (max 0 (/ (- monitor-width frame-pixel-width) 2))))
+         (top (+ monitor-y (max 0 (/ (- monitor-height frame-pixel-height) 2)))))
+    
+    ;; Apply frame configuration
+    (set-frame-size frame frame-width-chars frame-height-chars)
+    (set-frame-position frame left top)
+    (set-frame-parameter frame 'name "Bookmark Search")
+    (set-frame-parameter frame 'unsplittable t)
+    (set-frame-parameter frame 'auto-raise t)
+    (set-frame-parameter frame 'tool-bar-lines 0)
+    (set-frame-parameter frame 'menu-bar-lines 0)
+    (set-frame-parameter frame 'tab-bar-lines 0)
+    (set-frame-parameter frame 'vertical-scroll-bars nil)))
+
+(defun my/global-bookmark-search ()
+  "Global bookmark search with frame management for emacsclient.
+This function is designed to be called via 'emacsclient -c' which creates
+a frame. It configures that frame (centers on primary monitor, sets size),
+runs bookmark search, and closes the frame after selection.
+
+Intended use: System-wide via Raycast (Alt+Space -> type 'bs')
+
+Workflow:
+  1. Configures emacsclient-created frame (100x30, centered)
+  2. Opens fuzzy search interface with all bookmarks
+  3. Shows bookmark descriptions with fuzzy matching
+  4. On selection: opens URL in default browser, closes frame
+  5. On cancel (C-g): closes frame
+  
+The frame ALWAYS closes after search completes, ensuring no leftover
+frames remain on screen. Focus returns to the previously active application."
+  (interactive)
+  (let ((client-frame (selected-frame)))
     (unwind-protect
         (condition-case err
             (progn
-              ;; Step 1: Create and focus popup frame
-              (setq bookmark-frame (my/create-centered-bookmark-frame))
-              (select-frame-set-input-focus bookmark-frame)
+              ;; Step 1: Configure the emacsclient frame
+              (my/configure-bookmark-search-frame client-frame)
               
-              ;; Step 2: Run consult search
+              ;; Step 2: Run consult bookmark search
               (let ((url (my/consult-bookmarks)))
                 
                 ;; Step 3: Open URL if selected (nil if C-g cancelled)
@@ -172,11 +220,9 @@ Frame auto-closes after selection or cancellation."
           (error
            (message "Bookmark search error: %s" (error-message-string err))))
       
-      ;; Cleanup: ALWAYS delete frame and restore focus
-      (when (and bookmark-frame (frame-live-p bookmark-frame))
-        (delete-frame bookmark-frame))
-      (when (frame-live-p original-frame)
-        (select-frame-set-input-focus original-frame)))))
+      ;; Cleanup: ALWAYS close the frame
+      (when (frame-live-p client-frame)
+        (delete-frame client-frame t)))))
 
 ;; ============================================================================
 ;; URL BOOKMARK CAPTURE SYSTEM
@@ -345,20 +391,149 @@ Error handling:
     (error (message "Error capturing bookmark: %s" (error-message-string err)))))
 
 ;; ============================================================================
+;; RAYCAST INTEGRATION
+;; ============================================================================
+
+;;; Raycast Integration for System-Wide Bookmark Access
+;; Enables bookmark search and capture from anywhere in Windows via Raycast
+;; Keywords: 'bs' (bookmark search), 'bc' (bookmark capture)
+;;
+;; Architecture:
+;;   1. PowerShell scripts call emacsclient with -c flag (creates frame)
+;;   2. Search: my/global-bookmark-search (configures frame, runs search, closes)
+;;   3. Capture: my/global-bookmark-capture (configures frame, runs capture, closes)
+;;   4. Inline functions for Emacs use: my/bookmark-search-inline (SPC b u)
+;;
+;; Frame Management:
+;;   - Search frame: 100x30 chars (fits bookmark descriptions)
+;;   - Capture frame: 80x20 chars (only shows prompts)
+;;   - Both centered on primary monitor
+;;   - emacsclient creates frame, functions configure and close it
+;;
+;; Setup:
+;;   1. Emacs server runs automatically (see init.el)
+;;   2. Install Raycast for Windows
+;;   3. Configure Raycast script commands with keywords 'bs' and 'bc'
+;;   4. Scripts location: ~/dotconfig/scripts/emacs/emacs-bookmark-*.ps1
+
+(defun my/configure-bookmark-capture-frame (frame)
+  "Configure FRAME for bookmark capture with centered positioning.
+Size: 80x20 characters (smaller than search, only shows prompts).
+Centers on primary monitor, clean appearance.
+
+Parameters:
+  FRAME - The frame to configure (created by emacsclient -c)"
+  (let* ((frame-width-chars 80)
+         (frame-height-chars 20)
+         
+         ;; Multi-monitor aware centering on PRIMARY monitor
+         (monitor-attrs (car (display-monitor-attributes-list)))
+         (workarea (assq 'workarea monitor-attrs))
+         (monitor-x (nth 1 workarea))
+         (monitor-y (nth 2 workarea))
+         (monitor-width (nth 3 workarea))
+         (monitor-height (nth 4 workarea))
+         
+         ;; Calculate pixel dimensions
+         (char-width (frame-char-width frame))
+         (char-height (frame-char-height frame))
+         (frame-pixel-width (* frame-width-chars char-width))
+         (frame-pixel-height (* frame-height-chars char-height))
+         
+         ;; Center on primary monitor
+         (left (+ monitor-x (max 0 (/ (- monitor-width frame-pixel-width) 2))))
+         (top (+ monitor-y (max 0 (/ (- monitor-height frame-pixel-height) 2)))))
+    
+    ;; Apply frame configuration
+    (set-frame-size frame frame-width-chars frame-height-chars)
+    (set-frame-position frame left top)
+    (set-frame-parameter frame 'name "Bookmark Capture")
+    (set-frame-parameter frame 'unsplittable t)
+    (set-frame-parameter frame 'auto-raise t)
+    (set-frame-parameter frame 'tool-bar-lines 0)
+    (set-frame-parameter frame 'menu-bar-lines 0)
+    (set-frame-parameter frame 'tab-bar-lines 0)
+    (set-frame-parameter frame 'vertical-scroll-bars nil)))
+
+(defun my/global-bookmark-capture ()
+  "Global bookmark capture with frame management for emacsclient.
+This function is designed to be called via 'emacsclient -c' which creates
+a frame. It configures that frame (centers on primary monitor, sets size),
+runs the bookmark capture with minibuffer prompts, and closes the frame
+after completion or cancellation.
+
+Intended use: System-wide via Raycast (Alt+Space -> type 'bc')
+
+Workflow:
+  1. Configures emacsclient-created frame (80x20, centered)
+  2. Runs my/capture-url-bookmark (clipboard detection, duplicate check, prompts)
+  3. Closes frame after save/cancel (whether successful or error)
+  
+The frame ALWAYS closes after capture completes, ensuring no leftover frames."
+  (interactive)
+  (let ((client-frame (selected-frame)))
+    (unwind-protect
+        (condition-case err
+            (progn
+              ;; Step 1: Configure the emacsclient frame
+              (my/configure-bookmark-capture-frame client-frame)
+              
+              ;; Step 2: Run bookmark capture (blocks until complete)
+              ;; Uses minibuffer prompts: URL (if not in clipboard), Description
+              ;; Handles: clipboard detection, validation, duplicate check
+              (my/capture-url-bookmark))
+          
+          ;; Handle errors gracefully (show in minibuffer, not message box)
+          (error
+           (message "Bookmark capture error: %s" (error-message-string err))))
+      
+      ;; Cleanup: ALWAYS close the frame
+      (when (frame-live-p client-frame)
+        (delete-frame client-frame t)))))
+
+;; Architecture Notes:
+;; - Bookmark search: Two functions for different contexts
+;;   * my/bookmark-search-inline: For SPC b u (no frame, current window)
+;;   * my/global-bookmark-search: For Raycast bs (popup frame managed by emacsclient)
+;; - Bookmark capture: Single function reused by wrapper
+;;   * my/capture-url-bookmark: Core capture logic (reused)
+;;   * my/global-bookmark-capture: Frame wrapper for Raycast bc
+;; - Frame creation: emacsclient -c creates frame, functions configure it
+;; - Consistent with snippet system architecture (ss/sc and bs/bc)
+
+;; ============================================================================
 ;; KEYBINDINGS
 ;; ============================================================================
 
-;; Keybinding: SPC b u (bookmark → URL), SPC b c (bookmark → capture)
+;; Keybindings:
+;;   SPC b u  - URL bookmarks search (inline, current window)
+;;   SPC b c  - Capture URL bookmark
+;;   Raycast: 'bs' (search with popup frame), 'bc' (capture with popup frame)
 (zzc/leader-keys
-  "bu" '(my/search-bookmarks-in-frame :which-key "url bookmarks")
+  "bu" '(my/bookmark-search-inline :which-key "url bookmarks")
   "bc" '(my/capture-url-bookmark :which-key "capture url"))
 
-;; Future enhancements (documented, not implemented):
-;; - Preview: Show URL in minibuffer before opening
-;; - Categories: Narrow by org heading (Development, Documentation, etc.)
-;; - Edit: C-c C-e to open bookmarks.org at selected entry
-;; - Recent: Sort by access frequency/recency
-;; - Multiple files: Search across multiple bookmark files
+;; Implemented features:
+;;   1. URL bookmark search (SPC b u, or Raycast 'bs')
+;;      - Fuzzy search with consult integration
+;;      - Popup frame with automatic cleanup
+;;      - Opens in Windows default browser
+;;      - Preserves org tags in descriptions
+;;
+;;   2. URL bookmark capture (SPC b c, or Raycast 'bc')
+;;      - Clipboard detection for URLs
+;;      - Duplicate checking (case-sensitive)
+;;      - Domain extraction for default description
+;;      - Saves to Inbox heading in bookmarks.org
+;;
+;; Future enhancements:
+;;   - Category management: Choose heading during capture (not always Inbox)
+;;   - Bookmark editing: C-c C-e to open bookmarks.org at selected entry
+;;   - Preview: Show URL in minibuffer before opening
+;;   - Category filtering: Narrow by org heading (Development, Documentation, etc.)
+;;   - Frequency tracking: Sort by access frequency/recency
+;;   - Multiple files: Search across multiple bookmark files
+;;   - Tag support: Search and filter by org tags
 
 (provide 'bookmarks)
 ;;; bookmarks.el ends here
