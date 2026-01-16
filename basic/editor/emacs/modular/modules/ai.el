@@ -80,7 +80,7 @@
                '(commit-msg . "You are a git expert. Generate clear, concise commit messages following conventional commits format. Focus on the 'why' not just the 'what'."))
 
   (add-to-list 'gptel-directives
-               '(translate-zh . "You are a translator. Translate the text to Chinese (ç®€ä½"ä¸­æ–‡). Maintain the original tone and meaning. Be natural and idiomatic."))
+               '(translate-zh . "You are a translator. Translate the text to Chinese. Maintain the original tone and meaning. Be natural and idiomatic."))
 
   (add-to-list 'gptel-directives
                '(summarize . "You are a summarization expert. Create concise summaries that capture the key points and essential information. Be clear and structured."))

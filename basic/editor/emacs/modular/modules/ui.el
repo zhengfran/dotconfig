@@ -41,27 +41,6 @@
   :hook (after-init . global-emojify-mode))
 
 ;; ============================================================================
-;; THEME FUNCTIONS
-;; ============================================================================
-
-(defun my/load-doom-theme (theme)
-  "Disable active themes and load a Doom theme."
-  (interactive (list (intern (completing-read "Theme: "
-					(->> (custom-available-themes)
-					     (-map #'symbol-name)
-					     (--select (string-prefix-p "doom-" it)))))))
-  (my/switch-theme theme)
-  (set-face-foreground 'org-indent (face-background 'default)))
-
-(defun my/switch-theme (theme)
-  "Disable active themes and load THEME."
-  (interactive (list (intern (completing-read "Theme: "
-					(->> (custom-available-themes)
-					     (-map #'symbol-name))))))
-  (mapc #'disable-theme custom-enabled-themes)
-  (load-theme theme 'no-confirm))
-
-;; ============================================================================
 ;; DOOM THEMES
 ;; ============================================================================
 
@@ -70,7 +49,7 @@
   :config
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-gruvbox t) ; 加载主题
+  (load-theme 'modus-vivendi-tinted t) ; 加载主题
   (doom-themes-visual-bell-config) ; Enable flashing mode-line on errors
   (doom-themes-org-config)
   ;; Fix Corfu face inheritance cycle error with Gnus faces
@@ -80,14 +59,6 @@
    '(gnus-group-news-low-empty ((t :inherit default)))
    '(gnus-group-mail-1 ((t :inherit default)))
    '(gnus-group-mail-low ((t :inherit default)))))
-
-;; ============================================================================
-;; THEME KEYBINDINGS
-;; ============================================================================
-
-(zzc/leader-keys
-  "t"  '(:ignore t :which-key "toggle")
-  "tt" '(my/load-doom-theme :which-key "themes"))
 
 ;; ============================================================================
 ;; ICONS

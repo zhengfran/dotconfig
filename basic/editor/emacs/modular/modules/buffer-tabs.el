@@ -1,4 +1,4 @@
-;;; tab-line.el --- Buffer tab navigation -*- lexical-binding: t; -*-
+;;; buffer-tabs.el --- Buffer tab navigation -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; Tab-line mode for per-window buffer tabs with:
@@ -137,5 +137,5 @@ Shows org-mode titles, modified indicator, and truncates to 20 chars."
 ;; Buffers are restored, and tab-line reconstructs tabs automatically
 ;; No additional configuration needed
 
-(provide 'tab-line)
-;;; tab-line.el ends here
+(provide 'buffer-tabs)
+;;; buffer-tabs.el ends here
