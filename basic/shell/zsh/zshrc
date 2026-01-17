@@ -17,3 +17,11 @@ export GEMINI_API_KEY=$(get_netrc_pass "generativelanguage.googleapis.com")
 export OPENAI_API_KEY=$(get_netrc_pass "api.openai.com")
 export ANTHROPIC_API_KEY=$(get_netrc_pass "api.anthropic.com")
 export OPENROUTER_API_KEY=$(get_netrc_pass "openrouter.ai")
+export GLM_API_KEY=$(get_netrc_pass "z.ai")
+
+# bun completions
+[ -s "/home/uie41442/.bun/_bun" ] && source "/home/uie41442/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
