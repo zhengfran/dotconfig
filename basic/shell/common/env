@@ -6,6 +6,7 @@ export PATH=$PATH:$LOCALBIN
 export PATH=$PATH:/usr/local/bin
 export PATH=$PATH:$HOME/go/bin
 export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
+export PATH=$PATH:$HOME/.bun/bin
 export PATH=$PATH:/home/linuxbrew/.linuxbrew/sbin
 export PATH=$PATH:$HOME/.linuxbrew/bin
 export PATH=$PATH:$HOME/.linuxbrew/sbin
