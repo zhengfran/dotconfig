@@ -1,1 +1,59 @@
+# Emacs (actual config paths)
+**/*~
+**/\#*\#
+**/.#*
+**/*.elc
 
+# Emacs profile caches
+**/emacs/**/.cache/
+**/emacs/**/elpa/
+**/emacs/**/eln-cache/
+**/emacs/**/straight/
+**/emacs/**/var/
+**/emacs/**/gptel/
+**/emacs/**/tree-sitter/
+**/emacs/**/etc/
+
+# Vim (anywhere in tree)
+**/[._]*.s[a-v][a-z]
+**/[._]*.sw[a-p]
+**/[._]s[a-rt-v][a-z]
+**/[._]ss[a-gi-z]
+**/[._]sw[a-p]
+**/Session.vim
+**/.netrwhist
+
+# macOS (anywhere in tree)
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
+**/._*
+
+# Windows (anywhere in tree)
+**/Thumbs.db
+**/ehthumbs.db
+**/Desktop.ini
+**/$RECYCLE.BIN/
+
+# Linux (anywhere in tree)
+**/.fuse_hidden*
+**/.directory
+**/.Trash-*
+
+# IDE (anywhere in tree)
+**/.vscode/
+**/.idea/
+**/*.swp
+**/*.swo
+
+# Build artifacts
+**/*.o
+**/*.a
+**/*.so
+**/*.pyc
+**/__pycache__/
+
+# Temporary files
+**/*.tmp
+**/*.log
+**/*.bak
