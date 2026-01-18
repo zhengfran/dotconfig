@@ -143,9 +143,8 @@
 
 (defun my/org-download-clipboard ()
   (interactive)
-  (cond (my/is-windows (my/org-download-clipboard-windows))
-        (my/is-WSL (my/org-download-clipboard-wsl))
-        (t (org-download-clipboard)))) ; for linux and mac system
+  (cond (my/is-WSL (my/org-download-clipboard-wsl))
+        (t (org-download-clipboard))))
 
 (setq org-image-actual-width nil)
 
@@ -156,7 +155,7 @@
   :after org
   :bind (:map org-mode-map
               ("C-c i y" . org-download-yank)
-	      ("C-c i d" . org-download-delete)
+	   ("C-c i d" . org-download-delete)
               ("C-c i e" . org-download-edit)
               ("C-M-y" . my/org-download-clipboard)))
 
