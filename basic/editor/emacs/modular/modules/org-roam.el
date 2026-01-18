@@ -186,20 +186,20 @@ Prompts for date using org-mode's date picker."
 ;; ============================================================================
 
 ;; Ensure emacsql is available (includes sqlite-builtin support)
-(use-package emacsql)
-
-;; Explicitly load emacsql-sqlite to ensure the interface is available
-;; This is needed because org-roam requires it internally but the autoloads
-;; might not be ready on first startup with fresh packages
-(require 'emacsql-sqlite)
+(use-package emacsql
+  :config
+  ;; Explicitly load emacsql-sqlite to ensure the interface is available
+  ;; This is needed because org-roam requires it internally but the autoloads
+  ;; might not be ready on first startup with fresh packages
+  (require 'emacsql-sqlite))
 
 (use-package org-roam
-    :after emacsql 
+    :after emacsql
     :custom
     (org-roam-directory my/org-base-dir)
     (org-roam-completion-everywhere t)
     (org-roam-completion-system 'default)
-    (org-roam-node-display-template 
+    (org-roam-node-display-template
      (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
     (org-roam-db-gc-threshold most-positive-fixnum)
     (org-roam-db-update-on-save t)
@@ -231,44 +231,65 @@ Prompts for date using org-mode's date picker."
            ("C-c n C" . my/org-roam-dailies-capture-date)
            :map org-mode-map
            ("C-M-i". completion-at-point))
-     :config
-     ;; Ensure org-roam-directory is set before db-autosync-mode
-     (setq org-roam-directory my/org-base-dir)
-     (setq org-roam-capture-templates
-          '(("d" "default" plain "%?"
-             :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                                "#+title: ${title}\n#+date: %U\n#+filetags: \n\n")
-             :unnarrowed t)
-            
-            ("p" "project" plain "** TODO %?\n"
-             :target (file+head "projects/%<%Y%m%d%H%M%S>-${slug}.org"
-                                "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: :Project:\n\n* Tasks\n")
-             :unnarrowed t)
-            
-            ("r" "reference" plain
-             "* Key Ideas\n\n%?\n\n* Quotes\n\n* Questions\n\n* Next Steps\n"
-             :target (file+head "ref/%<%Y%m%d%H%M%S>-${slug}.org"
-                                "#+title: ${title}\n#+filetags: :reference:\n#+date: %U\n\n")
-             :unnarrowed t)))
-    (org-roam-db-autosync-mode) 
-    (my/org-roam-refresh-agenda-list))
-  (add-hook 'org-roam-mode-hook 'visual-line-mode)
+      :config
+      ;; Ensure org-roam-directory is set before db-autosync-mode
+      (setq org-roam-directory my/org-base-dir)
+      (setq org-roam-capture-templates
+           '(("d" "default" plain "%?"
+              :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                                 "#+title: ${title}\n#+date: %U\n#+filetags: \n\n")
+              :unnarrowed t)
 
-;; Initial setup: run after org-roam is loaded
-(with-eval-after-load 'org-roam
-  (my/org-roam-refresh-agenda-list))
+             ("p" "project" plain "** TODO %?\n"
+              :target (file+head "projects/%<%Y%m%d%H%M%S>-${slug}.org"
+                                 "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: :Project:\n\n* Tasks\n")
+              :unnarrowed t)
 
-;; Hook into org-roam database sync
-(add-hook 'org-roam-db-autosync-mode-hook 'my/org-roam-refresh-agenda-list)
+              ("r" "reference" plain
+               "* Key Ideas\n\n%?\n\n* Quotes\n\n* Questions\n\n* Next Steps\n"
+              :target (file+head "ref/%<%Y%m%d%H%M%S>-${slug}.org"
+                                 "#+title: ${title}\n#+filetags: :reference:\n#+date: %U\n\n")
+              :unnarrowed t)))
+     (add-hook 'org-roam-mode-hook 'visual-line-mode)
+    (add-hook 'org-roam-mode-hook #'org-roam-db-autosync-mode)
 
-;; Hook into after saving org-roam files
-(add-hook 'after-save-hook 'my/org-roam-auto-refresh-agenda)
+     ;; Leader key bindings
+     (eval '(zzc/leader-keys
+       "n" '(:ignore t :which-key "notes")
+       "n f" '(org-roam-node-find :which-key "find node")
+       "n i" '(org-roam-node-insert :which-key "insert node")
+       "n c" '(org-roam-capture :which-key "capture")
+       "n j" '(org-roam-dailies-capture-today :which-key "daily today")
+       "n d" '(org-roam-dailies-goto-today :which-key "goto today")
+       "n y" '(org-roam-dailies-goto-yesterday :which-key "goto yesterday")
+       "n t" '(org-roam-dailies-goto-tomorrow :which-key "goto tomorrow")
+       "n D" '(org-roam-dailies-goto-date :which-key "goto date")
+       "n p" '(my/org-roam-find-project :which-key "find project")
+       "n P" '(my/org-roam-insert-new-project :which-key "new project")
+       "n T" '(my/org-roam-capture-task :which-key "capture task")
+       "n Y" '(my/org-roam-goto-year :which-key "goto year")
+       "n M" '(my/org-roam-goto-month :which-key "goto month")
+       "n u" '(org-roam-ui-open :which-key "open ui")
+        "n s" '(org-roam-db-sync :which-key "sync db")))
 
-;; Hook into after org-roam capture finalize
-(add-hook 'org-roam-capture-new-node-hook 'my/org-roam-refresh-agenda-list)
+    ;; Hook into org-roam database sync
+    (add-hook 'org-roam-db-autosync-mode-hook 'my/org-roam-refresh-agenda-list)
 
-;; ============================================================================
-;; YEAR/MONTH NAVIGATION
+    ;; Hook into after org-roam capture finalize
+    (add-hook 'org-roam-capture-new-node-hook 'my/org-roam-refresh-agenda-list)
+
+    ;; Display buffer configuration
+    (add-to-list 'display-buffer-alist '("\\(^CAPTURE.*\\.org$\\|\\*Org.*Select\\*$\\)"
+                                       (display-buffer-in-side-window)
+                                       (side . right)
+                                       (slot . 0)
+                                       (window-width . 60))
+
+    ;; Hook into after saving org-roam files
+    (add-hook 'after-save-hook 'my/org-roam-auto-refresh-agenda)))
+
+ ;; ============================================================================
+ ;; YEAR/MONTH NAVIGATION
 ;; ============================================================================
 
 (defun my/org-roam-goto-month ()
@@ -318,15 +339,16 @@ Sets up commonly used mathematical symbols and operators."
           ("\\eps" . "\\varepsilon")
           ("\\det" . "\\mathop{det}"))))
 
-(use-package org-roam-ui
-  :after org-roam
-  :custom
-  (org-roam-ui-sync-theme t)
-  (org-roam-ui-follow t)
-  (org-roam-ui-update-on-save t)
-  (org-roam-ui-open-on-start nil)
-  :config
-  (my/set-orui-latex-macros))
+ (use-package org-roam-ui
+   :defer t
+   :after org-roam
+   :custom
+   (org-roam-ui-sync-theme t)
+   (org-roam-ui-follow t)
+   (org-roam-ui-update-on-save t)
+   (org-roam-ui-open-on-start nil)
+   :config
+   (my/set-orui-latex-macros))
 
 ;; ============================================================================
 ;; CONSULT-ORG-ROAM
@@ -357,44 +379,10 @@ Sets up commonly used mathematical symbols and operators."
    ("C-c n b" . consult-org-roam-backlinks)
    ("C-c n B" . consult-org-roam-backlinks-recursive)
    ("C-c n L" . consult-org-roam-forward-links)
-   ("C-c n r" . consult-org-roam-search))
+    ("C-c n r" . consult-org-roam-search))
 
-;; ============================================================================
-;; LEADER KEY BINDINGS
-;; ============================================================================
-
-;; Org-roam leader key bindings under SPC n prefix
-(zzc/leader-keys
-  "n" '(:ignore t :which-key "notes")
-  "n f" '(org-roam-node-find :which-key "find node")
-  "n i" '(org-roam-node-insert :which-key "insert node")
-  "n c" '(org-roam-capture :which-key "capture")
-  "n j" '(org-roam-dailies-capture-today :which-key "daily today")
-  "n d" '(org-roam-dailies-goto-today :which-key "goto today")
-  "n y" '(org-roam-dailies-goto-yesterday :which-key "goto yesterday")
-  "n t" '(org-roam-dailies-goto-tomorrow :which-key "goto tomorrow")
-  "n D" '(org-roam-dailies-goto-date :which-key "goto date")
-  "n p" '(my/org-roam-find-project :which-key "find project")
-  "n P" '(my/org-roam-insert-new-project :which-key "new project")
-  "n T" '(my/org-roam-capture-task :which-key "capture task")
-  "n Y" '(my/org-roam-goto-year :which-key "goto year")
-  "n M" '(my/org-roam-goto-month :which-key "goto month")
-  "n u" '(org-roam-ui-open :which-key "open ui")
-  "n s" '(org-roam-db-sync :which-key "sync db"))
-
-;; ============================================================================
-;; DISPLAY BUFFER CONFIGURATION
-;; ============================================================================
-
-;; org-roam capture 与 *Org-Select* 默认右侧打开
-(add-to-list 'display-buffer-alist '("\\(^CAPTURE.*\.org$\\|\\*Org.*Select\\*$\\)"
-                                     (display-buffer-in-side-window)
-                                     (side . right)
-                                     (slot . 0)
-                                     (window-width . 60)))
-
-;; ============================================================================
-;; ORG-NOTER
+ ;; ============================================================================
+ ;; ORG-NOTER
 ;; ============================================================================
 
 (use-package org-noter
