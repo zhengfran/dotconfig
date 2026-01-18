@@ -138,17 +138,6 @@
   (require 'terminal))        ; 20. Terminal (vterm, eee) - non-Windows only
 
 ;; ============================================================================
-;; EMACS SERVER FOR GLOBAL SNIPPET ACCESS
-;; ============================================================================
-
-;; Enables emacsclient to connect for system-wide snippet search
-;; Required for Raycast integration (Alt+Space -> type 'ss')
-(require 'server)
-(unless (server-running-p)
-  (server-start)
-  (message "Emacs server started for snippet engine"))
-
-;; ============================================================================
 ;; STARTUP COMPLETE
 ;; ============================================================================
 
