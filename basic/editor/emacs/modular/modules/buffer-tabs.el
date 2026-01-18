@@ -126,6 +126,7 @@ Shows org-mode titles, modified indicator, and truncates to 20 chars."
 ;; ============================================================================
 
 (with-eval-after-load 'evil
+  (define-key evil-normal-state-map (kbd "K") 'tab-line-close-tab)
   (define-key evil-normal-state-map (kbd "H") 'tab-line-switch-to-prev-tab)
   (define-key evil-normal-state-map (kbd "L") 'tab-line-switch-to-next-tab))
 
