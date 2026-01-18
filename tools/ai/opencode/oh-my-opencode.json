@@ -5,11 +5,11 @@
     "Sisyphus": {
       "model": "google/antigravity-claude-opus-4-5-thinking"
     },
-    "Oracle": {
+    "oracle": {
       "model": "openai/gpt-5.2"
     },
     "librarian": {
-      "model": "opencode/glm-4.7-free"
+      "model": "zai-coding-plan/glm-4.7"
     },
     "explore": {
       "model": "google/antigravity-gemini-3-flash"
