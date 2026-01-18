@@ -26,6 +26,7 @@
 ;; ============================================================================
 
 (use-package general
+  :demand t
   :config
   (general-create-definer zzc/leader-keys
     :states '(normal visual emacs)
