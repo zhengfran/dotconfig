@@ -189,7 +189,7 @@ This function is designed to be called via 'emacsclient -c' which creates
 a frame. It configures that frame (centers on primary monitor, sets size),
 runs bookmark search, and closes the frame after selection.
 
-Intended use: System-wide via Raycast (Alt+Space -> type 'bs')
+Intended use: System-wide via Raycast (Alt+Space -\u003e type 'bs')
 
 Workflow:
   1. Configures emacsclient-created frame (100x30, centered)
@@ -208,10 +208,14 @@ frames remain on screen. Focus returns to the previously active application."
               ;; Step 1: Configure the emacsclient frame
               (my/configure-bookmark-search-frame client-frame)
               
-              ;; Step 2: Run consult bookmark search
+              ;; Step 2: Force focus to frame and minibuffer (Windows fix)
+              (select-frame-set-input-focus client-frame)
+              (run-with-timer 0.05 nil (lambda () (select-frame-set-input-focus client-frame)))
+              
+              ;; Step 3: Run consult bookmark search
               (let ((url (my/consult-bookmarks)))
                 
-                ;; Step 3: Open URL if selected (nil if C-g cancelled)
+                ;; Step 4: Open URL if selected (nil if C-g cancelled)
                 (when url
                   (my/open-url-in-browser url)
                   (message "Opened: %s" url))))
