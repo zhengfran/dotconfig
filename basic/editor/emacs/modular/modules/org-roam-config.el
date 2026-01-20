@@ -10,6 +10,44 @@
 
 ;;; Code:
 
+;; Trade related capture
+(defvar my/trade-template-dir (expand-file-name "~/org/templates/trades/")
+  "Base directory for all trade strategy template notes.")
+(defun my/trade-list-templates ()
+  "Return list of trade template base names without extension."
+  (mapcar #'file-name-base
+          (directory-files my/trade-template-dir nil "\\.org$")))
+
+;;Read selected template file
+(defun my/trade-read-template (name)
+  (with-temp-buffer
+    (insert-file-contents
+     (expand-file-name (concat name ".org") my/trade-template-dir))
+    (buffer-string)))
+
+;;trade capture function
+(defun my/org-roam-capture-trade ()
+  (interactive)
+  (let* ((strategy (completing-read
+                    "Strategy: "
+                    (my/trade-list-templates)
+                    nil t))
+         (body (my/trade-read-template strategy))
+         (header (concat
+                  "#+title: %<%Y-%m-%d-%H-%M-%S> Trade\n"
+                  "#+filetags: :trade:" strategy ":\n\n")))
+    (org-roam-capture-
+     :node (org-roam-node-create)
+     :templates
+     `(("t" "trade log" plain
+        ,body
+        :if-new
+        (file+head
+         "trades/%<%Y%m%d%H%M%S>.org"
+         ,header)
+        :unnarrowed t)))))
+
+
 ;; ============================================================================
 ;; DAILY NOTE HELPERS
 ;; ============================================================================
@@ -184,7 +222,7 @@ Prompts for date using org-mode's date picker."
 ;; ============================================================================
 ;; ORG-ROAM CONFIGURATION
 ;; ============================================================================
-
+(setq org-capture-delete-aborted-notes t)
 ;; Ensure emacsql is available (includes sqlite-builtin support)
 (use-package emacsql
   :config
@@ -243,15 +281,9 @@ Prompts for date using org-mode's date picker."
              ("p" "project" plain "** TODO %?\n"
               :target (file+head "projects/%<%Y%m%d%H%M%S>-${slug}.org"
                                  "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: :Project:\n\n* Tasks\n")
-              :unnarrowed t)
-
-              ("r" "reference" plain
-               "* Key Ideas\n\n%?\n\n* Quotes\n\n* Questions\n\n* Next Steps\n"
-              :target (file+head "ref/%<%Y%m%d%H%M%S>-${slug}.org"
-                                 "#+title: ${title}\n#+filetags: :reference:\n#+date: %U\n\n")
               :unnarrowed t)))
      (add-hook 'org-roam-mode-hook 'visual-line-mode)
-    (add-hook 'org-roam-mode-hook #'org-roam-db-autosync-mode)
+    (org-roam-db-autosync-mode)
 
      ;; Leader key bindings
      (eval '(zzc/leader-keys
@@ -266,11 +298,12 @@ Prompts for date using org-mode's date picker."
        "n D" '(org-roam-dailies-goto-date :which-key "goto date")
        "n p" '(my/org-roam-find-project :which-key "find project")
        "n P" '(my/org-roam-insert-new-project :which-key "new project")
+       "n t" '(my/org-roam-capture-trade :which-key "capture task")
        "n T" '(my/org-roam-capture-task :which-key "capture task")
        "n Y" '(my/org-roam-goto-year :which-key "goto year")
        "n M" '(my/org-roam-goto-month :which-key "goto month")
        "n u" '(org-roam-ui-open :which-key "open ui")
-        "n s" '(org-roam-db-sync :which-key "sync db")))
+       "n s" '(org-roam-db-sync :which-key "sync db")))
 
     ;; Hook into org-roam database sync
     (add-hook 'org-roam-db-autosync-mode-hook 'my/org-roam-refresh-agenda-list)
@@ -503,5 +536,5 @@ Migrates all files tagged with :Project: or :project: or :projects:."
       (org-roam-db-sync)
       (my/org-roam-refresh-agenda-list))))
 
-(provide 'org-roam)
+(provide 'org-roam-config)
 ;;; org-roam.el ends here

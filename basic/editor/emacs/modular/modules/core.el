@@ -91,9 +91,9 @@
   (auto-save-file-name-transforms `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))) ; 设置自动保存文件目录
 
 (use-package recentf
-:after no-littering
-:demand t 
-:custom
+  :after no-littering
+  :demand t 
+  :custom
 (recentf-exclude '(no-littering-var-directory
                    no-littering-etc-directory)) ; 屏蔽临时文件
 (recentf-max-menu-items 25)

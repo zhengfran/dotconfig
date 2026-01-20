@@ -727,7 +727,7 @@ This function is designed to be called via 'emacsclient -c' which creates
 a frame. It configures that frame (centers on primary monitor, sets size),
 runs snippet search, and closes the frame after selection.
 
-Intended use: System-wide via Raycast (Alt+Space -> type 'ss')
+Intended use: System-wide via Raycast (Alt+Space -\u003e type 'ss')
 
 Workflow:
   1. Configures the emacsclient-created frame (centers on primary monitor)
@@ -746,10 +746,14 @@ frames remain on screen. Focus returns to the previously active application."
               ;; Step 1: Configure the emacsclient frame
               (my/configure-snippet-frame client-frame)
               
-              ;; Step 2: Run consult search with preview
+              ;; Step 2: Force focus to frame and minibuffer (Windows fix)
+              (select-frame-set-input-focus client-frame)
+              (run-with-timer 0.05 nil (lambda () (select-frame-set-input-focus client-frame)))
+              
+              ;; Step 3: Run consult search with preview
               (let ((content (my/consult-snippets)))
                 
-                ;; Step 3: Copy to clipboard if snippet was selected
+                ;; Step 4: Copy to clipboard if snippet was selected
                 (if content
                     (my/copy-to-clipboard content)
                   (message "Snippet search cancelled"))))
