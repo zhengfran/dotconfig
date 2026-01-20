@@ -13,6 +13,8 @@
 **/emacs/**/gptel/
 **/emacs/**/tree-sitter/
 **/emacs/**/etc/
+**/emacs/**/bookmarks
+**/emacs/**/emacs-desktop*
 
 # Vim (anywhere in tree)
 **/[._]*.s[a-v][a-z]
