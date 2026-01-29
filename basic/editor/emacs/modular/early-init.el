@@ -10,7 +10,7 @@
 ;; Platform-specific font sizes
 (defvar my/font-size
   (pcase system-type
-    ('windows-nt 160)  ; 14pt for Windows
+    ('windows-nt 160)  ; 16pt for Windows
     ('darwin 160)      ; 16pt for macOS
     ('gnu/linux 160)   ; 16pt for Linux
     (_ 140))           ; Fallback
@@ -63,6 +63,8 @@
         (setq inhibit-compacting-font-caches t)
         (setq auto-window-vscroll nil)))))
 
+(global-set-key (kbd "C--") #'text-scale-decrease)
+(global-set-key (kbd "C-=") #'text-scale-increase)
 ;; Apply fonts after Emacs initialization (when font system is ready)
 (add-hook 'after-init-hook
           (lambda ()

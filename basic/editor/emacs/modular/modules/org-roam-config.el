@@ -147,10 +147,13 @@ This function is called automatically when a task is marked as DONE or CANCEL."
 (defun my/org-roam-filter-by-tag (tag-name)
   "Return a predicate function that filters org-roam nodes by TAG-NAME (case-insensitive).
 The returned lambda checks if TAG-NAME is present in a node's tags list."
-  (lambda (node)
-    (cl-some (lambda (node-tag)
-               (string-equal-ignore-case tag-name node-tag))
-             (org-roam-node-tags node))))
+  (let ((target-tag tag-name))
+    (lambda (node)
+      (let ((node-tags (org-roam-node-tags node)))
+        (catch 'found
+          (dolist (node-tag node-tags)
+            (when (string-equal-ignore-case target-tag node-tag)
+              (throw 'found t)))))))
 
 (defun my/org-roam-list-notes-by-tag (tag-name)
   "Return a list of file paths for all org-roam nodes tagged with TAG-NAME (case-insensitive)."
@@ -161,18 +164,28 @@ The returned lambda checks if TAG-NAME is present in a node's tags list."
 (defun my/org-roam-filter-by-tags (wanted unwanted)
   "Return a predicate that filters nodes having any tag in WANTED but none in UNWANTED (case-insensitive).
 WANTED and UNWANTED should be lists of tag strings."
-  (lambda (node)
-    (let ((node-tags (org-roam-node-tags node)))
-      (and (cl-some (lambda (tag) 
-                      (cl-some (lambda (node-tag)
-                                 (string-equal-ignore-case tag node-tag))
-                               node-tags))
-                    wanted)
-           (not (cl-some (lambda (tag)
-                           (cl-some (lambda (node-tag)
-                                      (string-equal-ignore-case tag node-tag))
-                                    node-tags))
-                         unwanted))))))
+  (let ((wanted-tags wanted)
+        (unwanted-tags unwanted))
+    (lambda (node)
+      (let ((node-tags (org-roam-node-tags node))
+            (has-wanted nil)
+            (has-unwanted nil))
+        ;; Check for wanted tags
+        (catch 'found-wanted
+          (dolist (tag wanted-tags)
+            (dolist (node-tag node-tags)
+              (when (string-equal-ignore-case tag node-tag)
+                (setq has-wanted t)
+                (throw 'found-wanted)))))
+        ;; Check for unwanted tags
+        (catch 'found-unwanted
+          (dolist (tag unwanted-tags)
+            (dolist (node-tag node-tags)
+              (when (string-equal-ignore-case tag node-tag)
+                (setq has-unwanted t)
+                (throw 'found-unwanted)))))
+        ;; Return true only if has wanted and no unwanted
+        (and has-wanted (not has-unwanted)))))))
 
 ;; ============================================================================
 ;; AGENDA INTEGRATION

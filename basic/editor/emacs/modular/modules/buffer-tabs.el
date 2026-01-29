@@ -72,7 +72,7 @@
   "Cache for org-mode buffer titles to avoid repeated parsing.")
 
 (defun my/clear-org-title-cache ()
-  "Clear the org title cache for current buffer."
+  "Clear org title cache for current buffer."
   (remhash (buffer-file-name) my/org-title-cache))
 
 (defun my/extract-org-title ()

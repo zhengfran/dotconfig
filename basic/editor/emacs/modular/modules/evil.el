@@ -102,6 +102,7 @@
 ;; ============================================================================
 
 (use-package evil-goggles
+  :after evil
   :config
   (evil-goggles-mode)
   ;; optionally use diff-mode's faces; as a result, deleted text
@@ -110,6 +111,13 @@
   ;; other faces such as `diff-added` will be used for other actions
   (evil-goggles-use-diff-faces))
 
+(use-package evil-textobj-anyblock
+  :after evil
+  :config
+  (define-key evil-inner-text-objects-map "q"
+    #'evil-textobj-anyblock-inner-block)
+  (define-key evil-outer-text-objects-map "q"
+    #'evil-textobj-anyblock-a-block))
 ;; ============================================================================
 ;; AUTO-SAVE ON INSERT EXIT
 ;; ============================================================================
