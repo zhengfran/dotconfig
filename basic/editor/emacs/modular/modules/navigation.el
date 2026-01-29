@@ -112,12 +112,12 @@
   :config (treemacs-set-scope-type 'Tabs))
 
 (defun treemacs-adjust-width-to-fit ()
-  "Adjust Treemacs window width to fit the longest filename."
-  (let ((max-length (apply 'max
-                           (mapcar 'string-width
-                                   (treemacs--get-children-of (treemacs-current-root)))))
-        (treemacs-default-width 30)) ;; Default width if there are no entries
-    (treemacs-resize-to-width (max 30 (+ 5 max-length))))) ;; Add 5 to accommodate icons
+   "Adjust Treemacs window width to fit the longest filename."
+   (let ((max-length (apply 'max
+                            (mapcar 'string-width
+                                    (treemacs--get-children-of (treemacs-current-root)))))
+         (treemacs-default-width 30)) ;; Default width if there are no entries
+     (treemacs-resize-to-width (max 30 (+ 5 max-length))))) ;; Add 5 to accommodate icons
 
 ;; Hook into window selection to auto-adjust width
 (add-hook 'treemacs-select-window-hook 'treemacs-adjust-width-to-fit)
