@@ -111,6 +111,11 @@
   :after (treemacs)
   :config (treemacs-set-scope-type 'Tabs))
 
+;; Leader key binding for treemacs
+(with-eval-after-load 'treemacs
+  (zzc/leader-keys
+    "e" '(treemacs :which-key "toggle treemacs")))
+
 (defun treemacs-adjust-width-to-fit ()
    "Adjust Treemacs window width to fit the longest filename."
    (let ((max-length (apply 'max
