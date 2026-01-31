@@ -387,10 +387,14 @@ This function is called automatically when a task is marked as DONE or CANCEL."
 
 (defun my/org-refile-update-targets ()
   "Update `org-refile-targets` to match `org-agenda-files`."
-  (setq org-refile-targets
-        (mapcar (lambda (file) (cons file '(:maxlevel . 3))) org-agenda-files)))
+  (when (boundp 'org-agenda-files)
+    (setq org-refile-targets
+          (mapcar (lambda (file) (cons file '(:maxlevel . 3))) org-agenda-files))))
 
-(my/org-refile-update-targets)
+;; Only run if org-agenda-files is already defined
+(when (boundp 'org-agenda-files)
+  (my/org-refile-update-targets))
+
 (advice-add 'my/denote-project-finalize-hook :after #'my/org-refile-update-targets)
 
 (provide 'denote-config)
