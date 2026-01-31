@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a modular Emacs configuration built with `straight.el` package manager and `use-package`. The configuration is split into 20+ feature-based modules for maintainability and clear dependency management.
 
-**Key Philosophy**: Evil mode (Vim emulation) + SPC leader key bindings + Org-mode focused workflow with org-roam knowledge management.
+**Key Philosophy**: Evil mode (Vim emulation) + SPC leader key bindings + Org-mode focused workflow with denote note-taking system.
 
 ## Starting Emacs with This Configuration
 
@@ -50,14 +50,14 @@ modular/
 4. **editor** → Basic editor settings
 5. **evil** → Evil mode (required by navigation, window, etc.)
 6. **window** → Window management
-7. **completion** → Vertico/consult (required by bookmarks, org-roam)
+7. **completion** → Vertico/consult (required by bookmarks, denote)
 8. **bookmarks** → Uses consult
 9. **workspace** → Tab-bar, project, desktop sessions
 10. **navigation** → Avy, treemacs, multiple-cursors
 11. **snippets** → Yasnippet + global snippet search
 12. **org-base** → Core org-mode
 13. **org-agenda-config** → Defines `org-agenda-files`
-14. **org-roam-config** → Uses `org-agenda-files`
+14. **denote-config** → Uses `org-agenda-files`
 15. **org-babel** → Code execution in org
 16. **buffer-tabs** → Buffer tab-line
 17. **programming** → LSP, language modes
@@ -68,7 +68,7 @@ modular/
 ### Key Global Variables
 
 Defined in `core.el`:
-- `my/org-base-dir` - Org-roam notes directory (`~/org/notes/`)
+- `my/org-base-dir` - Denote notes directory (`~/org/notes/`)
 - `my/is-windows`, `my/is-linux`, `my/is-mac`, `my/is-WSL` - Platform detection
 - `org_notes_dir`, `zot_bib`, `zot_pdf` - Zotero integration paths
 - `my/font-size` - Font size in 1/10 pt units (160 = 16pt)
@@ -111,23 +111,32 @@ Common prefixes:
 - `SPC p` - Project commands
 - `SPC s` - Snippet commands
 - `SPC o` - Org-mode commands
-- `SPC n` - Org-roam notes
+- `SPC n` - Denote notes
 
-### Org-Roam Structure
+### Denote Structure
 
 Directory layout under `~/org/notes/`:
 ```
 notes/
-├── daily/       # Daily notes (created via org-roam-dailies)
-├── projects/    # Project notes
-├── ref/         # Reference/literature notes
-└── trades/      # Trade logs (custom capture)
+├── journal/                           # Daily notes (migrated from daily/)
+├── ref/                              # Reference/literature notes
+├── trades/                           # Trade logs (custom capture)
+└── YYYYMMDDTHHMMSS--title__keywords.org  # Files in denote format
+    Examples:
+    - 20240131T120000--my-project__project.org
+    - 20240131T000000--2024-01-31-thu__journal.org
 ```
 
+Denote naming convention:
+- `YYYYMMDDTHHMMSS` - Timestamp identifier
+- `--title` - Slugified title
+- `__keywords` - Underscore-separated keywords (project, journal, trade, ref)
+
 Key functions:
-- `my/org-roam-ensure-daily-note-exists` - Create today's daily note
-- `my/copy-completed-task-to-daily` - Auto-copy DONE tasks to daily notes
-- `my/org-roam-capture-trade` - Trade log capture with templates
+- `my/denote-ensure-journal-note-exists` - Create today's journal note
+- `my/copy-completed-task-to-journal` - Auto-copy DONE tasks to journal notes
+- `my/denote-capture-trade` - Trade log capture with templates
+- `my/denote-refresh-agenda-list` - Add project files to agenda
 
 ### Snippet System
 
@@ -158,9 +167,9 @@ Snippets live in `~/org/snippets/<mode-name>/`:
 - **Project markers**: `.project`, `*.csproj` recognized as project roots
 
 ### bookmarks.el (543 lines - largest module)
-- URL bookmarks with org-roam integration
+- URL bookmarks with denote integration
 - Bookmark search via consult (`consult-bookmark`)
-- URL capture from clipboard → org-roam nodes
+- URL capture from clipboard → denote notes
 
 ### snippets.el (786 lines - second largest)
 - Comprehensive snippet capture system
@@ -169,12 +178,13 @@ Snippets live in `~/org/snippets/<mode-name>/`:
 - Expression evaluation in snippets
 - Mode detection and creation workflow
 
-### org-roam-config.el (569 lines)
+### denote-config.el (~400 lines)
 - Trade log capture with template system (`my/trade-template-dir`)
-- Task completion automation (copies DONE/CANCEL to daily notes)
+- Task completion automation (copies DONE/CANCEL to journal notes)
 - Backlink creation for completed tasks
-- Org-roam-ui visualization integration
+- consult-denote integration for search and navigation
 - Org-noter PDF annotation integration
+- File-based linking (no database required)
 
 ## Platform-Specific Behavior
 

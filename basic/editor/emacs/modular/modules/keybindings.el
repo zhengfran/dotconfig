@@ -6,8 +6,8 @@
 ;; Also includes config reload functions.
 ;;
 ;; DEPENDENCIES: None
-;; USED BY: ui, editor, bookmarks, workspace, navigation, snippets, 
-;;          org-agenda, org-roam, org-babel, ai, terminal (zzc/leader-keys)
+;; USED BY: ui, editor, bookmarks, workspace, navigation, snippets,
+;;          org-agenda, denote, org-babel, ai, terminal (zzc/leader-keys)
 
 ;;; Code:
 

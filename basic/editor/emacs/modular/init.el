@@ -128,7 +128,7 @@
 (require 'snippets)        ; 11. Yasnippet + global snippet search
 (require 'org-base)           ; 12. Core org-mode setup
 (require 'org-agenda-config)  ; 13. Org agenda and TODO management (defines org-agenda-files)
-(require 'org-roam-config)           ; 14. Org-roam notes system (uses org-agenda-files)
+(require 'denote-config)           ; 14. Denote notes system (uses org-agenda-files)
 (require 'org-babel)          ; 15. Org babel code execution
 (require 'buffer-tabs)        ; 16. Buffer tab-line with H/L navigation and org titles
 (require 'programming)        ; 17. Programming languages
