@@ -47,15 +47,18 @@
   (setq desktop-dirname user-emacs-directory)
   (setq desktop-base-file-name "emacs-desktop")
   (setq desktop-base-lock-name "emacs-desktop.lock")
-  
+
   ;; Restore all buffers immediately (per user preference)
   (setq desktop-restore-eager t)
-  
+
   ;; Allow loading locked desktop (safe for single-user systems)
   (setq desktop-load-locked-desktop t)
-  
+
   ;; Auto-save every 5 minutes
   (setq desktop-auto-save-timeout 300)
+
+  ;; Always save desktop on exit without asking
+  (setq desktop-save t)
   
   ;; Disable frame restoration to avoid reloading tab workspaces
   (setq desktop-restore-frames nil)
