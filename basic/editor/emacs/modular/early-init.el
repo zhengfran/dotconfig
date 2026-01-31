@@ -22,9 +22,9 @@
 
 ;; Preferred font names
 (defvar my/preferred-fonts
-  '((default . "Iosevka NFP")
-    (variable-pitch . "Iosevka NFP")
-    (fixed-pitch . "Iosevka NF")
+  '((default . "Iosevka Nerd Font Propo")
+    (variable-pitch . "Iosevka Nerd Font Propo")
+    (fixed-pitch . "Iosevka Nerd Font Mono")
     (math . "Latin Modern Math")
     (chinese . "LXGW WenKai"))
   "Preferred font families for different use cases.")
