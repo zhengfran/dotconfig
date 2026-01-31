@@ -207,6 +207,7 @@ This function is called automatically when a task is marked as DONE or CANCEL."
 ;; ============================================================================
 
 (use-package denote
+  :demand t
   :custom
   (denote-directory my/org-base-dir)
   (denote-known-keywords '("project" "journal" "trade" "ref" "archived"))
