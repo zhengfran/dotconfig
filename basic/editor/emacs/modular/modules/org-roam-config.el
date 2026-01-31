@@ -143,66 +143,69 @@ This function is called automatically when a task is marked as DONE or CANCEL."
 ;; ============================================================================
 ;; FILTER FUNCTIONS
 ;; ============================================================================
+;; These functions require org-roam to be loaded
 
-(defun my/org-roam-filter-by-tag (tag-name)
-  "Return a predicate function that filters org-roam nodes by TAG-NAME (case-insensitive).
+(with-eval-after-load 'org-roam
+  (defun my/org-roam-filter-by-tag (tag-name)
+    "Return a predicate function that filters org-roam nodes by TAG-NAME (case-insensitive).
 The returned lambda checks if TAG-NAME is present in a node's tags list."
-  (let ((target-tag tag-name))
-    (lambda (node)
-      (let ((node-tags (org-roam-node-tags node)))
-        (catch 'found
-          (dolist (node-tag node-tags)
-            (when (string-equal-ignore-case target-tag node-tag)
-              (throw 'found t)))))))
+    (let ((target-tag tag-name))
+      (lambda (node)
+        (let ((node-tags (org-roam-node-tags node)))
+          (catch 'found
+            (dolist (node-tag node-tags)
+              (when (string-equal-ignore-case target-tag node-tag)
+                (throw 'found t))))))))
 
-(defun my/org-roam-list-notes-by-tag (tag-name)
-  "Return a list of file paths for all org-roam nodes tagged with TAG-NAME (case-insensitive)."
-  (mapcar #'org-roam-node-file
-          (seq-filter (my/org-roam-filter-by-tag tag-name)
-                      (org-roam-node-list))))
+  (defun my/org-roam-list-notes-by-tag (tag-name)
+    "Return a list of file paths for all org-roam nodes tagged with TAG-NAME (case-insensitive)."
+    (mapcar #'org-roam-node-file
+            (seq-filter (my/org-roam-filter-by-tag tag-name)
+                        (org-roam-node-list))))
 
-(defun my/org-roam-filter-by-tags (wanted unwanted)
-  "Return a predicate that filters nodes having any tag in WANTED but none in UNWANTED (case-insensitive).
+  (defun my/org-roam-filter-by-tags (wanted unwanted)
+    "Return a predicate that filters nodes having any tag in WANTED but none in UNWANTED (case-insensitive).
 WANTED and UNWANTED should be lists of tag strings."
-  (let ((wanted-tags wanted)
-        (unwanted-tags unwanted))
-    (lambda (node)
-      (let ((node-tags (org-roam-node-tags node))
-            (has-wanted nil)
-            (has-unwanted nil))
-        ;; Check for wanted tags
-        (catch 'found-wanted
-          (dolist (tag wanted-tags)
-            (dolist (node-tag node-tags)
-              (when (string-equal-ignore-case tag node-tag)
-                (setq has-wanted t)
-                (throw 'found-wanted)))))
-        ;; Check for unwanted tags
-        (catch 'found-unwanted
-          (dolist (tag unwanted-tags)
-            (dolist (node-tag node-tags)
-              (when (string-equal-ignore-case tag node-tag)
-                (setq has-unwanted t)
-                (throw 'found-unwanted)))))
-        ;; Return true only if has wanted and no unwanted
-        (and has-wanted (not has-unwanted)))))))
+    (let ((wanted-tags wanted)
+          (unwanted-tags unwanted))
+      (lambda (node)
+        (let ((node-tags (org-roam-node-tags node))
+              (has-wanted nil)
+              (has-unwanted nil))
+          ;; Check for wanted tags
+          (catch 'found-wanted
+            (dolist (tag wanted-tags)
+              (dolist (node-tag node-tags)
+                (when (string-equal-ignore-case tag node-tag)
+                  (setq has-wanted t)
+                  (throw 'found-wanted)))))
+          ;; Check for unwanted tags
+          (catch 'found-unwanted
+            (dolist (tag unwanted-tags)
+              (dolist (node-tag node-tags)
+                (when (string-equal-ignore-case tag node-tag)
+                  (setq has-unwanted t)
+                  (throw 'found-unwanted)))))
+          ;; Return true only if has wanted and no unwanted
+          (and has-wanted (not has-unwanted))))))
 
 ;; ============================================================================
 ;; AGENDA INTEGRATION
 ;; ============================================================================
 
-(defun my/org-roam-refresh-agenda-list ()
-  "Add all org-roam files tagged with 'Project' to `org-agenda-files' (case-insensitive).
+(with-eval-after-load 'org-roam
+  (defun my/org-roam-refresh-agenda-list ()
+    "Add all org-roam files tagged with 'Project' to `org-agenda-files' (case-insensitive).
 This allows project files to appear in the org-agenda view."
-  (interactive)
-  (when (featurep 'org-roam)
-    (let ((project-files (my/org-roam-list-notes-by-tag "Project")))
-      (setq org-agenda-files
-            (delete-dups (append (or org-agenda-files '())
-                                 project-files)))
-      (message "Refreshed agenda list: %d total files (%d projects)" 
-               (length org-agenda-files)
-               (length project-files)))))
+    (interactive)
+    (when (featurep 'org-roam)
+      (let ((project-files (my/org-roam-list-notes-by-tag "Project")))
+        (setq org-agenda-files
+              (delete-dups (append (or org-agenda-files '())
+                                   project-files)))
+        (message "Refreshed agenda list: %d total files (%d projects)" 
+                 (length org-agenda-files)
+                 (length project-files)))))))
 
 (defun my/org-roam-db-diagnose ()
   "Clear and rebuild org-roam database to fix issues.
@@ -224,13 +227,14 @@ Prompts for date using org-mode's date picker."
     (org-roam-dailies-capture-date time)))
 
 ;; Automatic refresh hooks
-(defun my/org-roam-auto-refresh-agenda ()
-  "Automatically refresh org-agenda-files when org-roam database updates."
-  (when (and (featurep 'org-roam)
-             (buffer-file-name)
-             (string-prefix-p (expand-file-name org-roam-directory)
-                              (file-truename (buffer-file-name))))
-    (my/org-roam-refresh-agenda-list)))
+(with-eval-after-load 'org-roam
+  (defun my/org-roam-auto-refresh-agenda ()
+    "Automatically refresh org-agenda-files when org-roam database updates."
+    (when (and (featurep 'org-roam)
+               (buffer-file-name)
+               (string-prefix-p (expand-file-name org-roam-directory)
+                                (file-truename (buffer-file-name))))
+      (my/org-roam-refresh-agenda-list))))
 
 ;; ============================================================================
 ;; ORG-ROAM CONFIGURATION
@@ -246,6 +250,17 @@ Prompts for date using org-mode's date picker."
 
 (use-package org-roam
     :after emacsql
+    :commands (org-roam-node-find
+               org-roam-node-insert
+               org-roam-capture
+               org-roam-dailies-capture-today
+               org-roam-dailies-goto-today
+               org-roam-dailies-goto-yesterday
+               org-roam-dailies-goto-tomorrow
+               org-roam-dailies-goto-date
+               org-roam-buffer-toggle
+               org-roam-db-sync
+               org-roam-ui-open)
     :custom
     (org-roam-directory my/org-base-dir)
     (org-roam-completion-everywhere t)
@@ -299,7 +314,7 @@ Prompts for date using org-mode's date picker."
     (org-roam-db-autosync-mode)
 
      ;; Leader key bindings
-     (eval '(zzc/leader-keys
+     (zzc/leader-keys
        "n" '(:ignore t :which-key "notes")
        "n f" '(org-roam-node-find :which-key "find node")
        "n i" '(org-roam-node-insert :which-key "insert node")
@@ -307,16 +322,16 @@ Prompts for date using org-mode's date picker."
        "n j" '(org-roam-dailies-capture-today :which-key "daily today")
        "n d" '(org-roam-dailies-goto-today :which-key "goto today")
        "n y" '(org-roam-dailies-goto-yesterday :which-key "goto yesterday")
-       "n t" '(org-roam-dailies-goto-tomorrow :which-key "goto tomorrow")
+       "n m" '(org-roam-dailies-goto-tomorrow :which-key "goto tomorrow")
        "n D" '(org-roam-dailies-goto-date :which-key "goto date")
        "n p" '(my/org-roam-find-project :which-key "find project")
        "n P" '(my/org-roam-insert-new-project :which-key "new project")
-       "n t" '(my/org-roam-capture-trade :which-key "capture task")
-       "n T" '(my/org-roam-capture-task :which-key "capture task")
+       "n r" '(my/org-roam-capture-trade :which-key "capture trade")
+       "n t" '(my/org-roam-capture-task :which-key "capture task")
        "n Y" '(my/org-roam-goto-year :which-key "goto year")
        "n M" '(my/org-roam-goto-month :which-key "goto month")
        "n u" '(org-roam-ui-open :which-key "open ui")
-       "n s" '(org-roam-db-sync :which-key "sync db")))
+       "n s" '(org-roam-db-sync :which-key "sync db"))
 
     ;; Hook into org-roam database sync
     (add-hook 'org-roam-db-autosync-mode-hook 'my/org-roam-refresh-agenda-list)
@@ -454,45 +469,46 @@ Sets up commonly used mathematical symbols and operators."
 ;; PROJECT MANAGEMENT
 ;; ============================================================================
 
-(defun my/org-roam-project-finalize-hook ()
-  "adds the captured project file to `org-agenda-files' if the
-  capture was not aborted."
-  ;; remove the hook since it was added temporarily
-  (remove-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-  ;; add project file to the agenda list if the capture was confirmed
-  (unless org-note-abort
-    (with-current-buffer (org-capture-get :buffer)
-      (add-to-list 'org-agenda-files (buffer-file-name)))))
+(with-eval-after-load 'org-roam
+  (defun my/org-roam-project-finalize-hook ()
+    "adds the captured project file to `org-agenda-files' if the
+    capture was not aborted."
+    ;; remove the hook since it was added temporarily
+    (remove-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+    ;; add project file to the agenda list if the capture was confirmed
+    (unless org-note-abort
+      (with-current-buffer (org-capture-get :buffer)
+        (add-to-list 'org-agenda-files (buffer-file-name)))))
 
-(defun my/org-roam-insert-new-project ()
-  (interactive)
-  ;; add the project file to the agenda after capture is finished
-  (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-  ;; select a project file to open, creating it if necessary
-  (org-roam-capture- :keys "p"
-                     :node (org-roam-node-read
-                            nil
-                            (my/org-roam-filter-by-tag "Project"))))
+  (defun my/org-roam-insert-new-project ()
+    (interactive)
+    ;; add the project file to the agenda after capture is finished
+    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+    ;; select a project file to open, creating it if necessary
+    (org-roam-capture- :keys "p"
+                       :node (org-roam-node-read
+                              nil
+                              (my/org-roam-filter-by-tag "Project"))))
 
-(defun my/org-roam-find-project ()
-  (interactive)
-  ;; add the project file to the agenda after capture is finished
-  (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-  ;; select a project file to open, creating it if necessary
-  (org-roam-node-find
-   nil
-   nil
-   (my/org-roam-filter-by-tags '("Project") '("Archived"))))
+  (defun my/org-roam-find-project ()
+    (interactive)
+    ;; add the project file to the agenda after capture is finished
+    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+    ;; select a project file to open, creating it if necessary
+    (org-roam-node-find
+     nil
+     nil
+     (my/org-roam-filter-by-tags '("Project") '("Archived"))))
 
-(defun my/org-roam-capture-task ()
-  (interactive)
-  ;; update org-agenda list after adding projects
-  (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-  ;; new todo
-  (org-roam-capture- :keys "p"
-                     :node (org-roam-node-read
-                            nil
-                            (my/org-roam-filter-by-tag "Project"))))
+  (defun my/org-roam-capture-task ()
+    (interactive)
+    ;; update org-agenda list after adding projects
+    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+    ;; new todo
+    (org-roam-capture- :keys "p"
+                       :node (org-roam-node-read
+                              nil
+                              (my/org-roam-filter-by-tag "Project")))))
 
 ;; ============================================================================
 ;; REFILE CONFIGURATION
