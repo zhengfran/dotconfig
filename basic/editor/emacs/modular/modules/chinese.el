@@ -11,16 +11,22 @@
 
 ;; Rime input method - Chinese input
 ;; Note: Only loads on non-Windows systems due to compilation requirements
+
 (unless (eq system-type 'windows-nt)
   (use-package rime
     :straight (rime :type git
                     :host github
                     :repo "doglooksgood/emacs-rime"
                     :files ("*.el" "Makefile" "lib.c"))
+    :demand t
+    :init
+    ;; Set the library root only on macOS
+    (when (eq system-type 'darwin)
+      (setq rime-librime-root "/opt/homebrew"))
     :custom
     (default-input-method "rime")
     (rime-show-candidate 'posframe)
-    (rime-user-data-dir "~/.config/rime")
+    (rime-user-data-dir (expand-file-name "rime" user-emacs-directory))
     (rime-disable-predicates '(rime-predicate-evil-mode-p
                                 rime-predicate-after-ascii-char-p
                                 rime-predicate-hydra-p
@@ -29,9 +35,9 @@
     :config
     ;; prevent rime crash
     (defun rime-lib-finalize() nil)
-    (add-hook 'kill-emacs-hook #'rime-lib-finalize)))
+    (add-hook 'kill-emacs-hook #'rime-lib-finalize))
 
-;; Clipboard encoding for Chinese characters
+;; Clipboard encoding for Chinese characters 
 (cond
  ((and my/is-windows (not my/is-WSL)) ; Only Windows, not WSL
   (set-clipboard-coding-system 'utf-8))

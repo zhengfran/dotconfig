@@ -1,0 +1,6 @@
+# Rime user dictionary
+#@/db_name	wanxiang
+#@/db_type	userdb
+#@/rime_version	1.11.2
+#@/tick	0
+#@/user_id	02776ae7-4978-40fa-9dcf-3595008875d1
