@@ -20,14 +20,32 @@
 (defvar my/latex-preview-scale 1.3
   "Scale factor for LaTeX preview rendering.")
 
-;; Preferred font names
+;; Preferred font names (platform-specific)
 (defvar my/preferred-fonts
-  '((default . "Iosevka NFP")
-    (variable-pitch . "Iosevka NFP")
-    (fixed-pitch . "Iosevka NF")
-    (math . "Latin Modern Math")
-    (chinese . "LXGW WenKai"))
-  "Preferred font families for different use cases.")
+  (pcase system-type
+    ('darwin
+     ;; macOS: Homebrew Nerd Font names
+     '((default . "Iosevka Nerd Font Propo")
+       (variable-pitch . "Iosevka Nerd Font Propo")
+       (fixed-pitch . "Iosevka Nerd Font Mono")
+       (math . "Latin Modern Math")
+       (chinese . "LXGW WenKai")))
+    ('windows-nt
+     ;; Windows: Original font names
+     '((default . "Iosevka NFP")
+       (variable-pitch . "Iosevka NFP")
+       (fixed-pitch . "Iosevka NF")
+       (math . "Latin Modern Math")
+       (chinese . "LXGW WenKai")))
+    (_
+     ;; Linux/other: Use Nerd Font names (similar to macOS)
+     '((default . "Iosevka Nerd Font Propo")
+       (variable-pitch . "Iosevka Nerd Font Propo")
+       (fixed-pitch . "Iosevka Nerd Font Mono")
+       (math . "Latin Modern Math")
+       (chinese . "LXGW WenKai"))))
+  "Preferred font families for different use cases.
+Automatically selects correct font names based on platform.")
 
 ;; Font family helper: Check if font exists, fallback to system default
 (defun my/get-font-or-default (preferred-font)
