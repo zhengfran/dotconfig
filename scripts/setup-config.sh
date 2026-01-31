@@ -146,4 +146,18 @@ elif [ -e ~/.config/opencode ]; then
 else
     echo "[WARN] opencode directory not found in dotconfig."
 fi
+
+## aerospace (macOS only)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    aerospace_dir_path=$(find ~/dotconfig -type d -path "*/tools/wm/aerospace" | head -n 1)
+    if [ -n "$aerospace_dir_path" ] && [ ! -e ~/.config/aerospace ]; then
+        echo "[INFO] Symlinking aerospace dir: $aerospace_dir_path -> ~/.config/aerospace"
+        ln -s "$aerospace_dir_path" ~/.config/aerospace
+    elif [ -e ~/.config/aerospace ]; then
+        echo "[INFO] ~/.config/aerospace already exists. Skipping."
+    else
+        echo "[WARN] aerospace directory not found in dotconfig."
+    fi
+fi
+
 echo "[INFO] setup-config.sh completed."

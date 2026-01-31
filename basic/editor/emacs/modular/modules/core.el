@@ -18,10 +18,10 @@
   :config
   (setq shell-file-name
         (cond
-         ((eq system-type 'windows-nt) (or (executable-find "bash")
-                                           (executable-find "zsh")
-                                           "bash"))
-         (t "/usr/bin/zsh")))
+          ((eq system-type 'windows-nt) (or (executable-find "bash")
+                                            (executable-find "zsh")
+                                            "bash"))
+          (t (or (executable-find "zsh") "/bin/zsh"))))
   (setq exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
 

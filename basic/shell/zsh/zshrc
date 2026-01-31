@@ -1,5 +1,11 @@
 source ~/.config/common/env
 source ~/.config/common/aliases
+
+# Fix brew completions for ARM Mac
+if [[ "$(uname)" == "Darwin" && -d "/opt/homebrew/share/zsh/site-functions" ]]; then
+  fpath=("${(@)fpath:#/usr/local/share/zsh/site-functions}")
+  fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
+fi
 for f in ~/.config/common/functions/*; do
     [ -f "$f" ] && source "$f"
 done
