@@ -5,7 +5,7 @@
 ;; file management (recentf, saveplace, auto-save, auto-revert)
 ;;
 ;; DEPENDENCIES: None (loads first)
-;; USED BY: org-base, org-roam, chinese, terminal (system detection vars)
+;; USED BY: org-base, denote, chinese, terminal (system detection vars)
 
 ;;; Code:
 
@@ -39,20 +39,21 @@
 
 ;; Centralized path configuration
 (defvar my/org-base-dir (expand-file-name "~/org/notes/")
-  "Base directory for all org-roam notes.")
+  "Base directory for all denote notes (previously org-roam).")
 
 (setq org_notes_dir my/org-base-dir
       zot_bib "~/Nutstore/1/Nutstore/Zotero-Library/Main.bib"; Zotero .bib 文件
       zot_pdf "~/Nutstore/1/Nutstore/Zotero-Library" ; Zotero 同步文件
-      org_notes (expand-file-name "ref/" my/org-base-dir)) ; org-roam 文献笔记目录
+      org_notes (expand-file-name "ref/" my/org-base-dir)) ; 文献笔记目录
 
 (unless (file-exists-p org_notes_dir) (setq org_notes_dir nil))
 (unless (file-exists-p zot_bib) (setq zot_bib nil))
 (unless (file-exists-p zot_pdf) (setq zot_pdf nil))
 (unless (file-exists-p org_notes) (setq org_notes nil)) ; 防止文件不存在报错
 
-;; Create org-roam subdirectories if they don't exist
-(dolist (subdir '("daily" "projects" "ref"))
+;; Create denote subdirectories if they don't exist
+;; Note: daily/ has been migrated to journal/ for denote
+(dolist (subdir '("journal" "ref" "trades"))
   (let ((dir (expand-file-name subdir my/org-base-dir)))
     (unless (file-exists-p dir)
       (make-directory dir t))))

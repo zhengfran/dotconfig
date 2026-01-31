@@ -5,7 +5,7 @@
 ;; org-pomodoro, task completion automation
 ;;
 ;; DEPENDENCIES: org-base, keybindings (zzc/leader-keys)
-;; USED BY: org-roam (org-agenda-files variable)
+;; USED BY: denote (org-agenda-files variable)
 
 ;;; Code:
 
@@ -13,8 +13,9 @@
 ;; AGENDA FILE CONFIGURATION
 ;; ============================================================================
 
-(setq org-agenda-dir "~/org/notes/projects/")
-;; Initialize with org roam project files
+(setq org-agenda-dir "~/org/notes/")
+;; Initialize with denote directory
+;; Note: my/denote-refresh-agenda-list in denote-config.el adds project files
 (setq org-agenda-files (list org-agenda-dir))
 
 ;; ============================================================================

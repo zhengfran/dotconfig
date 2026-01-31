@@ -5,7 +5,7 @@
 ;; visual-fill-column, link following
 ;;
 ;; DEPENDENCIES: core (system detection vars)
-;; USED BY: org-roam, org-agenda, org-babel
+;; USED BY: denote, org-agenda, org-babel
 
 ;;; Code:
 

@@ -6,7 +6,7 @@
 ;; marginalia, orderless, embark
 ;;
 ;; DEPENDENCIES: None
-;; USED BY: bookmarks, workspace, snippets, org-roam (consult-* functions)
+;; USED BY: bookmarks, workspace, snippets, denote (consult-* functions)
 
 ;;; Code:
 
