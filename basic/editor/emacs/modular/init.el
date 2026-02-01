@@ -34,7 +34,7 @@
 ;;   17. programming      -> Language support
 ;;   18. ai               -> GPTel AI integration
 ;;   19. chinese          -> Chinese input and formatting
-;;   20. terminal         -> Terminal emulation (non-Windows only)
+;;  20. terminal-config   -> Terminal emulation (non-Windows only)
 
 ;;; Code:
 
@@ -133,9 +133,9 @@
 (require 'buffer-tabs)        ; 16. Buffer tab-line with H/L navigation and org titles
 (require 'programming)        ; 17. Programming languages
 (require 'ai)                 ; 18. GPTel AI integration
-(require 'chinese)            ; 19. Chinese input and formatting (all systems)
+(require 'rime-config)        ; 19. Chinese input and formatting (all systems)
 (unless (eq system-type 'windows-nt)
-  (require 'terminal))        ; 20. Terminal (vterm, eee) - non-Windows only
+  (require 'terminal-config))  ; 20. Terminal (vterm, eee) - non-Windows only
 
 ;; ============================================================================
 ;; STARTUP COMPLETE

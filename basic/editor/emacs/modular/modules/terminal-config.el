@@ -1,4 +1,4 @@
-;;; terminal.el --- Terminal Configuration (vterm, eee) -*- lexical-binding: t; -*-
+;;; terminal-config.el --- Terminal Configuration (vterm, eee) -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; Terminal emulator configuration using vterm and eee
@@ -72,7 +72,7 @@
     
     :bind
     (("C-`" . vterm-toggle)
-     ("c-~" . VTERM-Toggle-cd)))
+     ("C-~" . vterm-toggle-cd)))
 
   ;; Key bindings with leader key
   (zzc/leader-keys
@@ -90,20 +90,22 @@
     :config
     ;; Set terminal command based on system
     (when my/is-WSL
-      (setq ee-terminal-command "kitty"))
+      (setq ee-terminal-command "kitty")
+      (setq ee-terminal-options
+          '(("kitty" . "--class scratchterm"))))
     (when my/is-mac
-      (setq ee-terminal-command "wezterm"))
+      (setq ee-terminal-command (or (executable-find "ghostty") "ghostty"))
+      (setq ee-terminal-options
+          '(("ghostty" . "--title=ee-ghostty --window-decoration=none"))))
     
     ;; Set custom kitty options with --class scratchterm (overwrite default)
-    (setq ee-terminal-options
-          '(("kitty" . "--class scratchterm")))
     
     ;; Keybindings
     (zzc/leader-keys
       "tf"  '(ee-find :which-key "find")
       "tr"  '(ee-rg :which-key "rg")
       "tg"  '(ee-lazygit :which-key "lazygit")
-      "ty"  '(ee-yazi :which-key "yazi"))))
+      "ty"  '(ee-yazi :which-key "yazi")))
 
-(provide 'terminal)
-;;; terminal.el ends here
+(provide 'terminal-config)
+;;; terminal-config.el ends here
