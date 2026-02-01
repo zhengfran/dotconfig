@@ -53,7 +53,7 @@
 
 ;; Create denote subdirectories if they don't exist
 ;; Note: daily/ has been migrated to journal/ for denote
-(dolist (subdir '("journal" "ref" "trades"))
+(dolist (subdir '("journal" "ref" "trades" "habits"))
   (let ((dir (expand-file-name subdir my/org-base-dir)))
     (unless (file-exists-p dir)
       (make-directory dir t))))

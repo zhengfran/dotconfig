@@ -210,10 +210,10 @@ This function is called automatically when a task is marked as DONE or CANCEL."
   :demand t
   :custom
   (denote-directory my/org-base-dir)
-  (denote-known-keywords '("project" "journal" "trade" "ref" "archived"))
+  (denote-known-keywords '("project" "journal" "trade" "work" "review" "ref" "archived" "habit"))
   (denote-infer-keywords t)
   (denote-sort-keywords t)
-  (denote-file-type 'org)
+  (denote-eile-type 'org)
   (denote-prompts '(title keywords))
   (denote-date-prompt-use-org-read-date t)
   (denote-backlinks-show-context t)
@@ -229,14 +229,13 @@ This function is called automatically when a task is marked as DONE or CANCEL."
    ("C-c n r" . denote-rename-file)
    ("C-c n R" . denote-rename-file-using-front-matter)
    ("C-c n a" . denote-keywords-add)
-   ("C-c n T" . denote-keywords-add)
-   ("C-c n D" . denote-keywords-remove)
+   ("C-c n d" . denote-keywords-remove)
    ("C-c n s" . my/denote-refresh-agenda-list)
    :map org-mode-map
    ("C-M-i" . completion-at-point))
   :config
   ;; Create subdirectories if they don't exist
-  (dolist (subdir '("journal" "ref" "trades"))
+  (dolist (subdir '("journal" "ref" "trades" "habits"))
     (let ((dir (expand-file-name subdir denote-directory)))
       (unless (file-exists-p dir)
         (make-directory dir t))))

@@ -129,6 +129,7 @@
 (require 'org-base)           ; 12. Core org-mode setup
 (require 'org-agenda-config)  ; 13. Org agenda and TODO management (defines org-agenda-files)
 (require 'denote-config)           ; 14. Denote notes system (uses org-agenda-files)
+(require 'habit-tracker)           ; 14b. Progressive habit tracking (uses denote)
 (require 'org-babel)          ; 15. Org babel code execution
 (require 'buffer-tabs)        ; 16. Buffer tab-line with H/L navigation and org titles
 (require 'programming)        ; 17. Programming languages
