@@ -14,6 +14,7 @@
 **/emacs/**/tree-sitter/
 **/emacs/**/etc/
 **/emacs/**/bookmarks
+**/emacs/**/rime/
 **/emacs/**/emacs-desktop*
 
 # Vim (anywhere in tree)
@@ -24,6 +25,9 @@
 **/[._]sw[a-p]
 **/Session.vim
 **/.netrwhist
+
+# Rime input method data
+/rime/
 
 # macOS (anywhere in tree)
 **/.DS_Store
