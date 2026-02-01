@@ -94,7 +94,7 @@
       (setq ee-terminal-options
           '(("kitty" . "--class scratchterm"))))
     (when my/is-mac
-      (setq ee-terminal-command (or (executable-find "ghostty") "ghostty"))
+      (setq ee-terminal-command "/Applications/Ghostty.app/Contents/MacOS/ghostty")
       (setq ee-terminal-options
           '(("ghostty" . "--title=ee-ghostty --window-decoration=none"))))
     
@@ -105,7 +105,7 @@
       "tf"  '(ee-find :which-key "find")
       "tr"  '(ee-rg :which-key "rg")
       "tg"  '(ee-lazygit :which-key "lazygit")
-      "ty"  '(ee-yazi :which-key "yazi")))
+      "ty"  '(ee-yazi :which-key "yazi"))))  ; closes use-package eee AND unless block
 
 (provide 'terminal-config)
 ;;; terminal-config.el ends here
