@@ -17,6 +17,8 @@
 (declare-function org-entry-get "org")
 (declare-function org-entry-put "org")
 (declare-function org-end-of-subtree "org")
+(declare-function org-table-align "org-table")
+(declare-function org-ctrl-c-ctrl-c "org")
 (declare-function denote "denote")
 (declare-function denote-retrieve-title-value "denote")
 (declare-function calendar-last-day-of-month "calendar")
@@ -540,6 +542,155 @@ Returns list of (day percentage) pairs."
       (switch-to-buffer buffer-name))))
 
 ;; ============================================================================
+;; DYNAMIC BLOCK: HABIT TRACKER TABLE
+;; ============================================================================
+
+(defun my/habit-get-log-data (file)
+  "Get all log entries from FILE as hash table keyed by date (YYYY-MM-DD).
+Each value is a plist with :value, :target, :met."
+  (let ((data (make-hash-table :test 'equal)))
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (when (re-search-forward "^\\*\\* Log" nil t)
+        (while (re-search-forward "^\\*\\*\\* \\[\\([0-9]+-[0-9]+-[0-9]+\\)" nil t)
+          (let ((date-str (match-string 1))
+                (entry-end (save-excursion
+                             (or (and (re-search-forward "^\\*\\*\\*" nil t) (point))
+                                 (point-max))))
+                value target met)
+            (save-excursion
+              (when (re-search-forward ":LOG_VALUE:\\s-*\\([0-9]+\\)" entry-end t)
+                (setq value (string-to-number (match-string 1)))))
+            (save-excursion
+              (when (re-search-forward ":LOG_TARGET:\\s-*\\([0-9]+\\)" entry-end t)
+                (setq target (string-to-number (match-string 1)))))
+            (save-excursion
+              (when (re-search-forward ":LOG_MET_TARGET:\\s-*\\(t\\|nil\\)" entry-end t)
+                (setq met (string= (match-string 1) "t"))))
+            (when (and value target)
+              (puthash date-str (list :value value :target target :met met) data))))))
+    data))
+
+(defun my/habit-format-date (time-value)
+  "Format TIME-VALUE as 'Mon DD' (e.g., 'Jan 28')."
+  (format-time-string "%b %d" time-value))
+
+(defun my/habit-get-title-from-file (file)
+  "Extract habit title from FILE using #+title."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (goto-char (point-min))
+    (if (re-search-forward "^#\\+title:\\s-*\\(.+\\)" nil t)
+        (string-trim (match-string 1))
+      (file-name-base file))))
+
+(defun org-dblock-write:habit-tracker (params)
+  "Generate habit tracker table for the last N days.
+PARAMS can include:
+  :days - Number of days to show (default 7)
+  :dir - Habit directory (default `my/habit-directory')
+  :show-values - Show value/target columns (default t)"
+  (let* ((days (or (plist-get params :days) 7))
+         (dir (or (plist-get params :dir) my/habit-directory))
+         (show-values (if (plist-member params :show-values)
+                          (plist-get params :show-values)
+                        t))
+         (files (directory-files (expand-file-name dir) t "\\.org$"))
+         (today (current-time))
+         ;; Generate list of dates from oldest to newest
+         (dates (cl-loop for i from (1- days) downto 0
+                         collect (time-subtract today (days-to-time i))))
+         (date-strings (mapcar (lambda (d) (format-time-string "%Y-%m-%d" d)) dates))
+         (date-headers (mapcar #'my/habit-format-date dates))
+         ;; Collect habit data: ((title . log-hash) ...)
+         (habits (mapcar (lambda (f)
+                           (cons (my/habit-get-title-from-file f)
+                                 (my/habit-get-log-data f)))
+                         files))
+         ;; Track totals per day
+         (day-totals (make-vector days 0))
+         (day-counts (make-vector days 0)))
+    ;; Insert table header
+    (insert "| Habit |")
+    (dolist (header date-headers)
+      (insert (format " %s |" header)))
+    (when show-values
+      (insert " Total |"))
+    (insert " Rate |\n")
+    ;; Separator
+    (insert "|-------|")
+    (dotimes (_ days)
+      (insert "--------|"))
+    (when show-values
+      (insert "-------|"))
+    (insert "------|\n")
+    ;; Insert habit rows
+    (dolist (habit habits)
+      (let* ((name (car habit))
+             (log-data (cdr habit))
+             (habit-total 0)
+             (habit-met 0))
+        (insert (format "| %s |" name))
+        (cl-loop for date-str in date-strings
+                 for i from 0
+                 do (let* ((entry (gethash date-str log-data))
+                           (cell-str
+                            (if entry
+                                (let ((value (plist-get entry :value))
+                                      (target (plist-get entry :target))
+                                      (met (plist-get entry :met)))
+                                  (cl-incf habit-total value)
+                                  (when met
+                                    (cl-incf habit-met)
+                                    (aset day-totals i (1+ (aref day-totals i))))
+                                  (aset day-counts i (1+ (aref day-counts i)))
+                                  (if show-values
+                                      (format "%d/%d %s" value target (if met "✓" "✗"))
+                                    (if met "✓" "✗")))
+                              "-")))
+                      (insert (format " %s |" cell-str))))
+        (when show-values
+          (insert (format " %d |" habit-total)))
+        (insert (format " %d%% |" (if (> days 0)
+                                      (round (* 100.0 (/ (float habit-met) days)))
+                                    0)))
+        (insert "\n")))
+    ;; Totals row
+    (insert "|-------|")
+    (dotimes (_ days)
+      (insert "--------|"))
+    (when show-values
+      (insert "-------|"))
+    (insert "------|\n")
+    (insert "| *Total* |")
+    (let ((grand-total 0))
+      (dotimes (i days)
+        (let ((day-met (aref day-totals i)))
+          (cl-incf grand-total day-met)
+          (insert (format " %d/%d |" day-met (length habits)))))
+      (when show-values
+        (insert (format " %d |" grand-total)))
+      (insert (format " %d%% |"
+                      (let ((possible (* days (length habits))))
+                        (if (> possible 0)
+                            (round (* 100.0 (/ (float grand-total) possible)))
+                          0)))))
+    (insert "\n")
+    ;; Align the table
+    (forward-line -1)
+    (org-table-align)))
+
+(defun my/habit-insert-tracker-block (&optional days)
+  "Insert a habit tracker dynamic block with DAYS (default 7)."
+  (interactive "P")
+  (let ((num-days (or days 7)))
+    (insert (format "#+BEGIN: habit-tracker :days %d\n" num-days))
+    (insert "#+END:\n"))
+  (forward-line -1)
+  (org-ctrl-c-ctrl-c))
+
+;; ============================================================================
 ;; KEYBINDINGS
 ;; ============================================================================
 
@@ -556,7 +707,8 @@ Returns list of (day percentage) pairs."
     "h v" '(my/habit-log-value :which-key "log value")
     "h c" '(my/habit-heatmap-view :which-key "calendar")
     "h d" '(my/habit-dashboard :which-key "dashboard")
-    "h r" '(my/habit-calculate-streaks :which-key "recalculate streaks")))
+    "h r" '(my/habit-calculate-streaks :which-key "recalculate streaks")
+    "h t" '(my/habit-insert-tracker-block :which-key "insert tracker table")))
 
 (provide 'habit-tracker)
 ;;; habit-tracker.el ends here
