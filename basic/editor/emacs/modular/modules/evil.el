@@ -95,7 +95,9 @@
   (general-define-key
    :states '(normal motion)
    :keymaps 'org-mode-map
-   "zd" 'org-fold-hide-drawer-toggle))
+   "zd" 'org-fold-hide-drawer-toggle
+   "RET" 'my/follow-link-at-current-window
+   "S-<return>" 'my/follow-link-in-split))
 
 ;; ============================================================================
 ;; EVIL GOGGLES

@@ -62,7 +62,7 @@
 ;; SYSTEM DETECTION
 ;; ============================================================================
 
-(setq my/is-windows (eq system-type 'windows-nt)) ; Windows 
+(setq my/is-windows (eq system-type 'windows-nt)) ; Windows
 (setq my/is-linux (eq system-type 'gnu/linux)) ; Linux
 (setq my/is-mac (eq system-type 'darwin)) ; mac
 (setq my/is-WSL

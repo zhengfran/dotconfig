@@ -99,5 +99,19 @@
    (while (search-forward "\r" nil :noerror)
       (replace-match ""))))
 
+(defun my/delete-current-file ()
+  "Delete the file associated with the current buffer, then kill the buffer."
+  (interactive)
+  (let ((file (buffer-file-name)))
+    (unless file
+      (error "Buffer is not visiting a file"))
+    (when (y-or-n-p (format "Delete %s? " file))
+      (delete-file file)
+      (kill-buffer))))
+
+(zzc/leader-keys
+ "f"  '(:ignore t :which-key "file")
+ "fd" '(my/delete-current-file :which-key "delete file"))
+
 (provide 'editor)
 ;;; editor.el ends here
