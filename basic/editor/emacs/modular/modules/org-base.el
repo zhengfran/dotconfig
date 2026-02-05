@@ -172,14 +172,27 @@
 ;; LINK FOLLOWING
 ;; ============================================================================
 
-(defun my/follow-link-at-current-window () 
+(defun my/follow-link-at-current-window ()
   (interactive)
   (let ((org-link-frame-setup (quote ((vm . vm-visit-folder-other-frame)
                                       (vm-imap . vm-visit-imap-folder-other-frame)
                                       (gnus . gnus)
                                       (file . find-file)
                                       (wl . wl-other-frame)))))
-    
+
+    (org-open-at-point)))
+
+(defun my/follow-link-in-split ()
+  "Open org link in a vertical split window on the right."
+  (interactive)
+  (let ((org-link-frame-setup (quote ((vm . vm-visit-folder-other-frame)
+                                      (vm-imap . vm-visit-imap-folder-other-frame)
+                                      (gnus . gnus)
+                                      (file . find-file)
+                                      (wl . wl-other-frame)))))
+    (delete-other-windows)
+    (split-window-right)
+    (windmove-right)
     (org-open-at-point)))
 
 (defun my/follow-link-at-current-window-mouse (event)

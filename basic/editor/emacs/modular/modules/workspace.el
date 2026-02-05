@@ -18,7 +18,23 @@
     ;; Cannot use :init (must use :config) because otherwise
     ;; project-find-functions is not yet initialized.
     :config
-    (setq project-vc-extra-root-markers '(".project" "*.csproj")))
+    (setq project-vc-extra-root-markers '(".project" "*.csproj"))
+
+    ;; Use fd instead of find for file listing (works better on Windows)
+    (when (executable-find "fd")
+      (defun my/project--files-in-directory-fd (dir ignores &optional files)
+        "Use fd to list files in DIR, ignoring IGNORES patterns."
+        (let* ((default-directory dir)
+               ;; Build exclude arguments for fd
+               (exclude-args (mapconcat
+                              (lambda (pattern)
+                                (concat "--exclude " (shell-quote-argument pattern)))
+                              ignores " "))
+               (cmd (format "fd --type f --hidden --follow %s" exclude-args)))
+          (mapcar (lambda (f) (concat (file-name-as-directory dir) f))
+                  (split-string (shell-command-to-string cmd) "\n" t))))
+
+      (advice-add 'project--files-in-directory :override #'my/project--files-in-directory-fd)))
 
 ;; Project leader key shortcuts
 (zzc/leader-keys

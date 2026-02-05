@@ -26,21 +26,22 @@
  (corfu-on-exact-match nil)
  (corfu-left-margin-width 1.0) ;; Fix clipping on left
  (corfu-right-margin-width 1.0) ;; Fix clipping on right
- :bind
- (:map
-  corfu-map
-  ("M-/" . completion-at-point)
-  ("TAB" . corfu-next)
-  ("S-TAB" . corfu-previous)
-  ("RET" . corfu-insert))
- :init
- ;; Enable corfu globally for auto-completion
- (global-corfu-mode)
  :config
  (set-face-attribute 'corfu-default nil :inherit 'fixed-pitch)
- (set-face-attribute 'corfu-current nil :inherit 'fixed-pitch)
+ (set-face-attribute 'corfu-current nil :inherit '(fixed-pitch highlight))
  ;; Crucial for proper sizing of child frames
- (setq frame-resize-pixelwise t))
+ (setq frame-resize-pixelwise t)
+
+ ;; Keybindings - use define-key for reliability
+ (define-key corfu-map (kbd "M-/") #'completion-at-point)
+ (define-key corfu-map (kbd "<tab>") #'corfu-next)
+ (define-key corfu-map (kbd "TAB") #'corfu-next)
+ (define-key corfu-map (kbd "<backtab>") #'corfu-previous)
+ (define-key corfu-map (kbd "S-TAB") #'corfu-previous)
+ (define-key corfu-map (kbd "RET") #'corfu-insert)
+
+ ;; Enable corfu globally (after keybindings are set)
+ (global-corfu-mode))
 
 (with-eval-after-load 'corfu
   (corfu-popupinfo-mode 1)

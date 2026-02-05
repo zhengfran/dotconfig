@@ -55,10 +55,12 @@
 Returns nil if no journal note exists for that date."
   (let* ((time (or date (current-time)))
          (date-str (format-time-string "%Y%m%d" time))
-         (journal-dir (expand-file-name "journal" denote-directory)))
-    (when (file-exists-p journal-dir)
-      (car (directory-files journal-dir t
-                            (concat "^" date-str "T[0-9]\\{6\\}--.*\\.org$"))))))
+         (journal-dir (expand-file-name "journal" denote-directory))
+         (file (when (file-exists-p journal-dir)
+                 (car (directory-files journal-dir nil
+                                       (concat "^" date-str "T[0-9]\\{6\\}--.*\\.org$"))))))
+    (when file
+      (expand-file-name file journal-dir))))
 
 (defun my/denote-ensure-journal-note-exists ()
   "Ensure today's journal note exists, creating it if necessary.
@@ -221,6 +223,7 @@ This function is called automatically when a task is marked as DONE or CANCEL."
   (("C-c n l" . denote-backlinks)
    ("C-c n f" . denote-open-or-create)
    ("C-c n c" . denote)
+   ("C-c n C" . denote-type)
    ("C-c n i" . denote-link-or-create)
    ("C-c n I" . denote-link)
    ("C-c n t" . my/denote-capture-task)
