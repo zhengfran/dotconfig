@@ -88,6 +88,13 @@
   ("C-c p a" . cape-abbrev)))
 
 ;; ============================================================================
+;; XREF - USE RIPGREP (faster than grep for file search)
+;; ============================================================================
+
+(with-eval-after-load 'xref
+  (setq xref-search-program 'ripgrep))
+
+;; ============================================================================
 ;; MINIBUFFER HELPER
 ;; ============================================================================
 
@@ -184,6 +191,7 @@
    ;; Use Consult to select xref locations with preview
    (setq xref-show-xrefs-function #'consult-xref
          xref-show-definitions-function #'consult-xref)
+
    ;; Configure other variables and modes in the :config section,
    ;; after lazily loading the package.
    :config
