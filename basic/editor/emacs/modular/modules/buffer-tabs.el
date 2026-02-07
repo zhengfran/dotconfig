@@ -1,12 +1,12 @@
-;;; buffer-tabs.el --- Frame-level buffer tabs and mode-line -*- lexical-binding: t; -*-
+;;; buffer-tabs.el --- Frame-level buffer tabs -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; Frame-level buffer tabs using Emacs' built-in tab-bar (spans full width).
-;; Frame-level mode-line using a bottom side-window (doesn't split).
+;; Project-aware: only shows buffers in the current project.
 ;; Org-mode #+TITLE: extraction for tab names.
 ;; Evil keybindings (H/L for tab navigation, K for close).
 ;;
-;; DEPENDENCIES: evil, ui (doom-modeline)
+;; DEPENDENCIES: evil, workspace (project)
 ;; USED BY: None
 
 ;;; Code:
@@ -49,9 +49,6 @@
 ;; BUFFER FILTERING
 ;; ============================================================================
 
-(defvar my/global-modeline-buffer-name " *global-modeline*"
-  "Buffer name for the global mode-line side window.")
-
 (defun my/buffer-tab-hidden-p (buffer)
   "Return non-nil if BUFFER should be hidden from tabs."
   (let ((name (buffer-name buffer)))
@@ -89,12 +86,52 @@
                        'eshell-mode
                        'term-mode)))))
 
+(defun my/buffer-in-current-project-p (buffer)
+  "Return non-nil if BUFFER belongs to the current project."
+  (when-let* ((current-project (project-current))
+              (current-root (file-truename (expand-file-name (project-root current-project))))
+              (buf-file (buffer-file-name buffer)))
+    (string-prefix-p current-root (file-truename buf-file))))
+
+(defun my/debug-buffer-project ()
+  "Show debug info about current buffer's project status."
+  (interactive)
+  (let* ((buf (current-buffer))
+         (buf-file (buffer-file-name buf))
+         (buf-file-true (and buf-file (file-truename buf-file)))
+         (current-project (project-current))
+         (current-root (and current-project (project-root current-project)))
+         (current-root-expanded (and current-root (file-truename (expand-file-name current-root))))
+         (in-project (my/buffer-in-current-project-p buf)))
+    (message "Buffer: %s\nFile: %s\nFile (truename): %s\nProject root: %s\nProject root (expanded): %s\nIn project: %s"
+             (buffer-name buf)
+             (or buf-file "No file")
+             (or buf-file-true "No file")
+             (or current-root "Not in a project")
+             (or current-root-expanded "Not in a project")
+             (if in-project "YES" "NO"))))
+
 (defun my/visible-buffer-list ()
-  "Return list of buffers visible in tabs, sorted by name."
-  (sort (seq-filter (lambda (buf) (not (my/buffer-tab-hidden-p buf)))
-                    (buffer-list))
-        (lambda (a b)
-          (string< (buffer-name a) (buffer-name b)))))
+  "Return list of buffers visible in tabs, filtered by current project.
+Only shows buffers that belong to the current project. If not in a project,
+shows all non-project buffers."
+  (let* ((current-project (project-current))
+         (all-buffers (buffer-list))
+         (filtered-buffers
+          (if current-project
+              ;; In a project: show only buffers in this project
+              (seq-filter
+               (lambda (buf)
+                 (and (not (my/buffer-tab-hidden-p buf))
+                      (my/buffer-in-current-project-p buf)))
+               all-buffers)
+            ;; Not in a project: show all non-hidden buffers
+            (seq-filter
+             (lambda (buf) (not (my/buffer-tab-hidden-p buf)))
+             all-buffers))))
+    (sort filtered-buffers
+          (lambda (a b)
+            (string< (buffer-name a) (buffer-name b))))))
 
 ;; ============================================================================
 ;; TAB-BAR BUFFER TABS (FRAME-LEVEL)
@@ -134,87 +171,16 @@ Each buffer becomes a clickable tab in the frame-level tab-bar."
 (add-to-list 'default-frame-alist '(tab-bar-lines . 1))
 (set-frame-parameter nil 'tab-bar-lines 1)
 
-;; ============================================================================
-;; GLOBAL MODE-LINE (BOTTOM SIDE WINDOW)
-;; ============================================================================
+;; Ensure tab-bar stays visible after tab switches
+(defun my/ensure-tab-bar-visible (&rest _)
+  "Ensure tab-bar remains visible after tab operations."
+  (setq tab-bar-show t)
+  (set-frame-parameter nil 'tab-bar-lines 1))
 
-;; Allow 1-line windows (needed for the mode-line side window)
-(setq window-min-height 1)
-
-(defun my/global-modeline-setup ()
-  "Create a bottom side-window that acts as a frame-level mode-line.
-Side windows are not affected by regular split commands."
-  (unless (get-buffer-window my/global-modeline-buffer-name t)
-    (let ((buf (get-buffer-create my/global-modeline-buffer-name)))
-      (with-current-buffer buf
-        (setq buffer-read-only t)
-        (setq-local truncate-lines t)
-        (setq-local cursor-type nil)
-        (setq-local mode-line-format nil)
-        ;; Remap default face to mode-line so background matches
-        (setq-local face-remapping-alist '((default mode-line))))
-      (display-buffer-in-side-window buf
-        '((side . bottom)
-          (slot . 1)
-          (window-height . 1)
-          (window-parameters
-           (mode-line-format . none)
-           (header-line-format . none)
-           (tab-line-format . none)
-           (no-other-window . t)
-           (no-delete-other-windows . t)))))))
-
-;; Ensure doom-modeline's selected-window var is treated as dynamic (special)
-(defvar doom-modeline--selected-window)
-
-(defun my/global-modeline-update ()
-  "Update the global mode-line content from the active window."
-  (when-let* ((ml-buf (get-buffer my/global-modeline-buffer-name))
-              (ml-win (get-buffer-window ml-buf t))
-              (sel-win (if (minibuffer-window-active-p (minibuffer-window))
-                           (minibuffer-selected-window)
-                         (selected-window)))
-              (sel-buf (window-buffer sel-win)))
-    ;; Don't update if active window is the modeline itself
-    (unless (eq sel-buf ml-buf)
-      ;; Use ml-win (full-width side window) for format-mode-line so
-      ;; doom-modeline right-aligns to the full frame width, not the
-      ;; split window width.  Bind doom-modeline--selected-window to
-      ;; ml-win so it still renders in "active" style.
-      (let* ((doom-modeline--selected-window ml-win)
-             (ml-text (format-mode-line
-                       (buffer-local-value 'mode-line-format sel-buf)
-                       'mode-line ml-win sel-buf))
-             (win-width (window-body-width ml-win)))
-        (with-current-buffer ml-buf
-          (let ((inhibit-read-only t))
-            (erase-buffer)
-            (insert ml-text)
-            ;; Pad to fill full width with mode-line background
-            (let ((padding (max 0 (- win-width (current-column)))))
-              (insert (propertize (make-string padding ?\s)
-                                  'face 'mode-line)))))))))
-
-;; Hide mode-line in ALL regular windows (side window takes over)
-(defun my/hide-all-window-modelines ()
-  "Hide per-window mode-lines; the global side-window shows mode-line instead."
-  ;; Ensure the side window exists
-  (my/global-modeline-setup)
-  (walk-windows
-   (lambda (win)
-     (unless (or (window-minibuffer-p win)
-                 (eq (window-buffer win)
-                     (get-buffer my/global-modeline-buffer-name)))
-       (set-window-parameter win 'mode-line-format 'none)))
-   nil nil))
-
-(add-hook 'window-configuration-change-hook #'my/hide-all-window-modelines)
-(add-hook 'post-command-hook #'my/global-modeline-update)
-
-;; Initialize after frame is ready
-(add-hook 'after-init-hook #'my/global-modeline-setup)
-;; Also handle daemon/client frames
-(add-hook 'server-after-make-frame-hook #'my/global-modeline-setup)
+(advice-add 'tab-bar-select-tab :after #'my/ensure-tab-bar-visible)
+(advice-add 'tab-bar-switch-to-tab :after #'my/ensure-tab-bar-visible)
+(advice-add 'tab-bar-new-tab :after #'my/ensure-tab-bar-visible)
+(advice-add 'tab-bar-close-tab :after #'my/ensure-tab-bar-visible)
 
 ;; ============================================================================
 ;; BUFFER NAVIGATION

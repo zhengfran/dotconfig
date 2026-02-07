@@ -120,7 +120,7 @@
 (require 'ui)              ; 3. Themes, modeline, icons
 (require 'editor)          ; 4. Basic editor settings
 (require 'evil)            ; 5. Evil mode (needed by other modules)
-(require 'window)          ; 6. Window management
+(require 'window-config)          ; 6. Window management
 (require 'completion)      ; 7. Vertico, consult, corfu (needed by other modules)
 (require 'bookmarks)       ; 8. Bookmarks (uses consult)
 (require 'workspace)       ; 9. Workspaces, sessions, projects

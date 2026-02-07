@@ -83,6 +83,7 @@ Automatically selects correct font names based on platform.")
 
 (global-set-key (kbd "C--") #'text-scale-decrease)
 (global-set-key (kbd "C-=") #'text-scale-increase)
+(global-set-key (kbd "C-0") (lambda () (interactive) (text-scale-set 0)))  ; Ctrl + 0 to reset
 ;; Apply fonts after Emacs initialization (when font system is ready)
 (add-hook 'after-init-hook
           (lambda ()

@@ -75,9 +75,9 @@
 
   ;; Always save desktop on exit without asking
   (setq desktop-save t)
-  
-  ;; Disable frame restoration to avoid reloading tab workspaces
-  (setq desktop-restore-frames nil)
+
+  ;; Enable frame and window layout restoration
+  (setq desktop-restore-frames t)
   (setq desktop-restore-in-current-display t)
   (setq desktop-restore-forces-onscreen t)
   
