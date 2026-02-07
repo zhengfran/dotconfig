@@ -1,4 +1,4 @@
-;;; window.el --- Window management -*- lexical-binding: t; -*-
+;;; window-config.el --- Window management -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; Window management: splits, winner-mode, winum, golden-ratio,
@@ -38,16 +38,6 @@
 (winner-mode 1)
 (global-set-key (kbd "C-c u") 'winner-undo)
 (global-set-key (kbd "C-c r") 'winner-redo)
-
-;; ============================================================================
-;; FONT SIZE ADJUSTMENT
-;; ============================================================================
-
-;; Font size adjustment keybindings
-(global-set-key (kbd "C-=") 'text-scale-increase)  ; Ctrl + = (same key as +)
-(global-set-key (kbd "C-+") 'text-scale-increase)  ; Ctrl + + (explicit)
-(global-set-key (kbd "C--") 'text-scale-decrease)  ; Ctrl + -
-(global-set-key (kbd "C-0") (lambda () (interactive) (text-scale-set 0)))  ; Ctrl + 0 to reset
 
 ;; ============================================================================
 ;; WINUM
@@ -125,16 +115,16 @@
   (add-to-list 'golden-ratio-extra-commands 'windmove-down)
   (add-to-list 'golden-ratio-extra-commands 'ace-window)
   
-  ;; Only enable golden-ratio when there are more than 2 windows
+  ;; Only enable golden-ratio when there are more than 1 window
   (defun my/golden-ratio-inhibit-few-windows ()
-    "Inhibit golden-ratio when there are 2 or fewer windows.
-This prevents golden-ratio from activating in simple window layouts."
+    "Inhibit golden-ratio when there is only 1 window.
+Golden-ratio needs at least 2 windows to be useful."
     (let ((window-count (length (cl-remove-if #'window-dedicated-p (window-list)))))
-      (<= window-count 2)))
-  
-  (add-to-list 'golden-ratio-inhibit-functions 
+      (<= window-count 1)))
+
+  (add-to-list 'golden-ratio-inhibit-functions
                'my/golden-ratio-inhibit-few-windows)
-  
+
   ;; Enable golden-ratio globally - MUST be last
   (golden-ratio-mode 1))
 
@@ -157,9 +147,7 @@ This prevents golden-ratio from activating in simple window layouts."
     (setq toggle-one-window-window-configuration (current-window-configuration))
     (delete-other-windows)))
 
-(general-define-key
- :prefix "C-c"
- "m" 'toggle-one-window)
+(global-set-key (kbd "C-c m") 'toggle-one-window)
 
-(provide 'window)
-;;; window.el ends here
+(provide 'window-config)
+;;; window-config.el ends here

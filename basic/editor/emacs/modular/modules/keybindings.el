@@ -37,36 +37,23 @@
     :global-prefix "C-SPC"))
 
 ;; ============================================================================
-;; CONFIG RELOAD FUNCTIONS
+;; CONFIG RELOAD - RESTART EMACS
 ;; ============================================================================
 
-(defun my/reload-emacs-config ()
-    "Reload Emacs configuration by loading init.el.
-This is useful after making changes to config.org and tangling it."
-    (interactive)
-    (message "Reloading Emacs configuration...")
-    (load-file (expand-file-name "init.el" user-emacs-directory))
-    (message "Emacs configuration reloaded successfully!"))
+(use-package restart-emacs
+  :commands restart-emacs)
 
-(defun my/tangle-and-reload-config ()
-  "Tangle config.org and then reload the configuration.
-This is useful when you've edited config.org and want to apply changes immediately."
+(defun my/reload-emacs-config ()
+  "Restart Emacs to reload configuration.
+Restarting is more reliable than in-place reloading."
   (interactive)
-  (if (and (buffer-file-name)
-           (string-match-p "config\\.org$" (buffer-file-name)))
-      (progn
-        (message "Tangling config.org...")
-        (org-babel-tangle)
-        (message "Config tangled successfully!")
-        (my/reload-emacs-config))
-    (message "Current buffer is not config.org. Reloading init.el anyway...")
-    (my/reload-emacs-config)))
+  (when (yes-or-no-p "Restart Emacs to reload configuration? ")
+    (restart-emacs)))
 
 ;; Keybindings for config reload
 (zzc/leader-keys
   "r"  '(:ignore t :which-key "reload")
-  "rr" '(my/reload-emacs-config :which-key "reload config")
-  "rt" '(my/tangle-and-reload-config :which-key "tangle & reload"))
+  "rr" '(my/reload-emacs-config :which-key "restart & reload"))
 
 (provide 'keybindings)
 ;;; keybindings.el ends here
