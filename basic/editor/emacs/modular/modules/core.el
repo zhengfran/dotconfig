@@ -25,6 +25,18 @@
   (setq exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
 
+;; Windows: Add Git for Windows Unix tools (grep, xargs, etc.) to exec-path
+;; Required by xref-matches-in-files which pipes through xargs
+(when (eq system-type 'windows-nt)
+  (when-let* ((git-exe (executable-find "git"))
+              (git-dir (file-name-directory
+                        (directory-file-name
+                         (file-name-directory git-exe))))
+              (usr-bin (expand-file-name "usr/bin" git-dir)))
+    (when (file-directory-p usr-bin)
+      (add-to-list 'exec-path usr-bin)
+      (setenv "PATH" (concat usr-bin path-separator (getenv "PATH"))))))
+
 ;; ============================================================================
 ;; STARTUP PROFILING
 ;; ============================================================================

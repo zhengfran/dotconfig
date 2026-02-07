@@ -19,7 +19,9 @@
   :init (which-key-mode)
   :diminish which-key-mode
   :config
-  (setq which-key-idle-delay 1))
+  (setq which-key-idle-delay 1)
+  ;; Use minibuffer to avoid conflict with global modeline side-window
+  (setq which-key-popup-type 'minibuffer))
 
 ;; ============================================================================
 ;; GENERAL.EL - LEADER KEY FRAMEWORK
