@@ -65,15 +65,14 @@ Returns nil if no journal note exists for that date."
 (defun my/denote-ensure-journal-note-exists ()
   "Ensure today's journal note exists, creating it if necessary.
 Returns the file path of today's journal note."
-  (let ((journal-file (my/denote-get-journal-note-file)))
-    (unless journal-file
+  (or (my/denote-get-journal-note-file)
       (my/denote-create-journal-note)
-      (setq journal-file (my/denote-get-journal-note-file)))
-    journal-file))
+      (my/denote-get-journal-note-file)))
 
 (defun my/denote-create-journal-note (&optional date)
   "Create journal note for DATE (defaults to today) with template.
-Uses template from ~/org/templates/daily.org if it exists."
+Uses template from ~/org/templates/daily.org if it exists.
+Returns the file path of the created note."
   (interactive)
   (let* ((time (or date (current-time)))
          (title (format-time-string "%Y-%m-%d %a" time))
@@ -90,7 +89,9 @@ Uses template from ~/org/templates/daily.org if it exists."
       (make-directory subdir t))
     ;; Create denote note with specific date
     (denote title '("journal") 'org subdir time template)
-    (message "Created journal note for %s" title)))
+    (message "Created journal note for %s" title)
+    ;; Return the file path (denote switches to the new buffer)
+    (buffer-file-name)))
 
 (defun my/denote-journal-goto-today ()
   "Open or create today's journal note."
@@ -102,29 +103,25 @@ Uses template from ~/org/templates/daily.org if it exists."
   "Open yesterday's journal note, creating if needed."
   (interactive)
   (let* ((yesterday (time-subtract (current-time) (days-to-time 1)))
-         (file (my/denote-get-journal-note-file yesterday)))
-    (if file
-        (find-file file)
-      ;; Create yesterday's note if it doesn't exist
-      (my/denote-create-journal-note yesterday)
-      (find-file (my/denote-get-journal-note-file yesterday)))))
+         (file (or (my/denote-get-journal-note-file yesterday)
+                   (my/denote-create-journal-note yesterday))))
+    (find-file file)))
 
 (defun my/denote-journal-goto-tomorrow ()
   "Open or create tomorrow's journal note."
   (interactive)
-  (let ((tomorrow (time-add (current-time) (days-to-time 1))))
-    (my/denote-create-journal-note tomorrow)
-    (find-file (my/denote-get-journal-note-file tomorrow))))
+  (let* ((tomorrow (time-add (current-time) (days-to-time 1)))
+         (file (or (my/denote-get-journal-note-file tomorrow)
+                   (my/denote-create-journal-note tomorrow))))
+    (find-file file)))
 
 (defun my/denote-journal-goto-date ()
   "Open or create journal note for a specific date selected from calendar."
   (interactive)
-  (let ((time (org-read-date nil t nil "Journal note date:")))
-    (let ((file (my/denote-get-journal-note-file time)))
-      (if file
-          (find-file file)
-        (my/denote-create-journal-note time)
-        (find-file (my/denote-get-journal-note-file time))))))
+  (let* ((time (org-read-date nil t nil "Journal note date:"))
+         (file (or (my/denote-get-journal-note-file time)
+                   (my/denote-create-journal-note time))))
+    (find-file file)))
 
 ;; ============================================================================
 ;; TASK COMPLETION AUTOMATION
@@ -141,8 +138,8 @@ This function is called automatically when a task is marked as DONE or CANCEL."
            (current-file (file-truename (buffer-file-name))))
       ;; Only process if NOT already in a journal note
       (unless (string-prefix-p (file-truename journal-dir) current-file)
-        (let* ((journal-file (my/denote-ensure-journal-note-exists))
-               (task-heading (org-get-heading t t t t))
+        ;; Capture task info BEFORE journal creation (denote switches buffers)
+        (let* ((task-heading (org-get-heading t t t t))
                (original-file (buffer-file-name))
                (original-link
                 (format "[[file:%s][%s]]"
@@ -153,20 +150,24 @@ This function is called automatically when a task is marked as DONE or CANCEL."
                   (org-back-to-heading t)
                   (let ((start (point)))
                     (org-end-of-subtree t t)
-                    (buffer-substring-no-properties start (point))))))
-          (save-excursion
-            (with-current-buffer (find-file-noselect journal-file)
-              (goto-char (point-min))
-              (if (re-search-forward "^\\* What's done today\\?" nil t)
-                  (progn
-                    (org-end-of-subtree t t)
-                    (insert "\n" task-body)
-                    (forward-line -1)
-                    (org-end-of-line)
-                    (insert "\n/Original: " original-link "/")
-                    (save-buffer))
-                (message "Warning: Could not find 'What's done today?' heading"))))
-          (message "Task copied to journal note: %s" task-heading))))))
+                    (buffer-substring-no-properties start (point)))))
+               ;; Now get/create journal (may switch buffers)
+               (journal-file (save-current-buffer
+                               (my/denote-ensure-journal-note-exists))))
+          (when journal-file
+            (save-excursion
+              (with-current-buffer (find-file-noselect journal-file)
+                (goto-char (point-min))
+                (if (re-search-forward "^\\* What's done today\\?" nil t)
+                    (progn
+                      (org-end-of-subtree t t)
+                      (insert "\n" task-body)
+                      (forward-line -1)
+                      (org-end-of-line)
+                      (insert "\n/Original: " original-link "/")
+                      (save-buffer))
+                  (message "Warning: Could not find 'What's done today?' heading"))))
+            (message "Task copied to journal note: %s" task-heading)))))))
 
 (add-hook 'org-after-todo-state-change-hook 'my/copy-completed-task-to-journal)
 
@@ -198,11 +199,12 @@ This function is called automatically when a task is marked as DONE or CANCEL."
              (length project-files))))
 
 (defun my/denote-auto-refresh-agenda ()
-  "Automatically refresh org-agenda-files when saving in denote directory."
-  (when (and (buffer-file-name)
-             (string-prefix-p (expand-file-name denote-directory)
-                              (file-truename (buffer-file-name))))
-    (my/denote-refresh-agenda-list)))
+  "Automatically refresh org-agenda-files when saving a project file."
+  (when-let* ((file (buffer-file-name))
+              (truename (file-truename file)))
+    (when (and (string-prefix-p (expand-file-name denote-directory) truename)
+               (string-match-p "_project" (file-name-nondirectory truename)))
+      (my/denote-refresh-agenda-list))))
 
 ;; ============================================================================
 ;; DENOTE CONFIGURATION
@@ -232,7 +234,6 @@ This function is called automatically when a task is marked as DONE or CANCEL."
    ("C-c n r" . denote-rename-file)
    ("C-c n R" . denote-rename-file-using-front-matter)
    ("C-c n a" . denote-keywords-add)
-   ("C-c n d" . denote-keywords-remove)
    ("C-c n s" . my/denote-refresh-agenda-list)
    :map org-mode-map
    ("C-M-i" . completion-at-point))

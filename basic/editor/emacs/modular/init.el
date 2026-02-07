@@ -134,7 +134,8 @@
 (require 'buffer-tabs)        ; 16. Buffer tab-line with H/L navigation and org titles
 (require 'programming)        ; 17. Programming languages
 (require 'ai)                 ; 18. GPTel AI integration
-(require 'rime-config)        ; 19. Chinese input and formatting (all systems)
+(require 'beancount)          ; 19. Beancount plain-text accounting
+(require 'rime-config)        ; 20. Chinese input and formatting (all systems)
 (unless (eq system-type 'windows-nt)
   (require 'terminal-config))  ; 20. Terminal (vterm, eee) - non-Windows only
 
