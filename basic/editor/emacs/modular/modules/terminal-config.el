@@ -85,7 +85,7 @@
   :straight '(eee :type git :host github :repo "eval-exec/eee.el"
                   :files (:defaults "*.el" "*.sh"))
   :config
-  (if (eq system-type 'windows-nt)
+  (if (eq system-type 'windows-nt) 
       ;; Windows: use alacritty with Git Bash
       (progn
         (setq ee-terminal-command "alacritty")
@@ -110,3 +110,4 @@
 
 (provide 'terminal-config)
 ;;; terminal-config.el ends here
+
