@@ -22,15 +22,25 @@
 (defvar my/beancount-main-file (expand-file-name "main.beancount" my/beancount-dir)
   "Path to main beancount ledger file.")
 
+(defvar my/beancount-accounts-dir (expand-file-name "accounts/" my/beancount-dir)
+  "Directory for account definition files.")
+
+(defvar my/beancount-transactions-dir (expand-file-name "transactions/" my/beancount-dir)
+  "Directory for transaction files.")
+
 (defvar my/fava-port 5000
   "Port for fava web server.")
 
 (defvar my/beancount-format-column 60
   "Column to align amounts when formatting beancount files.")
 
-;; Create finance directory if it doesn't exist
+;; Create finance directories if they don't exist
 (unless (file-exists-p my/beancount-dir)
   (make-directory my/beancount-dir t))
+(unless (file-exists-p my/beancount-accounts-dir)
+  (make-directory my/beancount-accounts-dir t))
+(unless (file-exists-p my/beancount-transactions-dir)
+  (make-directory my/beancount-transactions-dir t))
 
 ;; ============================================================================
 ;; BEANCOUNT MODE
@@ -103,25 +113,37 @@
     (when (y-or-n-p (format "Create %s? " my/beancount-main-file))
       (find-file my/beancount-main-file)
       (insert ";; -*- mode: beancount -*-\n")
-      (insert ";; Main Beancount Ledger\n\n")
       (insert "option \"title\" \"Personal Ledger\"\n")
-      (insert "option \"operating_currency\" \"CNY\"\n\n")
-      (insert ";; Account definitions\n")
-      (insert ";; 资产账户\n")
-      (insert "1970-01-01 open Assets:Bank:Checking\n")
-      (insert "1970-01-01 open Assets:Cash\n\n")
-      (insert ";; 负债账户\n")
-      (insert "1970-01-01 open Liabilities:CreditCard\n\n")
-      (insert ";; 收入账户\n")
-      (insert "1970-01-01 open Income:Salary\n\n")
-      (insert ";; 支出账户\n")
-      (insert "1970-01-01 open Expenses:Food\n")
-      (insert "1970-01-01 open Expenses:Transport\n")
-      (insert "1970-01-01 open Expenses:Shopping\n\n")
-      (insert ";; 权益账户\n")
-      (insert "1970-01-01 open Equity:Opening-Balances\n\n")
-      (insert ";; Transactions below\n\n")
+      (insert "option \"operating_currency\" \"SGD\"\n\n")
+      (insert "include \"accounts/assets.beancount\"\n")
+      (insert "include \"accounts/liabilities.beancount\"\n")
+      (insert "include \"accounts/income.beancount\"\n")
+      (insert "include \"accounts/expenses.beancount\"\n")
+      (insert "include \"accounts/equity.beancount\"\n")
+      (insert "include \"transactions/2026.beancount\"\n")
+      (insert "include \"prices.beancount\"\n")
       (save-buffer))))
+
+(defun my/beancount-open-accounts ()
+  "Open the accounts directory in dired."
+  (interactive)
+  (if (file-exists-p my/beancount-accounts-dir)
+      (dired my/beancount-accounts-dir)
+    (message "Accounts directory not found: %s" my/beancount-accounts-dir)))
+
+(defun my/beancount-open-transactions ()
+  "Open the current year's transactions file."
+  (interactive)
+  (let ((year-file (expand-file-name
+                    (format "%s.beancount" (format-time-string "%Y"))
+                    my/beancount-transactions-dir)))
+    (if (file-exists-p year-file)
+        (find-file year-file)
+      (when (y-or-n-p (format "Create %s? " year-file))
+        (find-file year-file)
+        (insert (format ";; -*- mode: beancount -*-\n;; %s Transactions\n\n"
+                        (format-time-string "%Y")))
+        (save-buffer)))))
 
 (defun my/beancount-check ()
   "Run bean-check on the current beancount file."
@@ -132,10 +154,15 @@
       (message "Not a beancount file"))))
 
 (defun my/beancount-insert-transaction ()
-  "Insert a transaction template at point."
+  "Insert a transaction template at point.
+If not in a beancount buffer, opens the current year's transactions file first."
   (interactive)
+  ;; If not in a beancount buffer, open the transactions file
+  (unless (eq major-mode 'beancount-mode)
+    (my/beancount-open-transactions)
+    (goto-char (point-max)))
   (let ((date (format-time-string "%Y-%m-%d")))
-    (insert (format "%s * \"\" \"\"\n  Expenses:  CNY\n  Assets:Bank:Checking\n" date))
+    (insert (format "\n%s * \"\" \"\"\n  Expenses:  SGD\n  Assets:Bank:SG:OCBC360\n" date))
     (forward-line -2)
     (search-forward "\"\"" nil t)
     (backward-char 1)))
@@ -189,6 +216,8 @@
 (zzc/leader-keys
   "F"   '(:ignore t :which-key "finance")
   "F f" '(my/beancount-open-main :which-key "open ledger")
+  "F a" '(my/beancount-open-accounts :which-key "accounts dir")
+  "F T" '(my/beancount-open-transactions :which-key "transactions file")
   "F v" '(my/fava-open :which-key "fava web UI")
   "F V" '(my/fava-stop :which-key "stop fava")
   "F c" '(my/beancount-check :which-key "check ledger")

@@ -603,9 +603,10 @@ PARAMS can include:
                          collect (time-subtract today (days-to-time i))))
          (date-strings (mapcar (lambda (d) (format-time-string "%Y-%m-%d" d)) dates))
          (date-headers (mapcar #'my/habit-format-date dates))
-         ;; Collect habit data: ((title . log-hash) ...)
+         ;; Collect habit data: ((title file . log-hash) ...)
          (habits (mapcar (lambda (f)
-                           (cons (my/habit-get-title-from-file f)
+                           (list (my/habit-get-title-from-file f)
+                                 f
                                  (my/habit-get-log-data f)))
                          files))
          ;; Track totals per day
@@ -627,11 +628,16 @@ PARAMS can include:
     (insert "------|\n")
     ;; Insert habit rows
     (dolist (habit habits)
-      (let* ((name (car habit))
-             (log-data (cdr habit))
+      (let* ((name (nth 0 habit))
+             (file (nth 1 habit))
+             (log-data (nth 2 habit))
              (habit-total 0)
-             (habit-met 0))
-        (insert (format "| %s |" name))
+             (habit-met 0)
+             ;; Extract denote identifier from filename (YYYYMMDDTHHMMSS)
+             (identifier (when (string-match "\\([0-9]\\{8\\}T[0-9]\\{6\\}\\)" (file-name-nondirectory file))
+                          (match-string 1 (file-name-nondirectory file)))))
+        ;; Insert habit name as denote link
+        (insert (format "| [[denote:%s][%s]] |" (or identifier file) name))
         (cl-loop for date-str in date-strings
                  for i from 0
                  do (let* ((entry (gethash date-str log-data))
