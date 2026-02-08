@@ -238,6 +238,24 @@ This function is called automatically when a task is marked as DONE or CANCEL."
    :map org-mode-map
    ("C-M-i" . completion-at-point))
   :config
+  ;; Ensure denote-backlinks buffer uses UTF-8 encoding for Chinese characters
+  (defun my/denote-backlinks-set-encoding ()
+    "Set UTF-8 encoding for denote-backlinks buffer to properly display Chinese characters."
+    (when (string-match-p "\\*denote-backlinks\\*" (buffer-name))
+      (set-buffer-file-coding-system 'utf-8-unix t)
+      (setq buffer-file-coding-system 'utf-8-unix)))
+
+  ;; Hook into denote-backlinks-mode if it exists
+  (add-hook 'denote-backlinks-mode-hook #'my/denote-backlinks-set-encoding)
+
+  ;; Also set encoding after denote-backlinks command runs
+  (advice-add 'denote-backlinks :after
+              (lambda (&rest _)
+                (when (get-buffer "*denote-backlinks*")
+                  (with-current-buffer "*denote-backlinks*"
+                    (set-buffer-file-coding-system 'utf-8-unix t)
+                    (setq buffer-file-coding-system 'utf-8-unix)))))
+
   ;; Create subdirectories if they don't exist
   (dolist (subdir '("journal" "ref" "trades" "habits"))
     (let ((dir (expand-file-name subdir denote-directory)))

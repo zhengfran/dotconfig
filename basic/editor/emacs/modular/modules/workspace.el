@@ -2,58 +2,7 @@
 
 ;;; Commentary:
 ;; Tab-bar workspaces, desktop session save/restore, project management,
-;; buffer management
-;;
-;; DEPENDENCIES: keybindings (zzc/leader-keys), completion (consult-buffer)
-;; USED BY: None
-
-;;; Code:
-
-;; ============================================================================
-;; PROJECT CONFIGURATION
-;; ============================================================================
-
-(use-package project
-    ;; Cannot use :hook because 'project-find-functions does not end in -hook
-    ;; Cannot use :init (must use :config) because otherwise
-    ;; project-find-functions is not yet initialized.
-    :config
-    (setq project-vc-extra-root-markers '(".project" "*.csproj"))
-
-    ;; Use fd instead of find for file listing (works better on Windows)
-    (when (executable-find "fd")
-      (defun my/project--files-in-directory-fd (dir ignores &optional files)
-        "Use fd to list files in DIR, ignoring IGNORES patterns."
-        (let* ((default-directory dir)
-               ;; Build exclude arguments for fd
-               (exclude-args (mapconcat
-                              (lambda (pattern)
-                                (concat "--exclude " (shell-quote-argument pattern)))
-                              ignores " "))
-               (cmd (format "fd --type f --hidden --follow %s" exclude-args)))
-          (mapcar (lambda (f) (concat (file-name-as-directory dir) f))
-                  (split-string (shell-command-to-string cmd) "\n" t))))
-
-      (advice-add 'project--files-in-directory :override #'my/project--files-in-directory-fd)))
-
-;; Project leader key shortcuts
-(zzc/leader-keys
-  "p"   '(:ignore t :which-key "project")
-  "p p" '(project-switch-project :which-key "switch project")
-  "p f" '(project-find-file :which-key "find file")
-  "p d" '(project-find-dir :which-key "find directory")
-  "p b" '(project-switch-to-buffer :which-key "switch buffer")
-  "p k" '(project-kill-buffers :which-key "kill buffers")
-  "p c" '(project-compile :which-key "compile")
-  "p s" '(project-shell :which-key "shell")
-  "p r" '(project-query-replace-regexp :which-key "replace regexp")
-  "p g" '(consult-ripgrep :which-key "find regexp")
-  "p D" '(project-dired :which-key "dired root")
-  "p !" '(project-shell-command :which-key "shell command")
-  "p &" '(project-async-shell-command :which-key "async shell command"))
-
-;; ============================================================================
-;; DESKTOP SESSION MANAGEMENT
+;DESKTOP SESSION MANAGEMENT
 ;; ============================================================================
 
 (use-package desktop
