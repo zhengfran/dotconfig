@@ -167,6 +167,53 @@
         (delete-region (match-beginning 0) (match-end 0))))
     (message "Cleared all context")))
 
+;; ============================================================================
+;; AGENT SHELL - Interactive LLM agent buffer (Claude Code, Gemini CLI, etc.)
+;; ============================================================================
+;; Prerequisites:
+;;   npm install -g @zed-industries/claude-code-acp  (for Claude Code agent)
+;;   On Windows: ensure npm global bin (~\AppData\Roaming\npm) is in exec-path
+;;               (handled automatically by core.el)
+
+(use-package agent-shell
+  :straight (:host github :repo "xenodium/agent-shell")
+  :config
+  (setq agent-shell-preferred-agent-config
+        (agent-shell-anthropic-make-claude-code-config))
+  (setq agent-shell-anthropic-authentication
+        (agent-shell-anthropic-make-authentication :login t))
+  ;; Corporate proxy: disable Node.js SSL verification for claude-code-acp
+  ;; TODO: replace with NODE_EXTRA_CA_CERTS pointing to your corporate CA cert
+  (setq agent-shell-anthropic-claude-environment
+        (agent-shell-make-environment-variables
+         :inherit-env t
+         "NODE_TLS_REJECT_UNAUTHORIZED" "0")))
+
+;; Manager: tabulated list view of all open agent sessions
+(use-package agent-shell-manager
+  :straight (:host github :repo "jethrokuan/agent-shell-manager")
+  :after agent-shell
+  :custom (agent-shell-manager-side 'bottom))
+
+;; Code review: send git diff to a second agent for review
+(use-package agent-review
+  :straight (:host github :repo "nineluj/agent-review")
+  :after agent-shell)
+
+;; Mode-line indicator showing pending/busy agent buffer counts
+(use-package agent-shell-attention
+  :straight (:host github :repo "ultronozm/agent-shell-attention.el")
+  :after agent-shell
+  :config (agent-shell-attention-mode 1))
+
+;; Persistent sidebar panel for agent interaction (like treemacs but for agents)
+(use-package agent-shell-sidebar
+  :straight (:host github :repo "cmacrae/agent-shell-sidebar")
+  :after agent-shell
+  :custom
+  (agent-shell-sidebar-position 'right)
+  (agent-shell-sidebar-width "30%"))
+
 ;; Key bindings
 (zzc/leader-keys
   "a"   '(:ignore t :which-key "ai/llm")
@@ -180,7 +227,13 @@
   "acb" '(my/gptel-add-context-buffer :which-key "add buffer")
   "acr" '(my/gptel-add-context-region :which-key "add region")
   "acf" '(my/gptel-add-context-file :which-key "add file")
-  "acc" '(my/gptel-clear-context :which-key "clear context"))
+  "acc" '(my/gptel-clear-context :which-key "clear context")
+  "ag"  '(:ignore t :which-key "agent shell")
+  "agg" '(agent-shell :which-key "open agent")
+  "agc" '(agent-shell-anthropic-start-claude-code :which-key "claude code")
+  "agm" '(agent-shell-manager-toggle :which-key "manager")
+  "agr" '(agent-review :which-key "code review")
+  "ags" '(agent-shell-sidebar-toggle :which-key "sidebar"))
 
 (provide 'ai)
 ;;; ai.el ends here
