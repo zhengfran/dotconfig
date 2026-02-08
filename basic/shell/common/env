@@ -1,10 +1,9 @@
 # environmental variables
-export PATH=$HOME/.local/bin:$PATH
 export XDG_CONFIG_HOME=$HOME/.config
 export LOCALBIN=$XDG_CONFIG_HOME/bin
-export PATH=$PATH:$LOCALBIN
+export PATH=$HOME/.local/bin:$PATH
 export PATH=$PATH:/usr/local/bin
-export PATH=$PATH:$HOME/go/bin
+export PATH=/usr/local/bin:/usr/bin:/bin:$PATH
 if [[ "$(uname)" != "Darwin" ]]; then
   export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
   export PATH=$PATH:/home/linuxbrew/.linuxbrew/sbin
