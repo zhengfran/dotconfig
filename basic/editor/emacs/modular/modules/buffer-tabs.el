@@ -154,7 +154,7 @@ Each buffer becomes a clickable tab in the frame-level tab-bar."
                              truncated
                              " "))
               (b buf))
-         `(,(intern (format "buf-tab-%s" (sxhash buf)))
+         `(,(intern (format "buf-tab-%s-%s" (sxhash buf) is-current))
            menu-item
            ,(propertize label 'face (if is-current
                                         'tab-bar-tab
