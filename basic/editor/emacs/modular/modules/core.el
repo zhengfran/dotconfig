@@ -37,6 +37,15 @@
       (add-to-list 'exec-path usr-bin)
       (setenv "PATH" (concat usr-bin path-separator (getenv "PATH"))))))
 
+;; Windows: Add npm global bin directory to exec-path (Scoop-managed Node.js)
+;; Required for agent-shell to find claude-code-acp and other npm-installed agents
+;; Use USERPROFILE (C:\Users\<user>) since ~ resolves to AppData\Roaming on Windows
+(when (eq system-type 'windows-nt)
+  (let ((npm-bin (expand-file-name "scoop/persist/nodejs/bin" (getenv "USERPROFILE"))))
+    (when (file-directory-p npm-bin)
+      (add-to-list 'exec-path npm-bin)
+      (setenv "PATH" (concat npm-bin path-separator (getenv "PATH"))))))
+
 ;; ============================================================================
 ;; STARTUP PROFILING
 ;; ============================================================================

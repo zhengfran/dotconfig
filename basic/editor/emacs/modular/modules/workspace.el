@@ -50,6 +50,48 @@
   (add-to-list 'desktop-modes-not-to-save 'fundamental-mode))
 
 ;; ============================================================================
+;; PROJECT
+;; ============================================================================
+
+(use-package project
+  :config
+  (setq project-vc-extra-root-markers '(".project" "*.csproj"))
+
+  ;; Use fd instead of find for file listing (works better on Windows)
+  (when (executable-find "fd")
+    (defun my/project--files-in-directory-fd (dir ignores &optional files)
+      "Use fd to list files in DIR, ignoring IGNORES patterns."
+      (let* ((default-directory dir)
+             (exclude-args (mapconcat
+                            (lambda (pattern)
+                              (concat "--exclude " (shell-quote-argument pattern)))
+                            ignores " "))
+             (cmd (format "fd --type f --hidden --follow %s" exclude-args)))
+        (mapcar (lambda (f) (concat (file-name-as-directory dir) f))
+                (split-string (shell-command-to-string cmd) "\n" t))))
+    (advice-add 'project--files-in-directory :override #'my/project--files-in-directory-fd)))
+
+;; ============================================================================
+;; PROJECT KEYBINDINGS
+;; ============================================================================
+
+(zzc/leader-keys
+  "SPC" '(project-find-file :which-key "find file in project")
+  "p"   '(:ignore t :which-key "project")
+  "p p" '(project-switch-project :which-key "switch project")
+  "p f" '(project-find-file :which-key "find file")
+  "p d" '(project-find-dir :which-key "find directory")
+  "p b" '(project-switch-to-buffer :which-key "switch buffer")
+  "p k" '(project-kill-buffers :which-key "kill buffers")
+  "p c" '(project-compile :which-key "compile")
+  "p s" '(project-shell :which-key "shell")
+  "p r" '(project-query-replace-regexp :which-key "replace regexp")
+  "p g" '(consult-ripgrep :which-key "find regexp")
+  "p D" '(project-dired :which-key "dired root")
+  "p !" '(project-shell-command :which-key "shell command")
+  "p &" '(project-async-shell-command :which-key "async shell command"))
+
+;; ============================================================================
 ;; TAB-BAR WORKSPACES
 ;; ============================================================================
 

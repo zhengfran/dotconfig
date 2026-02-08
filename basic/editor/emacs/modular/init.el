@@ -68,6 +68,21 @@
 (defvar native-comp-deferred-compilation-deny-list nil)
 
 ;; ============================================================================
+;; WINDOWS EXEC-PATH BOOTSTRAP
+;; Must run before straight.el bootstrap since straight needs git
+;; ============================================================================
+
+;; Windows: Add Scoop git to exec-path so straight.el can find it
+;; git lives in scoop app dir (not shims) at %USERPROFILE%\scoop\apps\git\current\cmd
+(when (eq system-type 'windows-nt)
+  (let ((git-cmd (expand-file-name "scoop/apps/git/current/cmd" (getenv "USERPROFILE"))))
+    (when (file-directory-p git-cmd)
+      (add-to-list 'exec-path git-cmd)
+      (setenv "PATH" (concat git-cmd path-separator (getenv "PATH")))))
+  ;; Disable git SSL verification for corporate proxy (SSL inspection)
+  (setenv "GIT_SSL_NO_VERIFY" "true"))
+
+;; ============================================================================
 ;; BOOTSTRAP STRAIGHT.EL (PACKAGE MANAGER)
 ;; ============================================================================
 
@@ -136,8 +151,7 @@
 (require 'ai)                 ; 18. GPTel AI integration
 (require 'beancount)          ; 19. Beancount plain-text accounting
 (require 'rime-config)        ; 20. Chinese input and formatting (all systems)
-(unless (eq system-type 'windows-nt)
-  (require 'terminal-config))  ; 20. Terminal (vterm, eee) - non-Windows only
+(require 'terminal-config)  ; 20. Terminal (vterm, eee) - non-Windows only
 
 ;; ============================================================================
 ;; STARTUP COMPLETE
