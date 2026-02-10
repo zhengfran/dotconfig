@@ -55,7 +55,19 @@
 
 (use-package project
   :config
-  (setq project-vc-extra-root-markers '(".project" "*.csproj"))
+  (setq project-vc-extra-root-markers '(".project" "*.csproj" ".repo"))
+
+  ;; .repo root has no VC backend, so project-try-vc rejects it.
+  ;; Register a dedicated backend so project.el recognizes it.
+  (cl-defmethod project-root ((project (head repo)))
+    (cdr project))
+
+  (defun my/project-try-repo (dir)
+    "Detect projects rooted by .repo directory."
+    (when-let* ((root (locate-dominating-file dir ".repo")))
+      (cons 'repo root)))
+
+  (add-hook 'project-find-functions #'my/project-try-repo)
 
   ;; Use fd instead of find for file listing (works better on Windows)
   (when (executable-find "fd")
