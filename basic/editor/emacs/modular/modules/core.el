@@ -155,19 +155,19 @@
 ;;
 ;; If you want to try TRAMP-RPC on native Linux/macOS, uncomment below:
 
-;; (use-package msgpack)
-;;
-;; (use-package tramp-rpc
-;;   :straight (tramp-rpc :type git
-;;                        :host github
-;;                        :repo "ArthurHeymans/emacs-tramp-rpc")
-;;   :custom
-;;   (tramp-rpc-deploy-auto-deploy t)
-;;   (tramp-rpc-deploy-local-cache-directory
-;;    (expand-file-name "tramp-rpc/" (or (getenv "XDG_CACHE_HOME") "~/.cache/")))
-;;   (tramp-rpc-deploy-remote-directory "~/.cache/tramp-rpc/")
-;;   (tramp-rpc-deploy-prefer-build nil)
-;;   (tramp-rpc-use-controlmaster (not (or my/is-windows my/is-WSL))))
+(use-package msgpack)
+
+(use-package tramp-rpc
+  :straight (tramp-rpc :type git
+                       :host github
+                       :repo "ArthurHeymans/emacs-tramp-rpc")
+  :custom
+  (tramp-rpc-deploy-auto-deploy t)
+  (tramp-rpc-deploy-local-cache-directory
+   (expand-file-name "tramp-rpc/" (or (getenv "XDG_CACHE_HOME") "~/.cache/")))
+  (tramp-rpc-deploy-remote-directory "~/.cache/tramp-rpc/")
+  (tramp-rpc-deploy-prefer-build nil)
+  (tramp-rpc-use-controlmaster (not (or my/is-windows my/is-WSL))))
 
 (provide 'core)
 ;;; core.el ends here

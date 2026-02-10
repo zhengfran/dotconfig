@@ -101,7 +101,8 @@
                      (concat "bash " (funcall to-msys command))
                      args)))))
     ;; Non-Windows: use eat as embedded terminal backend
-    (setq ee-start-terminal-function #'ee-eat-start-terminal))
+    ;; (setq ee-start-terminal-function #'ee-eat-start-terminal)
+    (setq ee-terminal-command "st"))
   (zzc/leader-keys
     "tf"  '(ee-find :which-key "find")
     "tr"  '(ee-rg :which-key "rg")
