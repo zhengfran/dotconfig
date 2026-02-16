@@ -47,7 +47,7 @@
   "Restart Emacs to reload configuration.
 Restarting is more reliable than in-place reloading."
   (interactive)
-  (when (yes-or-no-p "Restart Emacs to reload configuration? ")
+  (when (y-or-n-p "Restart Emacs to reload configuration? ")
     (restart-emacs)))
 
 ;; Keybindings for config reload

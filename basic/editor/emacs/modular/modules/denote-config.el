@@ -82,7 +82,7 @@ Returns the file path of the created note."
                          (insert-file-contents template-file)
                          (buffer-string))
                      ;; Default template if file doesn't exist
-                     "* What's done today?\n\n* Notes\n\n"))
+                                           "* What's done today?\n\n#+BEGIN: tasks-done-today\n#+END:\n\n* Notes\n\n"))
          (subdir (expand-file-name "journal" denote-directory)))
     ;; Ensure journal directory exists
     (unless (file-exists-p subdir)
@@ -124,52 +124,83 @@ Returns the file path of the created note."
     (find-file file)))
 
 ;; ============================================================================
-;; TASK COMPLETION AUTOMATION
+;; COMPLETED TASKS DYNAMIC BLOCK
 ;; ============================================================================
 
-(defun my/copy-completed-task-to-journal ()
-  "Copy completed task to today's journal note under 'What's done today?' heading.
-The original task remains in its original file. A backlink is added to the copy.
-This function is called automatically when a task is marked as DONE or CANCEL."
-  (when (and (eq major-mode 'org-mode)
-             (member (org-get-todo-state) '("DONE" "CANCEL"))
-             (buffer-file-name))
-    (let* ((journal-dir (expand-file-name "journal" denote-directory))
-           (current-file (file-truename (buffer-file-name))))
-      ;; Only process if NOT already in a journal note
-      (unless (string-prefix-p (file-truename journal-dir) current-file)
-        ;; Capture task info BEFORE journal creation (denote switches buffers)
-        (let* ((task-heading (org-get-heading t t t t))
-               (original-file (buffer-file-name))
-               (original-link
-                (format "[[file:%s][%s]]"
-                        original-file
-                        (file-name-nondirectory original-file)))
-               (task-body
-                (save-excursion
-                  (org-back-to-heading t)
-                  (let ((start (point)))
-                    (org-end-of-subtree t t)
-                    (buffer-substring-no-properties start (point)))))
-               ;; Now get/create journal (may switch buffers)
-               (journal-file (save-current-buffer
-                               (my/denote-ensure-journal-note-exists))))
-          (when journal-file
-            (save-excursion
-              (with-current-buffer (find-file-noselect journal-file)
-                (goto-char (point-min))
-                (if (re-search-forward "^\\* What's done today\\?" nil t)
-                    (progn
-                      (org-end-of-subtree t t)
-                      (insert "\n" task-body)
-                      (forward-line -1)
-                      (org-end-of-line)
-                      (insert "\n/Original: " original-link "/")
-                      (save-buffer))
-                  (message "Warning: Could not find 'What's done today?' heading"))))
-            (message "Task copied to journal note: %s" task-heading)))))))
+(defun my/org-format-clock-time (minutes)
+  "Format MINUTES as H:MM string, or '—' if zero/negative."
+  (if (or (null minutes) (<= minutes 0))
+      "—"
+    (format "%d:%02d" (/ minutes 60) (% minutes 60))))
 
-(add-hook 'org-after-todo-state-change-hook 'my/copy-completed-task-to-journal)
+(defun my/org-get-task-clock-time (file pos)
+  "Get total clocked minutes for task at POS in FILE."
+  (with-current-buffer (find-file-noselect file)
+    (save-excursion
+      (goto-char pos)
+      (let ((org-clock-sum-current-start-time nil)
+            (total 0))
+        (save-restriction
+          (org-narrow-to-subtree)
+          (goto-char (point-min))
+          (while (re-search-forward org-clock-line-re nil t)
+            (when-let* ((ts (match-string 2))
+                        (duration (org-duration-to-minutes ts)))
+              (cl-incf total duration))))
+        total))))
+
+(defun my/org-get-completed-tasks-on-date (date-str)
+  "Return list of completed tasks on DATE-STR (YYYY-MM-DD).
+Each element is (HEADING CLOCK-MINUTES FILE POS)."
+  (let ((results nil)
+        (closed-re (format "CLOSED: \\[%s .*?\\]" (regexp-quote date-str))))
+    (dolist (file (org-agenda-files))
+      (when (file-exists-p file)
+        (with-current-buffer (find-file-noselect file)
+          (save-excursion
+            (goto-char (point-min))
+            (while (re-search-forward closed-re nil t)
+              (when-let* ((pos (save-excursion
+                                 (org-back-to-heading t)
+                                 (point)))
+                          (heading (save-excursion
+                                     (goto-char pos)
+                                     (org-get-heading t t t t)))
+                          (clock-mins (my/org-get-task-clock-time file pos)))
+                (push (list heading clock-mins file pos) results)))))))
+    (nreverse results)))
+
+(defun my/org-extract-date-from-journal-filename ()
+  "Extract date string (YYYY-MM-DD) from current buffer filename.
+Expects denote journal filename format: YYYYMMDDTHHMMSS--title.org"
+  (let ((filename (buffer-file-name)))
+    (when (and filename (string-match "\\([0-9]\\{4\\}\\)\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\)T" filename))
+      (format "%s-%s-%s"
+              (match-string 1 filename)
+              (match-string 2 filename)
+              (match-string 3 filename)))))
+
+(defun org-dblock-write:tasks-done-today (params)
+  "Dynamic block showing tasks completed on journal date.
+PARAMS is ignored (date comes from filename)."
+  (let* ((date-str (my/org-extract-date-from-journal-filename))
+         (tasks (when date-str
+                  (my/org-get-completed-tasks-on-date date-str))))
+    (if (null tasks)
+        (insert "| No tasks completed on this day |")
+      (insert "| Task | Time spent | Link |\n")
+      (insert "|------+------------+------|\n")
+      (dolist (task tasks)
+        (let* ((heading (nth 0 task))
+               (mins (nth 1 task))
+               (file (nth 2 task))
+               (pos (nth 3 task))
+               (time-str (my/org-format-clock-time mins))
+               (link (format "[[file:%s::*%s][%s]]"
+                             file
+                             (url-hexify-string heading)
+                             (file-name-nondirectory file))))
+           (insert (format "| %s | %s | %s |\n" heading time-str link)))))))
 
 ;; ============================================================================
 ;; FILTER FUNCTIONS (denote-based)
@@ -187,24 +218,7 @@ This function is called automatically when a task is marked as DONE or CANCEL."
 ;; AGENDA INTEGRATION
 ;; ============================================================================
 
-(defun my/denote-refresh-agenda-list ()
-  "Add all denote files with 'project' keyword to `org-agenda-files'."
-  (interactive)
-  (let ((project-files (my/denote-list-project-files)))
-    (setq org-agenda-files
-          (delete-dups (append (or org-agenda-files '())
-                               project-files)))
-    (message "Refreshed agenda list: %d total files (%d projects)"
-             (length org-agenda-files)
-             (length project-files))))
-
-(defun my/denote-auto-refresh-agenda ()
-  "Automatically refresh org-agenda-files when saving a project file."
-  (when-let* ((file (buffer-file-name))
-              (truename (file-truename file)))
-    (when (and (string-prefix-p (expand-file-name denote-directory) truename)
-               (string-match-p "_project" (file-name-nondirectory truename)))
-      (my/denote-refresh-agenda-list))))
+;; Agenda integration removed - org-agenda-files now set statically in org-agenda-config.el
 
 ;; ============================================================================
 ;; DENOTE CONFIGURATION
@@ -234,7 +248,6 @@ This function is called automatically when a task is marked as DONE or CANCEL."
    ("C-c n r" . denote-rename-file)
    ("C-c n R" . denote-rename-file-using-front-matter)
    ("C-c n a" . denote-keywords-add)
-   ("C-c n s" . my/denote-refresh-agenda-list)
    :map org-mode-map
    ("C-M-i" . completion-at-point))
   :config
@@ -257,7 +270,7 @@ This function is called automatically when a task is marked as DONE or CANCEL."
                     (setq buffer-file-coding-system 'utf-8-unix)))))
 
   ;; Create subdirectories if they don't exist
-  (dolist (subdir '("journal" "ref" "trades" "habits"))
+  (dolist (subdir '("journal" "ref" "trades" "habits" "projects"))
     (let ((dir (expand-file-name subdir denote-directory)))
       (unless (file-exists-p dir)
         (make-directory dir t))))
@@ -279,36 +292,38 @@ This function is called automatically when a task is marked as DONE or CANCEL."
     "n t" '(my/denote-capture-task :which-key "capture task")
     "n Y" '(my/denote-goto-year :which-key "goto year")
     "n M" '(my/denote-goto-month :which-key "goto month")
-    "n l" '(denote-backlinks :which-key "backlinks")
-    "n s" '(my/denote-refresh-agenda-list :which-key "refresh agenda"))
-
-  ;; Hook for auto-refresh
-  (add-hook 'after-save-hook 'my/denote-auto-refresh-agenda))
+    "n l" '(denote-backlinks :which-key "backlinks")))
 
 ;; ============================================================================
 ;; YEAR/MONTH NAVIGATION
 ;; ============================================================================
 
 (defun my/denote-goto-month ()
-  "Navigate to or create a monthly planning note."
+  "Navigate to or create a monthly planning note in journal/ subdirectory."
   (interactive)
   (let* ((month-str (format-time-string "%Y-%B"))
          (regexp (concat ".*--" (regexp-quote (downcase month-str))))
-         (existing (car (denote-directory-files regexp))))
+         (existing (car (denote-directory-files regexp)))
+         (subdir (expand-file-name "journal" denote-directory)))
     (if existing
         (find-file existing)
-      (denote month-str '("project") 'org nil nil
+      (unless (file-exists-p subdir)
+        (make-directory subdir t))
+      (denote month-str '("journal") 'org subdir nil
               "\n* Goals\n\n* Summary\n\n"))))
 
 (defun my/denote-goto-year ()
-  "Navigate to or create a yearly planning note."
+  "Navigate to or create a yearly planning note in journal/ subdirectory."
   (interactive)
   (let* ((year-str (format-time-string "%Y"))
          (regexp (concat ".*--" year-str "$"))
-         (existing (car (denote-directory-files regexp))))
+         (existing (car (denote-directory-files regexp)))
+         (subdir (expand-file-name "journal" denote-directory)))
     (if existing
         (find-file existing)
-      (denote year-str '("project") 'org nil nil
+      (unless (file-exists-p subdir)
+        (make-directory subdir t))
+      (denote year-str '("journal") 'org subdir nil
               "\n* Goals\n\n* Summary\n\n"))))
 
 ;; ============================================================================
@@ -351,24 +366,15 @@ This function is called automatically when a task is marked as DONE or CANCEL."
 ;; PROJECT MANAGEMENT
 ;; ============================================================================
 
-(defvar my/denote-after-new-project-hook nil
-  "Hook run after creating a new project note.")
-
-(defun my/denote-project-finalize-hook ()
-  "Add the new project file to `org-agenda-files'."
-  (remove-hook 'my/denote-after-new-project-hook #'my/denote-project-finalize-hook)
-  (add-to-list 'org-agenda-files (buffer-file-name)))
-
 (defun my/denote-insert-new-project ()
-  "Create a new project note."
+  "Create a new project note in projects/ subdirectory."
   (interactive)
-  (add-hook 'my/denote-after-new-project-hook #'my/denote-project-finalize-hook)
-  (let ((title (read-string "Project title: ")))
-    (denote title '("project") 'org nil nil
-            "* Tasks\n\n")
-    ;; Run hooks after creation
-    (run-hooks 'my/denote-after-new-project-hook)
-    (my/denote-refresh-agenda-list)))
+  (let* ((title (read-string "Project title: "))
+         (subdir (expand-file-name "projects" denote-directory)))
+    (unless (file-exists-p subdir)
+      (make-directory subdir t))
+    (denote title '("project") 'org subdir nil
+            "* Tasks\n\n")))
 
 (defun my/denote-find-project ()
   "Find and open a project note."
@@ -416,8 +422,6 @@ This function is called automatically when a task is marked as DONE or CANCEL."
 ;; Only run if org-agenda-files is already defined
 (when (boundp 'org-agenda-files)
   (my/org-refile-update-targets))
-
-(advice-add 'my/denote-project-finalize-hook :after #'my/org-refile-update-targets)
 
 (provide 'denote-config)
 ;;; denote-config.el ends here

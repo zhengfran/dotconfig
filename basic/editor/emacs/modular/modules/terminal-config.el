@@ -73,7 +73,6 @@
 
 (unless (eq system-type 'windows-nt)
   (use-package eat
-    :straight t
     :config
     (evil-set-initial-state 'eat-mode 'emacs)))
 
@@ -92,14 +91,14 @@
         ;; Advise ee-run to convert Windows paths to MSYS (/c/...) and
         ;; call bash explicitly (same as running the script manually in Git Bash)
         (advice-add 'ee-run :around
-          (lambda (orig name dir command &rest args)
-            (let ((to-msys (lambda (s)
-                             (replace-regexp-in-string
-                              "^\\([a-zA-Z]\\):/" "/\\1/" s))))
-              (apply orig name
-                     (funcall to-msys dir)
-                     (concat "bash " (funcall to-msys command))
-                     args)))))
+		    (lambda (orig name dir command &rest args)
+		      (let ((to-msys (lambda (s)
+				       (replace-regexp-in-string
+					"^\\([a-zA-Z]\\):/" "/\\1/" s))))
+			(apply orig name
+			       (funcall to-msys dir)
+			       (concat "bash " (funcall to-msys command))
+			       args)))))
     ;; Non-Windows: use eat as embedded terminal backend
     ;; (setq ee-start-terminal-function #'ee-eat-start-terminal)
     (setq ee-terminal-command "st"))

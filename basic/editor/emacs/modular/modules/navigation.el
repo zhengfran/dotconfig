@@ -1,9 +1,9 @@
 ;;; navigation.el --- Navigation tools -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; Navigation tools: avy (jump), treemacs (file tree), multiple-cursors
+;; Navigation tools: avy (jump), treemacs (file tree)
 ;;
-;; DEPENDENCIES: evil, keybindings (zzc/leader-keys)
+;; DEPENDENCIES: evil
 ;; USED BY: None
 
 ;;; Code:
@@ -132,40 +132,10 @@
 
 (use-package avy
   :demand 1
-  :after general
-  :config
-  (zzc/leader-keys
-    "j" '(:ignore t :which-key "jump")
-    "jj" '(avy-goto-char :which-key "jump to char")
-    "jw" '(avy-goto-word-0 :which-key "jump to word")
-    "jl" '(avy-goto-line :which-key "jump to line")))
-
-;; ============================================================================
-;; MULTIPLE CURSORS
-;; ============================================================================
-
-(use-package multiple-cursors
-  :bind (("C->" . mc/mark-next-like-this)
-         ("C-<" . mc/mark-previous-like-this)
-         ("C-c C-<" . mc/mark-all-like-this)
-         ("C-S-c C-S-c" . mc/edit-lines))
-  :config
-  ;; Evil mode integration
-  (with-eval-after-load 'evil
-    (define-key evil-normal-state-map (kbd "g z") 'mc/mark-next-like-this)
-    (define-key evil-normal-state-map (kbd "g Z") 'mc/mark-previous-like-this)
-    (define-key evil-visual-state-map (kbd "g z") 'mc/mark-all-like-this))
-  
-  ;; Leader key bindings
-  (zzc/leader-keys
-    "m"  '(:ignore t :which-key "multiple-cursors")
-    "mn" '(mc/mark-next-like-this :which-key "mark next")
-    "mp" '(mc/mark-previous-like-this :which-key "mark previous")
-    "ma" '(mc/mark-all-like-this :which-key "mark all")
-    "ml" '(mc/edit-lines :which-key "edit lines")
-    "mr" '(mc/mark-all-in-region :which-key "mark all in region")
-    "ms" '(mc/skip-to-next-like-this :which-key "skip to next")
-    "mu" '(mc/unmark-next-like-this :which-key "unmark next")))
+  :after (general evil)
+  :bind (:map evil-normal-state-map
+              ("s" . avy-goto-char-timer)
+              ("gl" . avy-goto-line)))
 
 (provide 'navigation)
 ;;; navigation.el ends here
