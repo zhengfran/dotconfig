@@ -14,9 +14,28 @@
 ;; ============================================================================
 
 (setq org-agenda-dir "~/org/notes/")
-;; Initialize with denote directory
-;; Note: my/denote-refresh-agenda-list in denote-config.el adds project files
-(setq org-agenda-files (list org-agenda-dir))
+(setq org-agenda-show-inherited-tags nil)
+
+(defun my/get-active-project-files ()
+  "Return list of org files in projects dir with #+status: Active (case-insensitive)."
+  (let* ((projects-dir (expand-file-name "projects" org-agenda-dir))
+         (all-files (directory-files-recursively projects-dir "\\.org$" t)))
+    (seq-filter
+     (lambda (file)
+       (with-temp-buffer
+         (insert-file-contents file nil 0 1024)
+         (goto-char (point-min))
+         (let ((case-fold-search t))
+           (re-search-forward "^#\\+status:[ \t]*active[ \t]*$" nil t))))
+     all-files)))
+
+(defun my/refresh-agenda-files (&rest _)
+  "Update org-agenda-files to active project files only."
+  (setq org-agenda-files (my/get-active-project-files)))
+
+(advice-add 'org-agenda :before #'my/refresh-agenda-files)
+
+(setq org-agenda-files (my/get-active-project-files))
 
 ;; ============================================================================
 ;; TODO KEYWORDS AND LOGGING

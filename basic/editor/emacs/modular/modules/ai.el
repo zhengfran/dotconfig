@@ -10,7 +10,6 @@
 ;;; Code:
 
 (use-package gptel
-  :straight t
   :init
   ;; Helper function to read API keys from environment variables
   (defun my/gptel-api-key-from-env (var-name)

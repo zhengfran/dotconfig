@@ -110,7 +110,8 @@
 (use-package no-littering
   :demand t
   :custom
-  (auto-save-file-name-transforms `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))) ; 设置自动保存文件目录
+  (auto-save-file-name-transforms `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+  (backup-directory-alist `((".*" . ,(no-littering-expand-var-file-name "backup/")))))
 
 (use-package recentf
   :after no-littering

@@ -3,7 +3,7 @@
 ;;; Commentary:
 ;; Evil mode and all evil-related packages:
 ;; evil-collection, evil-commentary, evil-surround, evil-escape,
-;; evil-org, evil-goggles, undo-tree integration
+;; evil-org, evil-goggles, evil-mc, undo-tree integration
 ;;
 ;; DEPENDENCIES: None
 ;; USED BY: window, navigation, terminal, chinese (evil-set-initial-state)
@@ -125,11 +125,37 @@
     #'evil-textobj-anyblock-inner-block)
   (define-key evil-outer-text-objects-map "q"
     #'evil-textobj-anyblock-a-block))
+
+;; ============================================================================
+;; EVIL-MC (MULTIPLE CURSORS)
+;; ============================================================================
+
+(use-package evil-mc
+  :after evil
+  :hook (after-init . global-evil-mc-mode)
+  :bind (:map evil-normal-state-map
+              ("gm m" . evil-mc-make-all-cursors)
+              ("gm u" . evil-mc-undo-last-added-cursor)
+              ("gm q" . evil-mc-undo-all-cursors)
+              ("gm s" . evil-mc-pause-cursors)
+              ("gm r" . evil-mc-resume-cursors)
+              ("gm n" . evil-mc-make-and-goto-next-match)
+              ("gm p" . evil-mc-make-and-goto-prev-match)
+              ("gm N" . evil-mc-skip-and-goto-next-match)
+              ("gm P" . evil-mc-skip-and-goto-prev-match)
+              ("gm j" . evil-mc-make-cursor-move-next-line)
+              ("gm k" . evil-mc-make-cursor-move-prev-line)
+              ("gm h" . evil-mc-make-cursor-here)
+              ("gm f" . evil-mc-make-and-goto-first-cursor)
+              ("gm l" . evil-mc-make-and-goto-last-cursor)
+              :map evil-visual-state-map
+              ("gm m" . evil-mc-make-all-cursors)
+              ("I" . evil-mc-make-cursor-in-visual-selection-beg)
+              ("A" . evil-mc-make-cursor-in-visual-selection-end)))
+
 ;; ============================================================================
 ;; AUTO-SAVE ON INSERT EXIT
 ;; ============================================================================
-
-;; save file every time after quit insert mode
 (add-hook 'evil-insert-state-exit-hook
           (lambda ()
             (call-interactively #'save-buffer)))

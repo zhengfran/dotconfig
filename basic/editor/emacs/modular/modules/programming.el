@@ -10,8 +10,6 @@
 
 ;; Emacs Lisp formatter
 (use-package elisp-autofmt
-  :straight t
-  :demand t
   :config
   (setq elisp-autofmt-style 'native)
   (setq elisp-autofmt-format-quoted t)

@@ -95,6 +95,27 @@ Defined in `keybindings.el`:
 4. Add `(require 'your-feature)` to `init.el` in correct dependency order
 5. Use `zzc/leader-keys` for keybindings (see examples in existing modules)
 
+### Code Editing Best Practices
+
+**CRITICAL**: Always validate Elisp syntax after making changes to configuration files.
+
+```bash
+# Validate syntax of a module file
+emacs --batch --eval "(condition-case err (progn (load-file \"/path/to/file.el\") (message \"Syntax OK\")) (error (message \"Error: %S\" err)))"
+```
+
+Common syntax errors to avoid:
+- **Parentheses mismatch**: Count opening and closing parens carefully when adding nested forms
+- **Missing quote**: Symbols and lists need proper quoting (`'symbol`, `'(list)`)
+- **Malformed let bindings**: `(let ((var value)) body)` not `(let (var value) body)`
+- **Unbalanced strings**: Check for missing closing quotes in strings and docstrings
+
+When editing complex nested forms:
+1. Make the edit in your tool
+2. Run syntax validation before committing
+3. If syntax error occurs, use `git diff` to see exact changes and identify the issue
+4. Fix and re-validate before proceeding
+
 ### Keybinding Conventions
 
 All keybindings use `zzc/leader-keys` with SPC prefix:
