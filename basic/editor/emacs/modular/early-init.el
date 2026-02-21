@@ -11,7 +11,7 @@
 (defvar my/font-size
   (pcase system-type
     ('windows-nt 160)  ; 16pt for Windows
-    ('darwin 160)      ; 16pt for macOS
+    ('darwin 220)      ; 16pt for macOS
     ('gnu/linux 160)   ; 16pt for Linux
     (_ 140))           ; Fallback
   "Default font size in 1/10 pt units.")
