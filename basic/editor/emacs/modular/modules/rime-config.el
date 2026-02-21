@@ -24,7 +24,7 @@
     (setq rime-librime-root "/opt/homebrew"))
   :custom
   (default-input-method "rime")
-  (rime-show-candidate 'posframe)
+  (rime-show-candidate 'popup)
   (rime-user-data-dir (expand-file-name "rime" user-emacs-directory))
   (rime-share-data-dir "~/dotconfig/Rime")
   (rime-disable-predicates '(rime-predicate-evil-mode-p
