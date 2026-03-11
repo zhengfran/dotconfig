@@ -147,6 +147,16 @@ else
     echo "[WARN] opencode directory not found in dotconfig."
 fi
 
+agents_dir_path=$(find ~/dotconfig -type d -path "*/tools/ai/agents" | head -n 1)
+if [ -n "$agents_dir_path" ] && [ ! -e ~/.agents ]; then
+    echo "[INFO] Symlinking agents dir: $agents_dir_path -> ~/.agents"
+    ln -s "$agents_dir_path" ~/.agents
+elif [ -e ~/.agents ]; then
+    echo "[INFO] ~/.agents already exists. Skipping."
+else
+    echo "[WARN] agents directory not found in dotconfig."
+fi
+
 ## aerospace (macOS only)
 if [[ "$OSTYPE" == "darwin"* ]]; then
     aerospace_dir_path=$(find ~/dotconfig -type d -path "*/tools/wm/aerospace" | head -n 1)

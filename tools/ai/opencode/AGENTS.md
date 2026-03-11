@@ -1,1 +1,1 @@
-../AGENTS.md
+../shared/AGENTS.md
