@@ -1,0 +1,163 @@
+{
+  "version": 3,
+  "skills": {
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/skills.git",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "skillFolderHash": "c2f31172b6f256272305a5e6e7228b258446899f",
+      "installedAt": "2026-03-10T05:37:23.150Z",
+      "updatedAt": "2026-03-10T05:37:23.150Z"
+    },
+    "artifacts-builder": {
+      "source": "ComposioHQ/awesome-claude-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
+      "skillPath": "artifacts-builder/SKILL.md",
+      "skillFolderHash": "f89c02f23fbb7c5077ab960f46bdb6a3817d6fc2",
+      "installedAt": "2026-03-10T05:43:48.452Z",
+      "updatedAt": "2026-03-10T05:43:48.452Z"
+    },
+    "youtube-downloader": {
+      "source": "ComposioHQ/awesome-claude-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
+      "skillPath": "video-downloader/SKILL.md",
+      "skillFolderHash": "eac8b4684ba7d791f9941d0250d6a65ed2a01341",
+      "installedAt": "2026-03-10T05:43:48.522Z",
+      "updatedAt": "2026-03-10T05:43:48.522Z"
+    },
+    "skill-creator": {
+      "source": "ComposioHQ/awesome-claude-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
+      "skillPath": "skill-creator/SKILL.md",
+      "skillFolderHash": "28a79517753f9c3eea0127e70db740756fcf2ee6",
+      "installedAt": "2026-03-10T05:43:48.591Z",
+      "updatedAt": "2026-03-10T05:43:48.591Z"
+    },
+    "content-research-writer": {
+      "source": "ComposioHQ/awesome-claude-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
+      "skillPath": "content-research-writer/SKILL.md",
+      "skillFolderHash": "560a65081b1fc097120e95f04ec82b3fff5549e6",
+      "installedAt": "2026-03-10T05:43:48.663Z",
+      "updatedAt": "2026-03-10T05:43:48.663Z"
+    },
+    "developer-growth-analysis": {
+      "source": "ComposioHQ/awesome-claude-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
+      "skillPath": "developer-growth-analysis/SKILL.md",
+      "skillFolderHash": "b7172297fbe76d7ea320eb7a889202e8525fb81b",
+      "installedAt": "2026-03-10T05:43:48.739Z",
+      "updatedAt": "2026-03-10T05:43:48.739Z"
+    },
+    "domain-name-brainstormer": {
+      "source": "ComposioHQ/awesome-claude-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
+      "skillPath": "domain-name-brainstormer/SKILL.md",
+      "skillFolderHash": "ee97909251c1e45f7babc118fbf66467314d4e46",
+      "installedAt": "2026-03-10T05:43:48.806Z",
+      "updatedAt": "2026-03-10T05:43:48.806Z"
+    },
+    "mcp-builder": {
+      "source": "ComposioHQ/awesome-claude-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
+      "skillPath": "mcp-builder/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-03-10T05:43:48.861Z",
+      "updatedAt": "2026-03-10T05:43:48.861Z"
+    },
+    "lead-research-assistant": {
+      "source": "ComposioHQ/awesome-claude-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
+      "skillPath": "lead-research-assistant/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-03-10T05:43:48.918Z",
+      "updatedAt": "2026-03-10T05:43:48.918Z"
+    },
+    "meeting-insights-analyzer": {
+      "source": "ComposioHQ/awesome-claude-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
+      "skillPath": "meeting-insights-analyzer/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-03-10T05:43:48.977Z",
+      "updatedAt": "2026-03-10T05:43:48.977Z"
+    },
+    "canvas-design": {
+      "source": "ComposioHQ/awesome-claude-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
+      "skillPath": "canvas-design/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-03-10T05:43:49.038Z",
+      "updatedAt": "2026-03-10T05:43:49.038Z"
+    },
+    "brainstorming": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/obra/superpowers.git",
+      "skillPath": "skills/brainstorming/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-03-10T05:47:09.984Z",
+      "updatedAt": "2026-03-10T05:47:09.984Z"
+    },
+    "systematic-debugging": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/obra/superpowers.git",
+      "skillPath": "skills/systematic-debugging/SKILL.md",
+      "skillFolderHash": "828c239ac986cc1fc7edd10292f66e4a3640e9c0",
+      "installedAt": "2026-03-10T05:48:37.971Z",
+      "updatedAt": "2026-03-10T05:48:37.971Z"
+    },
+    "writing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/obra/superpowers.git",
+      "skillPath": "skills/writing-plans/SKILL.md",
+      "skillFolderHash": "b0a9e38ac6696f9b628c4a8d0cd9f7c71afd9f47",
+      "installedAt": "2026-03-10T05:50:00.859Z",
+      "updatedAt": "2026-03-10T05:50:00.859Z"
+    },
+    "executing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/obra/superpowers.git",
+      "skillPath": "skills/executing-plans/SKILL.md",
+      "skillFolderHash": "20087d25fb28f5f54578d873dc198ab24b34f967",
+      "installedAt": "2026-03-10T05:51:29.327Z",
+      "updatedAt": "2026-03-10T05:51:29.327Z"
+    },
+    "planning-with-files": {
+      "source": "othmanadi/planning-with-files",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/othmanadi/planning-with-files.git",
+      "skillPath": "skills/planning-with-files/SKILL.md",
+      "skillFolderHash": "d520f34584a46b8f7f5c488377508d98a9488251",
+      "installedAt": "2026-03-10T05:52:54.409Z",
+      "updatedAt": "2026-03-10T05:52:54.409Z"
+    }
+  },
+  "dismissed": {
+    "findSkillsPrompt": true
+  },
+  "lastSelectedAgents": [
+    "amp",
+    "cline",
+    "codex",
+    "cursor",
+    "gemini-cli",
+    "github-copilot",
+    "kimi-cli",
+    "opencode",
+    "claude-code"
+  ]
+}
