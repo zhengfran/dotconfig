@@ -29,13 +29,14 @@
       "updatedAt": "2026-03-10T05:43:48.522Z"
     },
     "skill-creator": {
-      "source": "ComposioHQ/awesome-claude-skills",
+      "source": "anthropics/skills",
       "sourceType": "github",
-      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
-      "skillPath": "skill-creator/SKILL.md",
-      "skillFolderHash": "28a79517753f9c3eea0127e70db740756fcf2ee6",
+      "sourceUrl": "https://github.com/anthropics/skills.git",
+      "skillPath": "skills/skill-creator/SKILL.md",
+      "skillFolderHash": "98a510d1cfef9f82c3b1eec200229ca68725e613",
+      "pluginName": "example-skills",
       "installedAt": "2026-03-10T05:43:48.591Z",
-      "updatedAt": "2026-03-10T05:43:48.591Z"
+      "updatedAt": "2026-03-12T12:19:45.813Z"
     },
     "content-research-writer": {
       "source": "ComposioHQ/awesome-claude-skills",
