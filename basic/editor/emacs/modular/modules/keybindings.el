@@ -31,10 +31,10 @@
   :demand t
   :config
   (general-create-definer zzc/leader-keys
-    :states '(normal visual emacs)
+    :states '(normal insert visual emacs)
     :keymaps 'override
     :prefix "SPC"
-    :global-prefix "C-SPC"))
+    :non-normal-prefix "C-SPC"))
 
 ;; ============================================================================
 ;; CONFIG RELOAD - RESTART EMACS
