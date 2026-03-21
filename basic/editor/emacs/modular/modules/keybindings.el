@@ -51,6 +51,19 @@ Restarting is more reliable than in-place reloading."
     (restart-emacs)))
 
 ;; Keybindings for config reload
+(defun my/yank-file-path ()
+  "Copy current file's full path to kill ring and clipboard."
+  (interactive)
+  (if-let ((file (buffer-file-name)))
+      (progn
+        (kill-new file)
+        (message "Copied: %s" file))
+    (message "No file associated with current buffer")))
+
+(zzc/leader-keys
+  "f"  '(:ignore t :which-key "file")
+  "fy" '(my/yank-file-path :which-key "yank path"))
+
 (zzc/leader-keys
   "r"  '(:ignore t :which-key "reload")
   "rr" '(my/reload-emacs-config :which-key "restart & reload"))

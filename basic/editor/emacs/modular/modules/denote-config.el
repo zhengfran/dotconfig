@@ -228,7 +228,7 @@ PARAMS is ignored (date comes from filename)."
   :demand t
   :custom
   (denote-directory my/org-base-dir)
-  (denote-known-keywords '("project" "journal" "trade" "work" "review" "ref" "archived" "habit"))
+  (denote-known-keywords '("project" "journal" "trade" "work" "review" "ref" "archived" "habit" "blog"))
   (denote-infer-keywords t)
   (denote-sort-keywords t)
   (denote-eile-type 'org)
@@ -270,7 +270,7 @@ PARAMS is ignored (date comes from filename)."
                     (setq buffer-file-coding-system 'utf-8-unix)))))
 
   ;; Create subdirectories if they don't exist
-  (dolist (subdir '("journal" "ref" "trades" "habits" "projects"))
+  (dolist (subdir '("journal" "ref" "trades" "habits" "projects" "blog"))
     (let ((dir (expand-file-name subdir denote-directory)))
       (unless (file-exists-p dir)
         (make-directory dir t))))
