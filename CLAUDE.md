@@ -43,7 +43,7 @@ The setup script symlinks configs to standard locations:
 
 ## Key Conventions
 
-- **Git branch**: Active development is on `Rebirth` branch, not `main`.
+- **Git branch**: Active development is on `main`.
 - **Emacs config** is the primary focus. Always read `basic/editor/emacs/CLAUDE.md` before modifying any `.el` files — it documents module load order, dependencies, and key variables.
 - **Emacs Lisp edits**: After editing `.el` files, delete any corresponding `.elc` files to avoid stale byte-compiled code. Validate changes with `emacs --batch --init-directory ~/dotconfig/basic/editor/emacs/modular/ -l init.el 2>&1`.
 - **WSL awareness**: Many configs handle WSL path differences. Check `my/is-WSL` (Emacs) or `is_wsl()` (.commonprofile) for platform-conditional logic.
