@@ -5,7 +5,7 @@ echo "[INFO] Starting setup-config.sh..."
 # Fetch config if not present and set them up
 if [ ! -d ~/dotconfig ]; then
     echo "[INFO] Cloning dotconfig repository..."
-    git clone -b Rebirth git@github.com:zhengfran/dotconfig.git ~/dotconfig
+    git clone git@github.com:zhengfran/dotconfig.git ~/dotconfig
 else
     echo "[INFO] dotconfig directory already exists."
 fi
@@ -155,6 +155,32 @@ elif [ -e ~/.agents ]; then
     echo "[INFO] ~/.agents already exists. Skipping."
 else
     echo "[WARN] agents directory not found in dotconfig."
+fi
+
+claude_settings_path=$(find ~/dotconfig -type f -path "*/tools/ai/claude/settings.json" | head -n 1)
+if [ -n "$claude_settings_path" ]; then
+    mkdir -p ~/.claude
+    if [ ! -e ~/.claude/settings.json ]; then
+        echo "[INFO] Symlinking Claude Code settings: $claude_settings_path -> ~/.claude/settings.json"
+        ln -s "$claude_settings_path" ~/.claude/settings.json
+    else
+        echo "[INFO] ~/.claude/settings.json already exists. Skipping."
+    fi
+else
+    echo "[WARN] Claude Code settings.json not found in dotconfig."
+fi
+
+claude_skills_path=$(find ~/dotconfig -type d -path "*/tools/ai/agents/skills" | head -n 1)
+if [ -n "$claude_skills_path" ]; then
+    mkdir -p ~/.claude
+    if [ ! -e ~/.claude/skills ]; then
+        echo "[INFO] Symlinking Claude Code skills: $claude_skills_path -> ~/.claude/skills"
+        ln -s "$claude_skills_path" ~/.claude/skills
+    else
+        echo "[INFO] ~/.claude/skills already exists. Skipping."
+    fi
+else
+    echo "[WARN] Claude Code skills directory not found in dotconfig."
 fi
 
 ## aerospace (macOS only)
