@@ -247,6 +247,150 @@
       "skillFolderHash": "0028508546eb487fe8079e0b5660c23cf788be9c",
       "installedAt": "2026-04-05T08:17:03.963Z",
       "updatedAt": "2026-04-05T08:17:03.963Z"
+    },
+    "ljg-card": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-card/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.742Z",
+      "updatedAt": "2026-04-05T08:32:37.742Z"
+    },
+    "ljg-invest": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-invest/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.750Z",
+      "updatedAt": "2026-04-05T08:32:37.750Z"
+    },
+    "ljg-learn": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-learn/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.751Z",
+      "updatedAt": "2026-04-05T08:32:37.751Z"
+    },
+    "ljg-paper": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-paper/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.751Z",
+      "updatedAt": "2026-04-05T08:32:37.751Z"
+    },
+    "ljg-paper-flow": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-paper-flow/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.751Z",
+      "updatedAt": "2026-04-05T08:32:37.751Z"
+    },
+    "ljg-paper-river": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-paper-river/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.752Z",
+      "updatedAt": "2026-04-05T08:32:37.752Z"
+    },
+    "ljg-plain": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-plain/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.752Z",
+      "updatedAt": "2026-04-05T08:32:37.752Z"
+    },
+    "ljg-rank": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-rank/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.752Z",
+      "updatedAt": "2026-04-05T08:32:37.752Z"
+    },
+    "ljg-relationship": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-relationship/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.753Z",
+      "updatedAt": "2026-04-05T08:32:37.753Z"
+    },
+    "ljg-roundtable": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-roundtable/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.753Z",
+      "updatedAt": "2026-04-05T08:32:37.753Z"
+    },
+    "ljg-skill-map": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-skill-map/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.754Z",
+      "updatedAt": "2026-04-05T08:32:37.754Z"
+    },
+    "ljg-travel": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-travel/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.755Z",
+      "updatedAt": "2026-04-05T08:32:37.755Z"
+    },
+    "ljg-word": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-word/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.756Z",
+      "updatedAt": "2026-04-05T08:32:37.756Z"
+    },
+    "ljg-word-flow": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-word-flow/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.756Z",
+      "updatedAt": "2026-04-05T08:32:37.756Z"
+    },
+    "ljg-writes": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-writes/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.757Z",
+      "updatedAt": "2026-04-05T08:32:37.757Z"
+    },
+    "ljg-x-download": {
+      "source": "git@github.com:lijigang/ljg-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
+      "skillPath": "skills/ljg-x-download/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:32:37.757Z",
+      "updatedAt": "2026-04-05T08:32:37.757Z"
     }
   },
   "dismissed": {
