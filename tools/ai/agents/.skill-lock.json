@@ -145,6 +145,60 @@
       "skillFolderHash": "d520f34584a46b8f7f5c488377508d98a9488251",
       "installedAt": "2026-03-10T05:52:54.409Z",
       "updatedAt": "2026-03-10T05:52:54.409Z"
+    },
+    "grill-me": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "grill-me/SKILL.md",
+      "skillFolderHash": "2a1ad17028306ebe45f0e49703fa28b9b2e7f499",
+      "installedAt": "2026-03-31T06:19:20.135Z",
+      "updatedAt": "2026-03-31T06:19:20.135Z"
+    },
+    "deepinit": {
+      "source": "yeachan-heo/oh-my-claudecode",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/yeachan-heo/oh-my-claudecode.git",
+      "skillPath": "skills/deepinit/SKILL.md",
+      "skillFolderHash": "5839f9be75783f998424c936ce3b62d5a443718f",
+      "installedAt": "2026-03-31T09:49:34.812Z",
+      "updatedAt": "2026-03-31T09:49:34.812Z"
+    },
+    "defuddle": {
+      "source": "git@github.com:kepano/obsidian-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:kepano/obsidian-skills.git",
+      "skillPath": "skills/defuddle/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:07:03.546Z",
+      "updatedAt": "2026-04-05T08:07:03.546Z"
+    },
+    "obsidian-bases": {
+      "source": "git@github.com:kepano/obsidian-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:kepano/obsidian-skills.git",
+      "skillPath": "skills/obsidian-bases/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:07:03.554Z",
+      "updatedAt": "2026-04-05T08:07:03.554Z"
+    },
+    "obsidian-markdown": {
+      "source": "git@github.com:kepano/obsidian-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:kepano/obsidian-skills.git",
+      "skillPath": "skills/obsidian-markdown/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:07:03.555Z",
+      "updatedAt": "2026-04-05T08:07:03.555Z"
+    },
+    "obsidian-cli": {
+      "source": "git@github.com:kepano/obsidian-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:kepano/obsidian-skills.git",
+      "skillPath": "skills/obsidian-cli/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-04-05T08:07:03.555Z",
+      "updatedAt": "2026-04-05T08:07:03.555Z"
     }
   },
   "dismissed": {
@@ -152,13 +206,17 @@
   },
   "lastSelectedAgents": [
     "amp",
+    "antigravity",
     "cline",
     "codex",
     "cursor",
+    "deepagents",
+    "firebender",
     "gemini-cli",
     "github-copilot",
     "kimi-cli",
     "opencode",
+    "warp",
     "claude-code"
   ]
 }
