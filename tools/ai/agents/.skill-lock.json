@@ -199,6 +199,54 @@
       "skillFolderHash": "",
       "installedAt": "2026-04-05T08:07:03.555Z",
       "updatedAt": "2026-04-05T08:07:03.555Z"
+    },
+    "excalidraw-diagram": {
+      "source": "git@github.com:axtonliu/axton-obsidian-visual-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:axtonliu/axton-obsidian-visual-skills.git",
+      "skillPath": "excalidraw-diagram/SKILL.md",
+      "skillFolderHash": "",
+      "pluginName": "obsidian-visual-skills",
+      "installedAt": "2026-04-05T08:15:10.981Z",
+      "updatedAt": "2026-04-05T08:15:10.981Z"
+    },
+    "mermaid-visualizer": {
+      "source": "git@github.com:axtonliu/axton-obsidian-visual-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:axtonliu/axton-obsidian-visual-skills.git",
+      "skillPath": "mermaid-visualizer/SKILL.md",
+      "skillFolderHash": "",
+      "pluginName": "obsidian-visual-skills",
+      "installedAt": "2026-04-05T08:15:10.986Z",
+      "updatedAt": "2026-04-05T08:15:10.986Z"
+    },
+    "obsidian-canvas-creator": {
+      "source": "git@github.com:axtonliu/axton-obsidian-visual-skills.git",
+      "sourceType": "git",
+      "sourceUrl": "git@github.com:axtonliu/axton-obsidian-visual-skills.git",
+      "skillPath": "obsidian-canvas-creator/SKILL.md",
+      "skillFolderHash": "",
+      "pluginName": "obsidian-visual-skills",
+      "installedAt": "2026-04-05T08:15:10.989Z",
+      "updatedAt": "2026-04-05T08:15:10.989Z"
+    },
+    "tutor": {
+      "source": "RoundTable02/tutor-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/RoundTable02/tutor-skills.git",
+      "skillPath": "skills/tutor/SKILL.md",
+      "skillFolderHash": "2086002c29352ef45ef2d5937a3100a44a99e6b8",
+      "installedAt": "2026-04-05T08:17:03.947Z",
+      "updatedAt": "2026-04-05T08:17:03.947Z"
+    },
+    "tutor-setup": {
+      "source": "RoundTable02/tutor-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/RoundTable02/tutor-skills.git",
+      "skillPath": "skills/tutor-setup/SKILL.md",
+      "skillFolderHash": "0028508546eb487fe8079e0b5660c23cf788be9c",
+      "installedAt": "2026-04-05T08:17:03.963Z",
+      "updatedAt": "2026-04-05T08:17:03.963Z"
     }
   },
   "dismissed": {
