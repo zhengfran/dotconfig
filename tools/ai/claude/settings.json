@@ -1,7 +1,7 @@
 {
   "model": "opus[1m]",
   "permissions": {
-    "defaultMode": "auto"
+    "defaultMode": "bypassPermissions"
   },
   "env": {
     "OPENCLAW_TOKEN": "REMOVED"
