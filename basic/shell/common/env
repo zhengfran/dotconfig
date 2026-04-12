@@ -9,6 +9,7 @@ if [[ "$(uname)" != "Darwin" ]]; then
   export PATH=$PATH:/home/linuxbrew/.linuxbrew/sbin
 fi
 export PATH=$PATH:$HOME/.bun/bin
+export PATH=$PATH:$HOME/.npm-global/bin
 export PATH=$PATH:$HOME/.linuxbrew/bin
 export PATH=$PATH:$HOME/.linuxbrew/sbin
 export PATH=$PATH:/opt/homebrew/bin
