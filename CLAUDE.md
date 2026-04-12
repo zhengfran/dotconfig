@@ -1,7 +1,3 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## What This Is
 
 Personal dotfiles repository (`~/dotconfig`) for a cross-platform development environment (WSL2/Linux primary, macOS secondary, Windows tertiary). Configs are symlinked into place by `scripts/setup-config.sh`.
