@@ -11,10 +11,11 @@ version: "5.1.0"
 
 ## 约束
 
-### Org-mode 语法
+### Markdown 语法
 
-- 加粗用 `*bold*`（单星号），禁止 `**bold**`
-- 标题层级从 `*` 开始，不跳级
+- 加粗用 `**bold**`（双星号）
+- 标题层级从 `#` 开始，不跳级
+- 目标是 Obsidian 可读的 Markdown（支持 wikilink `[[foo]]` 与 callout）
 
 ### ASCII Art
 
@@ -24,17 +25,19 @@ version: "5.1.0"
 
 - 时间戳：`date +%Y%m%dT%H%M%S`
 - 可读时间：`date "+%Y-%m-%d %a %H:%M"`
-- 文件名：`{时间戳}--{标题关键词}__write.org`
-- 输出目录：`~/Documents/notes/`
+- 文件名：`{时间戳}--{标题关键词}__write.md`
+- 输出目录：`~/Obsidian/00-Inbox/`
 
-### Org 文件头
+### YAML Frontmatter
 
 ```
-#+title:      {标题}
-#+date:       [{YYYY-MM-DD Day HH:MM}]
-#+filetags:   :write:
-#+identifier: {YYYYMMDDTHHMMSS}
-#+author:     李继刚
+---
+title: "{标题}"
+date: "{YYYY-MM-DD Day HH:MM}"
+tags: [write]
+identifier: "{YYYYMMDDTHHMMSS}"
+author: "郑之成"
+---
 ```
 
 文件写入后报告路径。
@@ -242,5 +245,5 @@ version: "5.1.0"
 
 1. `date +%Y%m%dT%H%M%S` 和 `date "+%Y-%m-%d %a %H:%M"` 获取时间戳
 2. 从观点中提取关键词作为标题
-3. 写入 `~/Documents/notes/{时间戳}--{标题关键词}__write.org`
+3. 写入 `~/Obsidian/00-Inbox/{时间戳}--{标题关键词}__write.md`
 4. 报告路径

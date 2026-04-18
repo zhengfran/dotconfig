@@ -91,23 +91,31 @@ Assistant: [Launches roundtable discussion on free will]
    - 生成**完整知识网络** ASCII 图：标出所有关键概念、立场、争议点及其关系
    - 列出**未解决的开放问题**（讨论中暴露但未穷尽的方向）
 
-7. **写入 org 文件**
-   将讨论全貌整合为 org-mode 格式并写入文件：
+7. **写入 markdown 文件**
+   将讨论全貌整合为 markdown 格式并写入文件：
    1. 运行 `date +%Y%m%dT%H%M%S` 获取时间戳
-   2. 写入 `~/Documents/notes/{timestamp}--圆桌-{议题关键词}__roundtable.org`
-   3. org 文件结构：
-      ```org
-      #+title: 圆桌：{议题}
-      #+date: [{日期}]
-      #+filetags: :roundtable:
-      * 议题与参会者
-      * 各轮讨论记录
-      ** 第 N 轮：{引导问题}
-      *** 发言记录
-      *** 核心争议
-      *** ASCII 框架图
-      * 知识网络（全局）
-      * 开放问题
+   2. 写入 `~/Obsidian/00-Inbox/{timestamp}--圆桌-{议题关键词}__roundtable.md`
+   3. markdown 文件结构：
+      ```markdown
+      ---
+      title: "圆桌：{议题}"
+      date: "{日期}"
+      tags: [roundtable]
+      identifier: "{timestamp}"
+      author: "郑之成"
+      ---
+
+      # 议题与参会者
+
+      # 各轮讨论记录
+      ## 第 N 轮：{引导问题}
+      ### 发言记录
+      ### 核心争议
+      ### ASCII 框架图
+
+      # 知识网络（全局）
+
+      # 开放问题
       ```
    4. 向用户报告文件路径
 
