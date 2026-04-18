@@ -11,10 +11,11 @@ version: "4.4.0"
 
 ## 格式约束
 
-### Org-mode 语法
+### Markdown 语法
 
-- 加粗用 `*bold*`（单星号），禁止 `**bold**`
-- 标题层级从 `*` 开始，不跳级
+- 加粗用 `**bold**`
+- 标题层级从 `#` 开始，不跳级
+- 目标是 Obsidian 友好的 Markdown
 
 ### ASCII Art
 
@@ -22,26 +23,31 @@ version: "4.4.0"
 
 ### 模板权威性
 
-输出结构依据 `references/template.org`。禁止参考 `~/Documents/notes/` 中已有论文文件的章节结构——旧文件可能使用过期模板。
+输出结构依据 `references/template.md`。禁止参考 `~/Obsidian/00-Inbox/` 中已有论文文件的章节结构——旧文件可能使用过期模板。
 
 ### Denote 文件规范
 
 - 时间戳：`date +%Y%m%dT%H%M%S`
 - 可读时间：`date "+%Y-%m-%d %a %H:%M"`
-- 文件名：`{时间戳}--paper-{简短标题}__paper.org`
-- 输出目录：`~/Documents/notes/`
+- 文件名：`{时间戳}--paper-{简短标题}__paper.md`
+- 输出目录：`~/Obsidian/00-Inbox/`
 
-### Org 文件头
+### YAML Frontmatter
 
 ```
-#+title:      paper-{简短标题}
-#+date:       [{YYYY-MM-DD Day HH:MM}]
-#+filetags:   :paper:
-#+identifier: {YYYYMMDDTHHMMSS}
-#+source:     {URL 或来源描述}
-#+authors:    {作者列表}
-#+venue:      {发表场所/年份}
+---
+title: "paper-{简短标题}"
+date: "{YYYY-MM-DD Day HH:MM}"
+tags: [paper]
+identifier: "{YYYYMMDDTHHMMSS}"
+source: "{URL 或来源描述}"
+authors: "{论文作者列表}"
+venue: "{发表场所/年份}"
+author: "郑之成"
+---
 ```
+
+备注：`authors` 是原论文作者；`author` 是本笔记的作者（郑之成）。
 
 文件写入后报告路径。
 
@@ -88,7 +94,7 @@ version: "4.4.0"
 
 确保拿到：标题、作者、摘要、核心方法、结果。
 
-如果论文有一张承载全文核心思路的总览图（overview / architecture diagram，通常是 Figure 1），提取并保存到 `~/Documents/notes/images/`，文件名 `{identifier}--paper-{简短标题}-overview.png`。
+如果论文有一张承载全文核心思路的总览图（overview / architecture diagram，通常是 Figure 1），提取并保存到 `~/Obsidian/00-Inbox/images/`，文件名 `{identifier}--paper-{简短标题}-overview.png`。
 
 判断标准：这张图让人一看就抓住论文在做什么。不是所有论文都有——没有就跳过，不要硬找。
 
@@ -173,9 +179,9 @@ version: "4.4.0"
 
 列修改清单确认后生成文件。
 
-### 9. 生成 Org 文件
+### 9. 生成 Markdown 文件
 
-按 Denote 规范获取时间戳，读 `references/template.org`，写入 `~/Documents/notes/`。
+按 Denote 规范获取时间戳，读 `references/template.md`，写入 `~/Obsidian/00-Inbox/`。
 
 ## 验收
 

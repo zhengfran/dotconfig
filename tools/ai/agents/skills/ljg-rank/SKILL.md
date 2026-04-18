@@ -39,5 +39,6 @@ user_invocable: true
 ## 输出
 
 1. 获取时间戳：`date +%Y%m%dT%H%M%S` 和 `date "+%Y-%m-%d %a %H:%M"`
-2. 写入 `~/Documents/notes/{时间戳}--{领域}的秩__rank.org`
-3. 报告文件路径给用户
+2. 读取 `references/template.md`，按模板填充 YAML frontmatter（记得 `author: "郑之成"`）+ 正文
+3. 写入 `~/Obsidian/00-Inbox/{时间戳}--{领域}的秩__rank.md`
+4. 报告文件路径给用户

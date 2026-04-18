@@ -17,10 +17,11 @@ version: "1.0.0"
 
 ## 格式约束
 
-### Org-mode 语法
+### Markdown 语法
 
-- 加粗用 `*bold*`（单星号），禁止 `**bold**`
-- 标题层级从 `*` 开始，不跳级
+- 加粗用 `**bold**`
+- 标题层级从 `#` 开始，不跳级
+- 目标是 Obsidian 友好的 Markdown
 
 ### ASCII Art
 
@@ -28,26 +29,31 @@ version: "1.0.0"
 
 ### 模板权威性
 
-输出结构依据 `references/template.org`。
+输出结构依据 `references/template.md`。
 
 ### Denote 文件规范
 
 - 时间戳：`date +%Y%m%dT%H%M%S`
 - 可读时间：`date "+%Y-%m-%d %a %H:%M"`
-- 文件名：`{时间戳}--paper-river-{简短标题}__paper_river.org`
-- 输出目录：`~/Documents/notes/`
+- 文件名：`{时间戳}--paper-river-{简短标题}__paper_river.md`
+- 输出目录：`~/Obsidian/00-Inbox/`
 
-### Org 文件头
+### YAML Frontmatter
 
 ```
-#+title:      paper-river-{简短标题}
-#+date:       [{YYYY-MM-DD Day HH:MM}]
-#+filetags:   :paper:river:
-#+identifier: {YYYYMMDDTHHMMSS}
-#+source:     {URL 或来源描述}
-#+authors:    {目标论文作者}
-#+venue:      {发表场所/年份}
+---
+title: "paper-river-{简短标题}"
+date: "{YYYY-MM-DD Day HH:MM}"
+tags: [paper, river]
+identifier: "{YYYYMMDDTHHMMSS}"
+source: "{URL 或来源描述}"
+authors: "{目标论文作者}"
+venue: "{发表场所/年份}"
+author: "郑之成"
+---
 ```
+
+备注：`authors` 是目标论文作者；`author` 是本笔记的作者（郑之成）。
 
 ## 红线
 
@@ -143,7 +149,7 @@ version: "1.0.0"
 - 因果链条是否连贯——把所有"它看到了什么问题"串起来读，逻辑通不通
 - 差异是否突出——每篇论文的重点是不是在讲"和前面有什么不同"
 
-读 `references/template.org`，按 Denote 规范写入 `~/Documents/notes/`。
+读 `references/template.md`，按 Denote 规范写入 `~/Obsidian/00-Inbox/`。
 
 ## 验收
 
