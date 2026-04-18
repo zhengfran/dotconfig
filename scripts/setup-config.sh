@@ -137,6 +137,14 @@ else
     echo "[WARN] Claude Code settings.json not found in dotconfig."
 fi
 
+claude_statusline_path=$(find ~/dotconfig -type f -path "*/tools/ai/claude/statusline-command.sh" | head -n 1)
+if [ -n "$claude_statusline_path" ]; then
+    mkdir -p ~/.claude
+    symlink_config "Claude Code statusline" "$claude_statusline_path" ~/.claude/statusline-command.sh
+else
+    echo "[WARN] Claude Code statusline-command.sh not found in dotconfig."
+fi
+
 claude_skills_path=$(find ~/dotconfig -type d -path "*/tools/ai/agents/skills" | head -n 1)
 if [ -n "$claude_skills_path" ]; then
     mkdir -p ~/.claude
