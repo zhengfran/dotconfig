@@ -53,8 +53,9 @@ def pace_str(distance_m: Optional[float], duration_s: Optional[float]) -> str:
     if not distance_m or not duration_s or distance_m <= 0 or duration_s <= 0:
         return "?"
     pace_s_per_km = duration_s / (distance_m / 1000.0)
-    mm = int(pace_s_per_km // 60)
-    ss = int(round(pace_s_per_km % 60))
+    total_seconds = int(round(pace_s_per_km))
+    mm = total_seconds // 60
+    ss = total_seconds % 60
     return f"{mm}:{ss:02d}/km"
 
 
