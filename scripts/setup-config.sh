@@ -145,6 +145,14 @@ else
     echo "[WARN] Claude Code statusline-command.sh not found in dotconfig."
 fi
 
+claude_validate_path=$(find ~/dotconfig -type f -path "*/tools/ai/claude/validate-commit-msg.sh" | head -n 1)
+if [ -n "$claude_validate_path" ]; then
+    mkdir -p ~/.claude
+    symlink_config "Claude Code commit-message hook" "$claude_validate_path" ~/.claude/validate-commit-msg.sh
+else
+    echo "[WARN] Claude Code validate-commit-msg.sh not found in dotconfig."
+fi
+
 claude_skills_path=$(find ~/dotconfig -type d -path "*/tools/ai/agents/skills" | head -n 1)
 if [ -n "$claude_skills_path" ]; then
     mkdir -p ~/.claude

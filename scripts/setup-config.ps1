@@ -105,6 +105,16 @@ if (Test-Path $claudeSettings) {
     New-ConfigLink -Source $claudeSettings -Target "$claudeDir\settings.json"
 }
 
+# Claude Code commit-message hook (referenced by settings.json hooks.PreToolUse)
+$claudeCommitHook = "$dotconfig\tools\ai\claude\validate-commit-msg.sh"
+if (Test-Path $claudeCommitHook) {
+    $claudeDir = "$HOME\.claude"
+    if (-not (Test-Path $claudeDir)) {
+        New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null
+    }
+    New-ConfigLink -Source $claudeCommitHook -Target "$claudeDir\validate-commit-msg.sh"
+}
+
 # Claude Code skills
 $claudeSkills = "$dotconfig\tools\ai\agents\skills"
 if (Test-Path $claudeSkills) {
