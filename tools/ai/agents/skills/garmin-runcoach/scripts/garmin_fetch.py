@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Fetch Garmin activities + sleep summary and write to JSON.
 
+Requires the `garminconnect` package in the chosen Python interpreter.
+
 Usage:
-  source /home/flanlc/.openclaw/workspace/.venv/bin/activate
   export GARMIN_EMAIL=... GARMIN_PASSWORD=***
-  python garmin_fetch.py --days 14 --out /home/flanlc/.openclaw/workspace/runcoach/data/garmin-latest.json
+  python garmin_fetch.py --days 14 --out path/to/garmin-latest.json
+
+Typically invoked through the `garmin-runcoach` wrapper (which handles
+venv detection, credentials from ~/.netrc, and default output paths).
 """
 
 from garminconnect import Garmin

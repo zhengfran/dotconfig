@@ -1,4 +1,171 @@
 #!/usr/bin/env bash
+# garmin-runcoach — fetch + summarize Garmin Connect data
+#
+# Usage:
+#   garmin-runcoach sync    [--days N] [--out PATH]
+#   garmin-runcoach summary [--in PATH] [--out PATH]
+#   garmin-runcoach all     [--days N]
+#   garmin-runcoach help
+#
+# Configuration (all optional, all via env):
+#   GARMIN_RUNCOACH_DATA_DIR   Where JSON/MD output lives.
+#                              Default: ${XDG_DATA_HOME:-$HOME/.local/share}/garmin-runcoach
+#   GARMIN_RUNCOACH_PYTHON     Python interpreter to use.
+#                              Default: auto-detect (venv near data dir, then python3)
+#   GARMIN_EMAIL               Garmin Connect login email
+#   GARMIN_PASSWORD            Garmin Connect login password
+#                              (Both fall back to ~/.netrc entry for connect.garmin.com)
+#
+# The Python helpers (garmin_fetch.py, garmin_summary.py) live next to this
+# script; the wrapper locates them via $BASH_SOURCE — no external paths.
+
 set -euo pipefail
 
-exec /home/flanlc/.openclaw/workspace/scripts/garmin-runcoach "$@"
+# ── Locate self ──────────────────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# ── Resolve data dir ─────────────────────────────────────────────────────────
+DATA_DIR="${GARMIN_RUNCOACH_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/garmin-runcoach}"
+mkdir -p "$DATA_DIR"
+
+JSON_PATH="$DATA_DIR/garmin-latest.json"
+MD_PATH="$DATA_DIR/garmin-summary.md"
+
+# ── Pick Python ──────────────────────────────────────────────────────────────
+pick_python() {
+    if [[ -n "${GARMIN_RUNCOACH_PYTHON:-}" ]]; then
+        echo "$GARMIN_RUNCOACH_PYTHON"
+        return
+    fi
+    # Probe common venv locations
+    local candidate
+    for candidate in \
+        "$DATA_DIR/.venv/bin/python" \
+        "$HOME/.local/share/garmin-runcoach/.venv/bin/python" \
+        "$HOME/.virtualenvs/garmin-runcoach/bin/python" \
+        ; do
+        if [[ -x "$candidate" ]]; then
+            echo "$candidate"
+            return
+        fi
+    done
+    # Fall back to system python
+    command -v python3 2>/dev/null || command -v python 2>/dev/null || echo ""
+}
+
+PY="$(pick_python)"
+if [[ -z "$PY" ]]; then
+    echo "garmin-runcoach: no Python interpreter found." >&2
+    echo "  Install python3 or set GARMIN_RUNCOACH_PYTHON=/path/to/python" >&2
+    exit 127
+fi
+
+# ── Load credentials from .netrc if not in env ───────────────────────────────
+load_netrc_creds() {
+    local netrc="$HOME/.netrc"
+    [[ -r "$netrc" ]] || return 0
+    local host
+    for host in connect.garmin.com garmin; do
+        # Extract login + password for this host. Stops at next "machine" line.
+        local creds
+        creds="$(awk -v h="$host" '
+            $1 == "machine" && $2 == h { f=1; next }
+            f && $1 == "login"    { printf "L=%s\n", $2 }
+            f && $1 == "password" { printf "P=%s\n", $2; exit }
+            f && $1 == "machine"  { exit }
+        ' "$netrc")"
+        [[ -n "$creds" ]] || continue
+        local L P
+        L="$(awk -F= '/^L=/{print $2}' <<< "$creds")"
+        P="$(awk -F= '/^P=/{print $2}' <<< "$creds")"
+        if [[ -n "$L" && -n "$P" ]]; then
+            export GARMIN_EMAIL="$L"
+            export GARMIN_PASSWORD="$P"
+            return 0
+        fi
+    done
+}
+
+if [[ -z "${GARMIN_EMAIL:-}" || -z "${GARMIN_PASSWORD:-}" ]]; then
+    load_netrc_creds
+fi
+
+require_creds() {
+    if [[ -z "${GARMIN_EMAIL:-}" || -z "${GARMIN_PASSWORD:-}" ]]; then
+        echo "garmin-runcoach: no Garmin credentials." >&2
+        echo "  Set GARMIN_EMAIL/GARMIN_PASSWORD env vars, or add a" >&2
+        echo "  'machine connect.garmin.com' entry to ~/.netrc." >&2
+        exit 1
+    fi
+}
+
+# ── Sub-command dispatch ─────────────────────────────────────────────────────
+print_help() {
+    # Print the leading comment block of this file (lines 2 onward, until
+    # the first blank-comment line stops the doc section).
+    awk '
+        NR == 1 { next }
+        /^# / { sub(/^# ?/, ""); print; next }
+        /^#$/ { print ""; next }
+        { exit }
+    ' "${BASH_SOURCE[0]}"
+}
+
+cmd="${1:-help}"
+shift || true
+
+case "$cmd" in
+    sync)
+        days=14
+        out="$JSON_PATH"
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                --days) days="$2"; shift 2 ;;
+                --out)  out="$2"; shift 2 ;;
+                *) echo "Unknown arg: $1" >&2; exit 2 ;;
+            esac
+        done
+        require_creds
+        exec "$PY" "$SCRIPT_DIR/garmin_fetch.py" --days "$days" --out "$out"
+        ;;
+
+    summary)
+        in_path="$JSON_PATH"
+        out="$MD_PATH"
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                --in)  in_path="$2"; shift 2 ;;
+                --out) out="$2"; shift 2 ;;
+                *) echo "Unknown arg: $1" >&2; exit 2 ;;
+            esac
+        done
+        exec "$PY" "$SCRIPT_DIR/garmin_summary.py" --in "$in_path" --out "$out"
+        ;;
+
+    all)
+        days=14
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                --days) days="$2"; shift 2 ;;
+                *) echo "Unknown arg: $1" >&2; exit 2 ;;
+            esac
+        done
+        require_creds
+        "$PY" "$SCRIPT_DIR/garmin_fetch.py"   --days "$days" --out "$JSON_PATH"
+        "$PY" "$SCRIPT_DIR/garmin_summary.py" --in   "$JSON_PATH" --out "$MD_PATH"
+        echo
+        echo "Wrote:"
+        echo "  $JSON_PATH"
+        echo "  $MD_PATH"
+        ;;
+
+    help|--help|-h|"")
+        print_help
+        ;;
+
+    *)
+        echo "Unknown command: $cmd" >&2
+        echo "Try: garmin-runcoach help" >&2
+        exit 2
+        ;;
+esac
