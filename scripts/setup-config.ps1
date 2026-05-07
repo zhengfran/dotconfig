@@ -119,4 +119,17 @@ if (Test-Path $claudeSkills) {
 New-ConfigLink -Source "$dotconfig\basic\shell\common" `
                -Target "$HOME\.config\common" -IsDirectory
 
+# --- AHK smart-launcher auto-start at login ---
+# Symlink the script into the user's Startup folder so Windows runs it
+# automatically each login. Requires AutoHotkey v2 to be installed
+# (winget install AutoHotkey.AutoHotkey) and registered as the .ahk handler.
+$ahkScript = "$dotconfig\tools\automation\ahk\smart-launcher.ahk"
+if (Test-Path $ahkScript) {
+    $startupFolder = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
+    New-ConfigLink -Source $ahkScript `
+                   -Target "$startupFolder\smart-launcher.ahk"
+} else {
+    Write-Host "[WARN] AHK script not found at $ahkScript"
+}
+
 Write-Host "[INFO] setup-config.ps1 completed." -ForegroundColor Cyan

@@ -16,6 +16,7 @@ $wingetPackages = @(
     "FFmpeg (Gyan.dev).FFmpeg"       # ffmpeg
     "ajeetdsouza.zoxide"
     "Neovim.Neovim"
+    "AutoHotkey.AutoHotkey"           # smart-launcher.ahk hotkey daemon (Hyper + Meta layers)
 )
 
 Write-Host "==> Installing winget packages..." -ForegroundColor Cyan
