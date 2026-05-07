@@ -1,6 +1,6 @@
 ---
 name: conventional-commit
-description: 'Prompt and workflow for generating conventional commit messages using a structured XML format. Guides users to create standardized, descriptive commit messages in line with the Conventional Commits specification, including instructions, examples, and validation.'
+description: Generate a Conventional Commits format message (`type(scope): description`) for a git commit. **ALWAYS invoke this skill before running `git commit`** in any repo that enforces it (the dotconfig repo has a PreToolUse hook that will reject non-conforming messages). Allowed types — feat | fix | docs | style | refactor | perf | test | build | ci | chore | revert. TRIGGER on any of: user says "commit", "git commit", "提交", "commit and push", "make a commit", "amend", "reword commit", "fix commit message"; OR Claude is about to call `git commit` via Bash; OR a previous commit attempt was rejected by validate-commit-msg.sh hook.
 ---
 
 ### Instructions
