@@ -1,6 +1,6 @@
 ---
-name: project-breakdown
-description: When the user shares a project idea at any level of detail — a napkin sketch ("I want to build X"), a passing thought ("thinking about starting Y"), or a detailed brief — relentlessly interview them round-by-round to resolve every branch of the decision tree (scope, constraints, risks, success criteria), then break the result into a Project + Epics + Tasks note tree in their Obsidian vault. Use whenever the user presents ANY project-sized intent, even if they don't explicitly ask for breakdown. Triggers on "/project-breakdown", "new project idea", "break this down", "let's plan this project", "新项目", "I want to build/make/start", and similar phrasings.
+name: new-obsidian-project
+description: When the user shares a project idea OR points at an existing/completed project they want documented — a napkin sketch ("I want to build X"), a passing thought ("thinking about starting Y"), a detailed brief, OR an existing codebase path ("this project lives at /path/..." / "I did this already") — relentlessly interview them round-by-round to resolve every branch of the decision tree (scope, constraints, risks, success criteria) OR read the existing code to ground the breakdown, then create a Project + Epics + Tasks (greenfield) or Project + Supplements (retrospective) note tree in their Obsidian vault. Use whenever the user presents ANY project-sized intent, even if they don't explicitly ask for breakdown. Triggers on "/new-obsidian-project", "new project idea", "break this down", "let's plan this project", "新项目", "document this project", "I want to build/make/start", and similar phrasings.
 ---
 
 # Project Breakdown
@@ -129,6 +129,28 @@ Project folder path: `06-Spaces/<Space>/02-Projects/<Project Name>/`
 ### Step 3 — Create the files
 
 Use the frontmatter schemas below. All dates default to today (YYYY-MM-DD). All filenames match the note's display name.
+
+#### Step 3a — Clone the per-project bases (REQUIRED — do this BEFORE writing notes)
+
+Each project owns its own per-Type bases. Sharing them across projects causes Kanban plugin state pollution — one project's column ordering overwrites another's. The fix: every project folder gets its own copies of 6 base templates from `07-Databases/`.
+
+```bash
+# Run after creating the project folder, before creating notes
+PROJ="06-Spaces/<Space>/02-Projects/<Project Name>"
+mkdir -p "$PROJ"
+cp "07-Databases/Epics.base"       "$PROJ/"
+cp "07-Databases/Stories.base"     "$PROJ/"
+cp "07-Databases/Tasks.base"       "$PROJ/"
+cp "07-Databases/Bugs.base"        "$PROJ/"
+cp "07-Databases/Supplements.base" "$PROJ/"
+cp "07-Databases/Children.base"    "$PROJ/"
+```
+
+**Why this works**: the bases use `Project == link(this.file.name)` filters — context-aware to the embedding Project note. The Project note's `![[Tasks.base]]` etc. resolve to the LOCAL copy (Obsidian prefers same-folder matches over distant ones). Each project gets isolated Kanban state.
+
+**Don't skip this** — embedding the global bases from `07-Databases/` in a new Project note technically displays the right data via the filter, but the Kanban plugin will silently overwrite shared state.
+
+#### Step 3b — Create the markdown notes
 
 **Project note** — `<Project Name>.md`:
 
