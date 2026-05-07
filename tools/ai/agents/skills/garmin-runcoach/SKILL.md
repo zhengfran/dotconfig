@@ -5,62 +5,74 @@ description: Fetch, parse, and summarize Garmin Connect running and sleep data f
 
 # Garmin Runcoach
 
-Use this skill to pull Garmin Connect data into local JSON files, then summarize it into coach-friendly signals.
+Pull Garmin Connect data into local JSON, then summarize it into coach-friendly markdown signals. The skill is **self-contained** — the wrapper and Python helpers live together under `scripts/`; no external paths.
 
-## Current machine setup
-
-Use the working wrapper command:
+## Quick start
 
 ```bash
 garmin-runcoach all --days 14
 ```
 
-Defaults on this machine:
-- Wrapper: `/home/flanlc/.openclaw/workspace/scripts/garmin-runcoach`
-- In PATH via: `/home/flanlc/.local/bin/garmin-runcoach`
-- Python: `/home/flanlc/.openclaw/workspace/.venv/bin/python`
-- JSON output: `/home/flanlc/.openclaw/workspace/runcoach/data/garmin-latest.json`
-- Markdown output: `/home/flanlc/.openclaw/workspace/runcoach/data/garmin-summary.md`
+Fetches the last 14 days and writes:
+- `$DATA_DIR/garmin-latest.json` — raw activities + sleep
+- `$DATA_DIR/garmin-summary.md` — coach summary
+
+## Configuration (all optional)
+
+Everything resolves from env vars with sensible defaults; **no path is hardcoded**.
+
+| Env var | Default | What it does |
+|---|---|---|
+| `GARMIN_RUNCOACH_DATA_DIR` | `${XDG_DATA_HOME:-$HOME/.local/share}/garmin-runcoach` | Where JSON/MD outputs land |
+| `GARMIN_RUNCOACH_PYTHON` | auto-detect (venv near data dir → `python3`) | Python with `garminconnect` installed |
+| `GARMIN_EMAIL` / `GARMIN_PASSWORD` | read from `~/.netrc` if unset | Login |
 
 ## Credentials
 
-Credential resolution order:
-1. Existing `GARMIN_EMAIL` / `GARMIN_PASSWORD` env vars
-2. `~/.netrc` entry for `connect.garmin.com` (fallback: `garmin`)
+Resolution order:
+1. `GARMIN_EMAIL` + `GARMIN_PASSWORD` env vars
+2. `~/.netrc` entry for `connect.garmin.com` (fallback host name: `garmin`)
 
-Do not assume a root-only `garmin.env` file exists.
-
-## Common commands
-
-Sync + summary:
-
-```bash
-garmin-runcoach all --days 30
+Example `~/.netrc` (chmod 600):
+```
+machine connect.garmin.com
+  login your.email@example.com
+  password ***
 ```
 
-Sync only:
+## Python venv
+
+The `garminconnect` package isn't in stdlib. Set up a venv once:
 
 ```bash
-garmin-runcoach sync --days 30 --out /home/flanlc/.openclaw/workspace/runcoach/data/garmin-latest.json
+python3 -m venv "${XDG_DATA_HOME:-$HOME/.local/share}/garmin-runcoach/.venv"
+"${XDG_DATA_HOME:-$HOME/.local/share}/garmin-runcoach/.venv/bin/pip" install garminconnect
 ```
 
-Summary only:
+The wrapper auto-detects this venv. Or point at any other venv via `GARMIN_RUNCOACH_PYTHON=/path/to/python`.
+
+## Commands
 
 ```bash
-garmin-runcoach summary --in /home/flanlc/.openclaw/workspace/runcoach/data/garmin-latest.json --out /home/flanlc/.openclaw/workspace/runcoach/data/garmin-summary.md
+garmin-runcoach sync    [--days N] [--out PATH]
+garmin-runcoach summary [--in PATH] [--out PATH]
+garmin-runcoach all     [--days N]
+garmin-runcoach help
 ```
+
+`sync` and `summary` default `--out` / `--in` to `$DATA_DIR/garmin-{latest.json,summary.md}`.
 
 ## Coaching workflow
 
-If the user asks to read/sync Garmin data,复盘, or arrange training:
-1. Run sync or confirm `garmin-latest.json` is fresh.
-2. Generate/read `garmin-summary.md`.
+If the user asks to read/sync Garmin data, 复盘, or arrange training:
+1. Run `garmin-runcoach all --days N` (or confirm `garmin-latest.json` is fresh).
+2. Read `garmin-summary.md`.
 3. Base advice primarily on the summary.
-4. If needed, supplement with recovery snapshots from `/home/flanlc/.openclaw/workspace/data/running/recovery/`.
 
 ## Troubleshooting
 
-- If Garmin returns `429` or login issues, say clearly that it is Garmin rate limiting/login trouble.
-- Do not misreport the problem as a credential permission error unless you actually verified that failure mode.
-- The wrapper suppresses noisy fallback 429 lines when the overall sync still succeeds.
-- If sync succeeds, trust the new files instead of stale March snapshots.
+- **`429` from Garmin** — rate limit. Wait and retry; don't misreport as credential failure unless you've actually verified that mode.
+- **Login error** — check `~/.netrc` is `chmod 600`, host is exactly `connect.garmin.com`, password not stale.
+- **`no Python interpreter found`** — install `python3` or set `GARMIN_RUNCOACH_PYTHON=/path/to/python`.
+- **`ModuleNotFoundError: garminconnect`** — in your chosen Python: `pip install garminconnect`.
+- If sync succeeds, trust the new files; do not fall back to stale snapshots.
