@@ -391,6 +391,15 @@
       "skillFolderHash": "",
       "installedAt": "2026-04-05T08:32:37.757Z",
       "updatedAt": "2026-04-05T08:32:37.757Z"
+    },
+    "conventional-commit": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/github/awesome-copilot.git",
+      "skillPath": "skills/conventional-commit/SKILL.md",
+      "skillFolderHash": "f29c9486cede6c7b2df0cfb0a2e4aa67446552b991bcf17d1b309e903171f03d",
+      "installedAt": "2026-05-07T06:22:17.415Z",
+      "updatedAt": "2026-05-07T06:22:17.415Z"
     }
   },
   "dismissed": {
@@ -403,6 +412,7 @@
     "codex",
     "cursor",
     "deepagents",
+    "dexto",
     "firebender",
     "gemini-cli",
     "github-copilot",
