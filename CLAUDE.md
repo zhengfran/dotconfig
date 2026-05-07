@@ -44,7 +44,7 @@ The setup script symlinks configs to standard locations:
 - **Emacs Lisp edits**: After editing `.el` files, delete any corresponding `.elc` files to avoid stale byte-compiled code. Validate changes with `emacs --batch --init-directory ~/dotconfig/basic/editor/emacs/modular/ -l init.el 2>&1`.
 - **WSL awareness**: Many configs handle WSL path differences. Check `my/is-WSL` (Emacs) or `is_wsl()` (.commonprofile) for platform-conditional logic.
 - **Symlink-based deployment**: Editing files here directly affects the live environment. Changes take effect immediately for shell configs (after re-sourcing) and on next Emacs restart.
-- **Git commits**: Do **not** add `Co-Authored-By: Claude...` (or any AI assistant attribution) trailer to commit messages in this repo.
+- **Git commits**: Follow [Conventional Commits](https://www.conventionalcommits.org/) format — `type(scope): description`, e.g. `feat(ahk): add hyper key layer`. Allowed types: `feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`. Use the `conventional-commit` skill to format. Do **not** add `Co-Authored-By: Claude...` (or any AI assistant attribution) trailer.
 
 ## Emacs Quick Reference
 
