@@ -19,7 +19,7 @@
 (tool-bar-mode -1) ;;disable tool bar
 (tooltip-mode -1) ;;disable tool tips
 (menu-bar-mode -1) ;;disable menu bar
-(set-fringe-mode 10) ;;Give some breathing room
+(fringe-mode '(0 . 0)) ;;no fringe (lijigang-style)
 
 ;; ============================================================================
 ;; BASIC MODES
@@ -33,17 +33,9 @@
 ;; LINE NUMBERS
 ;; ============================================================================
 
-(global-display-line-numbers-mode t)
+;; Lijigang-style: no line numbers globally; use SPC t l to toggle per-buffer.
+(setq display-line-numbers-type nil)
 (setq-default display-line-numbers-width-start t)
-
-;; Disable line numbers for some modes
-(dolist (mode
-         '(org-mode-hook
-           term-mode-hook
-           eshell-mode-hook
-           dired-mode-hook
-           helpful-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode -1))))
 
 (defun doom/toggle-line-numbers ()
   "Toggle line numbers.
