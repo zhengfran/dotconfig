@@ -59,17 +59,19 @@
   (interactive)
   ;; org 字体美化
   (require 'org-faces)
-  ;; 标题字体大小优化
+  ;; 标题字体大小优化 (lijigang-style cascade)
   (set-face-attribute 'org-document-title nil :weight 'bold :height 1.2)
-  (dolist (face '((org-level-1 . 1.15)
-                  (org-level-2 . 1.1)
-                  (org-level-3 . 1.05)
-                  (org-level-4 . 1.0)
-                  (org-level-5 . 1.0)
-                  (org-level-6 . 1.0)
-                  (org-level-7 . 1.0)
-                  (org-level-8 . 1.0)))
-    (set-face-attribute (car face) nil :weight 'medium :height (cdr face)))
+  (dolist (spec '((org-level-1 extra-bold 1.25)
+                  (org-level-2 bold       1.15)
+                  (org-level-3 bold       1.12)
+                  (org-level-4 semi-bold  1.09)
+                  (org-level-5 semi-bold  1.06)
+                  (org-level-6 semi-bold  1.03)
+                  (org-level-7 semi-bold  1.0)
+                  (org-level-8 semi-bold  1.0)))
+    (set-face-attribute (nth 0 spec) nil
+                        :weight (nth 1 spec)
+                        :height (nth 2 spec)))
 
   (set-face-attribute 'org-block nil :foreground 'unspecified' :inherit 'fixed-pitch)
   (set-face-attribute 'org-block-begin-line nil :foreground 'unspecified' :inherit '(font-lock-comment-face fixed-pitch))
@@ -112,8 +114,8 @@
   ;; Adjust margins when text scale changes
   (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
 
-;; For org-mode specifically, use custom settings
-(add-hook 'org-mode-hook #'my/org-mode-visual-fill)
+;; For org-mode specifically: prefer olivetti (added below) over visual-fill-column.
+;; (add-hook 'org-mode-hook #'my/org-mode-visual-fill)
 
 ;; ============================================================================
 ;; ORG-DOWNLOAD (IMAGE INSERTION)
@@ -228,9 +230,77 @@
     (setq org-ellipsis " ▾"); 用小箭头代替...表示折叠
     (setq org-startup-folded 'content) ; 开启时折叠大纲
 
+    ;; Lijigang-style visual polish
+    (setq org-hide-emphasis-markers t
+          org-pretty-entities t
+          org-fontify-quote-and-verse-blocks t
+          org-fontify-whole-heading-line t
+          org-fontify-done-headline t
+          org-startup-with-inline-images t)
+
     (my/set-org-font)
     (add-hook 'org-mode-hook 'my-org-hook)
+    (add-hook 'org-mode-hook #'prettify-symbols-mode)
     (add-to-list 'org-babel-load-languages '(shell . t)))
+
+;; ============================================================================
+;; PRETTIFY SYMBOLS (lijigang-style)
+;; ============================================================================
+;; Replace org keywords with single-glyph symbols. The hook is installed in
+;; the org :config block above.
+
+(setq-default prettify-symbols-alist
+              '(("#+title:" . "✍")
+                ("#+TITLE:" . "✍")
+                ("#+subtitle:" . "✒")
+                ("#+author:" . "👨")
+                ("#+authors:" . "⚶")
+                ("#+caption:" . "☰")
+                ("#+source:" . "☍")
+                ("#+venue:" . "⌂")
+                ("#+filetags:" . "🎃")
+                ("#+identifier:" . "🍄")
+                ("#+results:" . "🎁")
+                ("#+attr_latex:" . "⚛")
+                ("#+attr_org:" . "⚛")
+                ("#+ATTR_ORG:" . "⚛")
+                ("#+date:" . "⚓")
+                ("#+property:" . "☸")
+                (":PROPERTIES:" . "⚙")
+                (":END:" . ".")
+                ("[ ]" . "☐")
+                ("[X]" . "☑︎")
+                ("#+options:" . "⌥")
+                ("\\pagebreak" . 128204)
+                ("#+begin_example" . "⌸")
+                ("#+end_example" . "⌸")
+                ("#+begin_quote" . "❮")
+                ("#+end_quote" . "❯")
+                ("#+begin_src" . "❮")
+                ("#+end_src" . "❯")))
+
+;; ============================================================================
+;; ORG VISUAL PACKAGES (lijigang-style)
+;; ============================================================================
+
+;; CJK-aware table column alignment
+(use-package valign
+  :hook (org-mode . valign-mode)
+  :config
+  (setq valign-fancy-bar t))
+
+;; Centered, fixed-width body for distraction-free org writing
+(use-package olivetti
+  :hook (org-mode . olivetti-mode)
+  :config
+  (setq olivetti-body-width 80))
+
+;; Auto-spacing between CJK and ASCII characters for readability
+(use-package pangu-spacing
+  :config
+  (global-pangu-spacing-mode 1)
+  ;; Insert real spaces, not just visual ones
+  (setq pangu-spacing-real-insert-separtor t))
 
 (provide 'org-base)
 ;;; org-base.el ends here

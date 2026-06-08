@@ -78,8 +78,10 @@
   :init
   (doom-modeline-mode 1)
   :custom
-  (doom-modeline-height 25)
+  (doom-modeline-height 10)
   (doom-modeline-bar-width 3)
+  (doom-modeline-buffer-encoding nil)
+  (doom-modeline-enable-word-count nil)
   (doom-modeline-unicode-fallback t)
   ;; Show tab-bar workspace name in modeline
   (doom-modeline-workspace-name t)
@@ -93,6 +95,42 @@
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
+
+;; ============================================================================
+;; VISUAL POLISH (lijigang-style)
+;; ============================================================================
+
+;; Cursor and frame chrome
+(blink-cursor-mode 0)
+(setq-default x-stretch-cursor t
+              x-underline-at-descent-line t)
+
+;; Silence the bell completely (visible-bell already set in init.el)
+(setq ring-bell-function 'ignore)
+
+;; Prefer side-by-side splits over stacked ones
+(setq split-height-threshold nil
+      split-width-threshold 0)
+
+;; Smooth, non-accelerating mouse scrolling
+(setq mouse-wheel-scroll-amount '(2 ((shift) . 1))
+      mouse-wheel-progressive-speed nil
+      mouse-wheel-follow-mouse t
+      scroll-step 1)
+
+;; Pixel-precise scrolling
+(use-package ultra-scroll
+  :straight (:host github :repo "jdtsmith/ultra-scroll")
+  :init
+  (setq scroll-conservatively 101
+        scroll-margin 0)
+  :config
+  (ultra-scroll-mode 1))
+
+;; Generous spacing inside windows + line spacing
+(use-package spacious-padding
+  :custom (line-spacing 3)
+  :init (spacious-padding-mode 1))
 
 (provide 'ui)
 ;;; ui.el ends here

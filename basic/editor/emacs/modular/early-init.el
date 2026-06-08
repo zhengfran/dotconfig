@@ -24,28 +24,52 @@
 (defvar my/preferred-fonts
   (pcase system-type
     ('darwin
-     ;; macOS: Homebrew Nerd Font names
-     '((default . "Iosevka Nerd Font Propo")
-       (variable-pitch . "Iosevka Nerd Font Propo")
-       (fixed-pitch . "Iosevka Nerd Font Mono")
+     ;; macOS: Roboto Mono for Latin, PingFang SC for CJK/variable
+     '((default . "Roboto Mono")
+       (variable-pitch . "PingFang SC")
+       (fixed-pitch . "Roboto Mono")
        (math . "Latin Modern Math")
-       (chinese . "LXGW WenKai")))
+       (chinese . "PingFang SC")))
     ('windows-nt
-     ;; Windows: Original font names
-     '((default . "Iosevka NFP")
-       (variable-pitch . "Iosevka NFP")
-       (fixed-pitch . "Iosevka NF")
+     ;; Windows: Roboto Mono for Latin, LXGW WenKai for CJK/variable
+     '((default . "Roboto Mono")
+       (variable-pitch . "LXGW WenKai")
+       (fixed-pitch . "Roboto Mono")
        (math . "Latin Modern Math")
        (chinese . "LXGW WenKai")))
     (_
-     ;; Linux/other: Use Nerd Font names (similar to macOS)
-     '((default . "Iosevka Nerd Font Propo")
-       (variable-pitch . "Iosevka Nerd Font Propo")
-       (fixed-pitch . "Iosevka Nerd Font Mono")
+     ;; Linux/other: Roboto Mono for Latin, LXGW WenKai for CJK/variable
+     '((default . "Roboto Mono")
+       (variable-pitch . "LXGW WenKai")
+       (fixed-pitch . "Roboto Mono")
        (math . "Latin Modern Math")
        (chinese . "LXGW WenKai"))))
   "Preferred font families for different use cases.
 Automatically selects correct font names based on platform.")
+
+;; Symbol/math/emoji fontset overrides (lijigang-style).
+;; Force-prepend emoji unicode ranges so they win over the symbol fontset.
+(setq use-default-font-for-symbols nil)
+
+(defvar my/emoji-font
+  (pcase system-type
+    ('darwin "Apple Color Emoji")
+    (_       "Noto Color Emoji"))
+  "Preferred emoji font.")
+
+(defun my/setup-symbol-emoji-fonts ()
+  "Apply Symbola for symbols/math and emoji font for emoji ranges."
+  (when (display-graphic-p)
+    (set-fontset-font t 'symbol       (font-spec :family "Symbola"))
+    (set-fontset-font t 'mathematical (font-spec :family "Symbola"))
+    (set-fontset-font t 'emoji        (font-spec :family my/emoji-font))
+    ;; Force-prepend emoji ranges so they win over the symbol fontset.
+    (set-fontset-font t '(#x1F300 . #x1FAFF)
+                      (font-spec :family my/emoji-font) nil 'prepend)
+    (set-fontset-font t '(#x2600  . #x27BF)
+                      (font-spec :family my/emoji-font) nil 'prepend)))
+
+(add-hook 'after-setting-font-hook #'my/setup-symbol-emoji-fonts)
 
 ;; Font family helper: Check if font exists, fallback to system default
 (defun my/get-font-or-default (preferred-font)
