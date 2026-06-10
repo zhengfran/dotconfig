@@ -13,8 +13,12 @@
 ;; EXEC PATH FROM SHELL
 ;; ============================================================================
 
+;; Only needed on real GUI sessions where Emacs does NOT inherit the shell's
+;; PATH (macOS, native X). Under WSLg `window-system' is `x', but spawning a
+;; login shell here is slow and unnecessary, so skip it on WSL.
 (use-package exec-path-from-shell
-  :if (memq window-system '(mac ns x))
+  :if (and (memq window-system '(mac ns x))
+           (not (getenv "WSL_DISTRO_NAME")))
   :config
   (setq shell-file-name
         (cond
@@ -86,18 +90,19 @@
 (setq my/is-windows (eq system-type 'windows-nt)) ; Windows
 (setq my/is-linux (eq system-type 'gnu/linux)) ; Linux
 (setq my/is-mac (eq system-type 'darwin)) ; mac
+;; WSL detection: read the kernel osrelease from /proc instead of spawning a
+;; `uname' subprocess (process spawns are expensive on WSL/9p).
 (setq my/is-WSL
-      (if (and (eq system-type 'gnu/linux)
-               (string-match-p "Microsoft" (shell-command-to-string "uname -r")))
-          t
-        nil)) ; WSL
+      (and (eq system-type 'gnu/linux)
+           (with-temp-buffer
+             (ignore-errors
+               (insert-file-contents "/proc/sys/kernel/osrelease"))
+             (goto-char (point-min))
+             (and (re-search-forward "[Mm]icrosoft\\|WSL" nil t) t))))
 (setq my/is-terminal (not window-system)) ;GUI
 
-;; WSL browser configuration
-(when (and (eq system-type 'gnu/linux)
-           (string-match
-            "Linux.*Microsoft.*Linux"
-            (shell-command-to-string "uname -a")))
+;; WSL browser configuration (reuse my/is-WSL; avoids a second subprocess)
+(when my/is-WSL
   (setq
    browse-url-generic-program  "/mnt/c/Windows/System32/cmd.exe"
    browse-url-generic-args     '("/c" "start")

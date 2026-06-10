@@ -1,4 +1,18 @@
 source ~/.config/common/env
+
+# fnm
+FNM_PATH="$HOME/.local/share/fnm"
+if [ -d "$FNM_PATH" ]; then
+  export PATH="$FNM_PATH:$PATH"
+  eval "$(fnm env --shell zsh)"
+fi
+
+# Ensure WSL paths have precedence over Windows paths
+if grep -qi "microsoft" /proc/version 2>/dev/null; then
+  path=("${(@)path:#/mnt/c/*}")
+  path+=(/mnt/c/Windows/system32 /mnt/c/Windows /mnt/c/Windows/System32/Wbem /mnt/c/Windows/System32/WindowsPowerShell/v1.0)
+fi
+
 source ~/.config/common/aliases
 
 # Fix brew completions for ARM Mac
@@ -31,3 +45,11 @@ export GLM_API_KEY=$(get_netrc_pass "z.ai")
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+
+# Load MCP server credentials
+[ -f "$HOME/.kiro/settings/mcp.env" ] && source "$HOME/.kiro/settings/mcp.env"

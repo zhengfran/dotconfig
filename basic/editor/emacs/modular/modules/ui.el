@@ -37,8 +37,11 @@
 ;; EMOJIFY
 ;; ============================================================================
 
+;; Emojify is heavy (loads a large emoji image set on first activation).
+;; Defer it to the buffers where emoji actually matter rather than enabling it
+;; globally at `after-init', which slows startup.
 (use-package emojify
-  :hook (after-init . global-emojify-mode))
+  :hook ((org-mode markdown-mode text-mode) . emojify-mode))
 
 ;; ============================================================================
 ;; DOOM THEMES

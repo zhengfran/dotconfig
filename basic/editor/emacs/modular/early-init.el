@@ -1,8 +1,15 @@
 ;; -*- lexical-binding: t; -*-
 ;; early-init.el - Loaded before init.el and GUI initialization
-(setq debug-on-error t)
+;; Enable error backtraces only on demand: launch with EMACS_DEBUG=1 set.
+(when (getenv "EMACS_DEBUG")
+  (setq debug-on-error t))
 ;; Disable package.el in favor of straight.el
 (setq package-enable-at-startup nil)
+
+;; Maximize GC threshold during startup to avoid GC pauses while loading
+;; packages. Restored to a sane value in `emacs-startup-hook' (see init.el).
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 0.6)
 
 ;;; Font Configuration
 ;; Configured here for better startup performance (before GUI renders)

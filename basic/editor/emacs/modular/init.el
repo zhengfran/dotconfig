@@ -53,9 +53,13 @@
 ;; Disable bell
 (setq visible-bell 1)
 
-;; Increase garbage collection threshold for better startup performance
-;; The default is 800 kilobytes. Set to 50MB.
-(setq gc-cons-threshold (* 50 1000 1000))
+;; Garbage collection: the threshold is maximized in early-init.el for fast
+;; startup. Restore it to a reasonable value once startup is complete so Emacs
+;; does not accumulate excessive garbage during normal editing.
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq gc-cons-threshold (* 50 1000 1000)
+                  gc-cons-percentage 0.1)))
 
 ;; Profile emacs startup time
 (add-hook 'emacs-startup-hook

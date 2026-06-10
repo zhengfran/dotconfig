@@ -17,6 +17,10 @@
 **/emacs/**/rime/
 **/emacs/**/emacs-desktop*
 
+# Doom Emacs profile state (when DOOMDIR points into the repo)
+**/emacs/**/.local/
+**/emacs/**/custom.el
+
 # Vim (anywhere in tree)
 **/[._]*.s[a-v][a-z]
 **/[._]*.sw[a-p]
@@ -63,3 +67,4 @@
 **/*.tmp
 **/*.log
 **/*.bak
+/.agent-shell/
