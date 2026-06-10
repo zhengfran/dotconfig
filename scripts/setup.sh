@@ -9,4 +9,7 @@ bash "$SCRIPT_DIR/setup-config.sh"
 echo "Installing packages..."
 bash "$SCRIPT_DIR/setup-packages.sh"
 
+echo "Installing fonts..."
+bash "$SCRIPT_DIR/setup-fonts.sh"
+
 echo "Setup complete!"

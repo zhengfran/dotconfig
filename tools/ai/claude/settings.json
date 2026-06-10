@@ -2,12 +2,6 @@
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
-  "statusLine": {
-    "type": "command",
-    "command": "bash \"$HOME/.claude/statusline-command.sh\""
-  },
-  "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true,
   "model": "sonnet",
   "hooks": {
     "PreToolUse": [
@@ -21,5 +15,10 @@
         ]
       }
     ]
-  }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"$HOME/.claude/statusline-command.sh\""
+  },
+  "skipDangerousModePermissionPrompt": true
 }
