@@ -23,6 +23,15 @@
   (setq sh-basic-offset 2
         sh-indentation 2))
 
+;; Markdown
+(use-package markdown-mode
+  :mode (("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode)
+         ("README\\.md\\'" . gfm-mode))  ; GitHub-Flavored Markdown for READMEs
+  :init
+  ;; Use pandoc for live HTML preview if available, else fall back gracefully.
+  (setq markdown-command (or (executable-find "pandoc") "markdown")))
+
 ;; Commented out language modes (enable as needed)
 ;; (use-package rust-mode
 ;;   :ensure t)
