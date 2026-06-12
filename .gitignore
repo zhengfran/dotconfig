@@ -32,6 +32,8 @@
 
 # Rime input method data
 /rime/
+# Wanxiang scheme + grammar model (~487MB, incl. 402MB .gram) — do not commit
+/Rime/
 
 # macOS (anywhere in tree)
 **/.DS_Store
