@@ -25,8 +25,21 @@
   :custom
   (default-input-method "rime")
   (rime-show-candidate 'popup)
-  (rime-user-data-dir (expand-file-name "rime" user-emacs-directory))
-  (rime-share-data-dir "~/dotconfig/Rime")
+  ;; 万象 (rime-wanxiang) is designed to live entirely in the *user* data
+  ;; dir: its lua scripts read ./lua/ and create writable userdbs
+  ;; (e.g. lua/predict.userdb) relative to user-data-dir. So point
+  ;; user-data-dir at ~/dotconfig/Rime where wanxiang + its grammar model
+  ;; were installed.
+  (rime-user-data-dir (expand-file-name "~/dotconfig/Rime"))
+  ;; Shared data: system rime-data provides preset/essential files as a
+  ;; fallback. (Wanxiang is self-contained, but this is a safety net and
+  ;; keeps Chinese input working on machines without the wanxiang dir.)
+  (rime-share-data-dir
+   (seq-find #'file-directory-p
+             (list "/usr/share/rime-data"
+                   "/opt/homebrew/share/rime-data"
+                   "/usr/local/share/rime-data")
+             "/usr/share/rime-data"))
   (rime-disable-predicates '(rime-predicate-evil-mode-p
                               rime-predicate-after-ascii-char-p
                               rime-predicate-hydra-p
