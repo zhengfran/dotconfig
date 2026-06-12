@@ -53,3 +53,19 @@ export NVM_DIR="$HOME/.config/nvm"
 
 # Load MCP server credentials
 [ -f "$HOME/.kiro/settings/mcp.env" ] && source "$HOME/.kiro/settings/mcp.env"
+
+# ── Emacs vterm integration ────────────────────────────────────────────────
+# Only active when running inside Emacs' vterm. Sends the current directory
+# as the terminal title (so the vterm buffer is named after the folder) and
+# tells vterm the working directory (OSC 51;A) so find-file etc. use it.
+if [[ "$INSIDE_EMACS" = *vterm* ]]; then
+  vterm_set_folder_title() {
+    # %~  = full path, with $HOME shown as ~
+    print -Pn "\e]2;%~\a"
+    # Tell vterm the current directory for accurate default-directory.
+    print -Pn "\e]51;A$(whoami)@$(hostname):$(pwd)\e\\"
+  }
+  autoload -Uz add-zsh-hook
+  add-zsh-hook precmd vterm_set_folder_title
+  add-zsh-hook chpwd  vterm_set_folder_title
+fi
