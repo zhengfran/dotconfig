@@ -49,8 +49,17 @@
 ;; BUFFER FILTERING
 ;; ============================================================================
 
+(defun my/tab-terminal-p (&optional buffer)
+  "Return non-nil if BUFFER (default current) is a terminal buffer.
+Terminals (vterm/eshell/term) form their own tab group rather than
+being hidden, so they can be navigated like iTerm-style tabs."
+  (with-current-buffer (or buffer (current-buffer))
+    (derived-mode-p 'vterm-mode 'eshell-mode 'term-mode)))
+
 (defun my/buffer-tab-hidden-p (buffer)
-  "Return non-nil if BUFFER should be hidden from tabs."
+  "Return non-nil if BUFFER should be hidden from tabs entirely.
+Note: terminal buffers are NOT hidden here; they are handled as a
+separate group (see `my/tab-terminal-p')."
   (let ((name (buffer-name buffer)))
     (or
      ;; Invisible buffers (space prefix)
@@ -67,11 +76,8 @@
      (string-prefix-p "*Backtrace" name)
      (string-prefix-p "*Flycheck" name)
      (string-prefix-p "*which-key" name)
-     (string-prefix-p "*Treemacs" name)
      (string-prefix-p "*lsp" name)
      (string-prefix-p "*eglot" name)
-     (string-prefix-p "*vterm" name)
-     (string-prefix-p "*eshell" name)
      (string-prefix-p "magit" name)
      (string-prefix-p "*fava" name)
      (string-prefix-p "*gptel" name)
@@ -80,11 +86,7 @@
        (derived-mode-p 'dired-mode
                        'help-mode
                        'helpful-mode
-                       'magit-mode
-                       'treemacs-mode
-                       'vterm-mode
-                       'eshell-mode
-                       'term-mode)))))
+                       'magit-mode)))))
 
 (defun my/buffer-in-current-project-p (buffer)
   "Return non-nil if BUFFER belongs to the current project."
@@ -111,10 +113,33 @@
              (or current-root-expanded "Not in a project")
              (if in-project "YES" "NO"))))
 
+(defvar my/tab-buffer-order nil
+  "Ordered list of buffers as they first appeared on the tab-line.
+Used to keep a stable tab order: existing buffers keep their position,
+newly-seen buffers are appended to the end, dead buffers are dropped.")
+
+(defun my/tab-stable-order (buffers)
+  "Return BUFFERS in a stable tab order.
+Known buffers keep their recorded position in `my/tab-buffer-order';
+buffers not yet recorded are appended (in BUFFERS' order).  The order
+list only ever drops dead buffers, so switching project/group does not
+reshuffle existing tabs, and the normal/terminal groups don't clobber
+each other's positions."
+  ;; Record any newly-seen buffers at the end.
+  (dolist (buf buffers)
+    (unless (memq buf my/tab-buffer-order)
+      (setq my/tab-buffer-order (append my/tab-buffer-order (list buf)))))
+  ;; Forget buffers that have been killed.
+  (setq my/tab-buffer-order
+        (seq-filter #'buffer-live-p my/tab-buffer-order))
+  ;; Project BUFFERS onto the recorded order.
+  (seq-filter (lambda (b) (memq b buffers)) my/tab-buffer-order))
+
 (defun my/visible-buffer-list ()
-  "Return list of buffers visible in tabs, filtered by current project.
-Only shows buffers that belong to the current project. If not in a project,
-shows all non-project buffers."
+  "Return list of NORMAL buffers visible in tabs, filtered by current project.
+Excludes hidden buffers and terminal buffers (terminals are their own
+group, see `my/tab-terminal-p').  In a project, only buffers belonging to
+that project are shown; otherwise all non-hidden, non-terminal buffers."
   (let* ((current-project (project-current))
          (all-buffers (buffer-list))
          (filtered-buffers
@@ -123,86 +148,148 @@ shows all non-project buffers."
               (seq-filter
                (lambda (buf)
                  (and (not (my/buffer-tab-hidden-p buf))
+                      (not (my/tab-terminal-p buf))
                       (my/buffer-in-current-project-p buf)))
                all-buffers)
-            ;; Not in a project: show all non-hidden buffers
+            ;; Not in a project: show all non-hidden, non-terminal buffers
             (seq-filter
-             (lambda (buf) (not (my/buffer-tab-hidden-p buf)))
+             (lambda (buf)
+               (and (not (my/buffer-tab-hidden-p buf))
+                    (not (my/tab-terminal-p buf))))
              all-buffers))))
-    (sort filtered-buffers
-          (lambda (a b)
-            (string< (buffer-name a) (buffer-name b))))))
+    ;; Stable order: existing tabs stay put, new buffers append to the end.
+    (my/tab-stable-order filtered-buffers)))
 
 ;; ============================================================================
-;; TAB-BAR BUFFER TABS (FRAME-LEVEL)
+;; TWO-LINE TABS: tab-bar = WORKSPACES, tab-line = BUFFERS
 ;; ============================================================================
 
-(defun my/tab-bar-buffer-tabs ()
-  "Generate tab-bar items showing open file buffers.
-Each buffer becomes a clickable tab in the frame-level tab-bar."
-  (let ((current-buf (window-buffer (selected-window))))
-    (mapcar
-     (lambda (buf)
-       (let* ((name (my/get-org-buffer-name buf))
-              (truncated (if (> (length name) 20)
-                            (concat (substring name 0 17) "...")
-                          name))
-              (is-current (eq buf current-buf))
-              (is-modified (buffer-modified-p buf))
-              (label (concat " "
-                             (when is-modified "*")
-                             truncated
-                             " "))
-              (b buf))
-         `(,(intern (format "buf-tab-%s-%s" (sxhash buf) is-current))
-           menu-item
-           ,(propertize label 'face (if is-current
-                                        'tab-bar-tab
-                                      'tab-bar-tab-inactive))
-           ,(lambda () (interactive) (switch-to-buffer b))
-           :help ,(buffer-name buf))))
-     (my/visible-buffer-list))))
-
-;; Override workspace.el tab-bar settings: show buffer tabs in tab-bar
-(setq tab-bar-format '(my/tab-bar-buffer-tabs))
+;; ── Line 1: tab-bar shows WORKSPACES (native tabs) ──────────────────────────
+;; Restore workspace tabs in the frame-level tab-bar (workspace.el hid it).
+(setq tab-bar-format '(tab-bar-format-tabs tab-bar-separator))
 (setq tab-bar-show t)
 (setq tab-bar-auto-width nil)
 ;; Force tab-bar visible (workspace.el set tab-bar-lines to 0)
 (add-to-list 'default-frame-alist '(tab-bar-lines . 1))
 (set-frame-parameter nil 'tab-bar-lines 1)
 
-;; Ensure tab-bar stays visible after tab switches
-(defun my/ensure-tab-bar-visible (&rest _)
-  "Ensure tab-bar remains visible after tab operations."
-  (setq tab-bar-show t)
-  (set-frame-parameter nil 'tab-bar-lines 1))
+;; ── Line 2: tab-line shows BUFFERS in the current workspace ─────────────────
+;; Reuse the project-aware buffer list and org #+TITLE: naming from above.
 
-(advice-add 'tab-bar-select-tab :after #'my/ensure-tab-bar-visible)
-(advice-add 'tab-bar-switch-to-tab :after #'my/ensure-tab-bar-visible)
-(advice-add 'tab-bar-new-tab :after #'my/ensure-tab-bar-visible)
-(advice-add 'tab-bar-close-tab :after #'my/ensure-tab-bar-visible)
+;; Per-workspace terminals: tag each terminal buffer with the tab-bar
+;; workspace it was created in, then show only this workspace's terminals
+;; in the terminal tab group.
+(defvar-local my/tab-terminal-workspace nil
+  "Name of the tab-bar workspace a terminal buffer belongs to.")
+
+(defun my/current-workspace-name ()
+  "Return the current tab-bar workspace (tab) name, or nil."
+  (when (fboundp 'tab-bar-tab-name-current)
+    (ignore-errors (tab-bar-tab-name-current))))
+
+(defun my/tag-terminal-workspace ()
+  "Tag the current terminal buffer with the active workspace name.
+Added to terminal mode hooks so each terminal remembers where it was born."
+  (when (my/tab-terminal-p)
+    (setq my/tab-terminal-workspace (my/current-workspace-name))))
+
+(add-hook 'vterm-mode-hook  #'my/tag-terminal-workspace)
+(add-hook 'eshell-mode-hook #'my/tag-terminal-workspace)
+(add-hook 'term-mode-hook   #'my/tag-terminal-workspace)
+
+(defun my/terminal-in-current-workspace-p (buffer)
+  "Return non-nil if terminal BUFFER belongs to the current workspace.
+Untagged terminals (no recorded workspace) are shown everywhere so they
+never silently disappear."
+  (let ((tag (buffer-local-value 'my/tab-terminal-workspace buffer)))
+    (or (null tag)
+        (equal tag (my/current-workspace-name)))))
+
+(defun my/terminal-buffer-list ()
+  "Return live terminal buffers for the current workspace, in stable order."
+  (my/tab-stable-order
+   (seq-filter (lambda (b)
+                 (and (my/tab-terminal-p b)
+                      (my/terminal-in-current-workspace-p b)))
+               (buffer-list))))
+
+(defun my/tab-line-buffers ()
+  "Return buffers for the tab-line, grouped by the current buffer's type.
+- In a terminal buffer: show only terminal buffers (iTerm-style group).
+- Otherwise: show the project-filtered normal buffer list.
+The current buffer is always included even if filtering would drop it."
+  (let ((bufs (if (my/tab-terminal-p)
+                  (my/terminal-buffer-list)
+                (my/visible-buffer-list))))
+    (if (memq (current-buffer) bufs)
+        bufs
+      (cons (current-buffer) bufs))))
+
+(defun my/tab-line-buffer-name (buffer &optional _buffers)
+  "Display name for BUFFER on the tab-line (uses org #+TITLE: when available)."
+  (let ((name (my/get-org-buffer-name buffer)))
+    (concat " "
+            (when (buffer-modified-p buffer) "*")
+            (if (> (length name) 20)
+                (concat (substring name 0 17) "...")
+              name)
+            " ")))
+
+(use-package tab-line
+  :init
+  (setq tab-line-tabs-function #'my/tab-line-buffers)
+  (setq tab-line-tab-name-function #'my/tab-line-buffer-name)
+  (setq tab-line-new-button-show nil)
+  (setq tab-line-close-button-show nil)
+  (setq tab-line-separator " | ")
+  :config
+  (global-tab-line-mode 1))
 
 ;; ============================================================================
 ;; BUFFER NAVIGATION
 ;; ============================================================================
 
 (defun my/next-buffer-tab ()
-  "Switch to next buffer in tab list."
+  "Switch to the next buffer following the tab-line display order.
+Stays within the current tab group (normal vs terminal)."
   (interactive)
-  (let* ((bufs (my/visible-buffer-list))
+  (let* ((bufs (tab-line-tabs-window-buffers))
          (len (length bufs))
          (pos (seq-position bufs (current-buffer))))
     (when (and pos (> len 1))
-      (switch-to-buffer (nth (mod (1+ pos) len) bufs)))))
+      (tab-line-select-tab-buffer (nth (mod (1+ pos) len) bufs)
+                                  (selected-window)))))
 
 (defun my/prev-buffer-tab ()
-  "Switch to previous buffer in tab list."
+  "Switch to the previous buffer following the tab-line display order.
+Stays within the current tab group (normal vs terminal)."
   (interactive)
-  (let* ((bufs (my/visible-buffer-list))
+  (let* ((bufs (tab-line-tabs-window-buffers))
          (len (length bufs))
          (pos (seq-position bufs (current-buffer))))
     (when (and pos (> len 1))
-      (switch-to-buffer (nth (mod (1- pos) len) bufs)))))
+      (tab-line-select-tab-buffer (nth (mod (1- pos) len) bufs)
+                                  (selected-window)))))
+
+;; ============================================================================
+;; SKIP BORING BUFFERS IN NATIVE next-buffer / previous-buffer
+;; ============================================================================
+;; Make C-x <left>/<right> (and any switch-to-prev/next-buffer caller) skip
+;; the same buffers that are hidden from tabs, and keep terminals separate
+;; from normal buffers. Reuses the predicates above for a single source
+;; of truth.
+
+(defun my/switch-to-prev-buffer-skip (_win buf _bury-or-kill)
+  "Predicate for `switch-to-prev-buffer-skip'.
+Skip BUF when navigating so that:
+- from a terminal, only other terminals are reachable;
+- from a normal buffer, terminals and hidden buffers are skipped."
+  (if (my/tab-terminal-p)
+      (not (my/tab-terminal-p buf))
+    (or (my/buffer-tab-hidden-p buf)
+        (my/tab-terminal-p buf))))
+
+(setq switch-to-prev-buffer-skip #'my/switch-to-prev-buffer-skip)
 
 ;; ============================================================================
 ;; EVIL KEYBINDINGS
