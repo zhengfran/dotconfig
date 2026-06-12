@@ -20,7 +20,7 @@
     :commands vterm
     :config
     (setq vterm-max-scrollback 10000)
-    (setq vterm-buffer-name-string "vterm %s")
+    (setq vterm-buffer-name-string "%s")
     (add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode 0)))
     (evil-set-initial-state 'vterm-mode 'emacs)
     (define-key vterm-mode-map (kbd "C-q") #'vterm-send-next-key)
