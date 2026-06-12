@@ -2,7 +2,7 @@
 
 ## 步骤 1：读取模板
 
-Read `~/.claude/skills/ljg-card/assets/long_template.html`
+Read `assets/long_template.html`
 
 ## 步骤 2：内容预处理
 
@@ -41,6 +41,22 @@ Read `~/.claude/skills/ljg-card/assets/long_template.html`
 <p class="highlight">金句文本</p>
 ```
 判断标准：独立成段、< 25 字、承载关键洞察。用 `.highlight` 而非 `<p><strong>`。
+
+**重点提示（绿底高亮，用于关键问句/提示）：**
+```html
+<p class="prompt">重点提示文本</p>
+```
+判断标准：需要让读者停下来、用力看的"提示性"内容。典型场景：
+- Q&A 中的 **Question**（Answer 用普通段落）
+- 关键追问（"那为什么 X 不是 Y？"）
+- 阅读引导提示（"读到这里，请先停下想一想"）
+- 召唤行动的指令句
+
+视觉上以**淡绿底色 + 深绿左边线**呈现，与 `.highlight`（左边线+大字号）形成区分：
+- `.highlight` = 作者下的金句结论
+- `.prompt` = 抛给读者的问题/提示
+
+一张卡内 `.prompt` 不超过 5 处，避免高亮泛滥。
 
 **首字下沉（第一个正文段落）：**
 第一个普通段落（非 `.subtitle`、`.highlight`、`.item`）添加 `dropcap` 类：
@@ -84,5 +100,5 @@ Read `~/.claude/skills/ljg-card/assets/long_template.html`
 ## 步骤 5：截图
 
 ```bash
-node ~/.claude/skills/ljg-card/assets/capture.js /tmp/ljg_cast_long_{name}.html ~/Downloads/{name}.png 1080 800 fullpage
+node assets/capture.js /tmp/ljg_cast_long_{name}.html ~/Downloads/{name}.png 1080 800 fullpage
 ```

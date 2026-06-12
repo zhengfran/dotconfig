@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const path = require('path');
+const fs = require('fs');
 
 async function main() {
   const args = process.argv.slice(2);
@@ -15,6 +16,15 @@ async function main() {
     process.exit(1);
   }
 
+  const resolvedHtml = path.resolve(htmlPath);
+  const logoUrl = 'file://' + path.resolve(__dirname, 'logo.png');
+
+  let content = fs.readFileSync(resolvedHtml, 'utf8');
+  if (content.includes('{{LOGO}}')) {
+    content = content.replace(/\{\{LOGO\}\}/g, logoUrl);
+    fs.writeFileSync(resolvedHtml, content, 'utf8');
+  }
+
   let chromium;
   try {
     chromium = require('playwright').chromium;
@@ -27,7 +37,7 @@ async function main() {
   const page = await browser.newPage();
   await page.setViewportSize({ width, height: fullpage ? 800 : height });
 
-  const fileUrl = 'file://' + path.resolve(htmlPath);
+  const fileUrl = 'file://' + resolvedHtml;
   await page.goto(fileUrl, { waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
 

@@ -8,7 +8,7 @@
 
 ## 步骤 1：读取模板
 
-Read `~/.claude/skills/ljg-card/assets/comic_template.html`
+Read `assets/comic_template.html`
 
 模板提供：
 - 字体加载（Noto Serif SC + DM Sans）
@@ -27,7 +27,30 @@ Read `~/.claude/skills/ljg-card/assets/comic_template.html`
 - **情绪弧线**：从什么状态到什么状态？
 - **视觉锚点**：最有画面感的那个概念
 
-### 2.2 选择漫画风格
+### 2.2 确定卡片数量
+
+根据内容体量决定生成一张还是多张漫画卡：
+
+| 内容体量 | 核心观点数 | 卡片数 | 说明 |
+|---------|----------|--------|------|
+| 短文（< 1000 字） | 1-3 个 | 1 张 | 所有观点压入一页 |
+| 中文（1000-3000 字） | 3-5 个 | 2-3 张 | 每张聚焦 1-2 个核心观点 |
+| 长文（> 3000 字） | 5+ 个 | 3-5 张 | 每张聚焦 1-2 个核心观点 |
+
+**原则**：
+- **完整性优先**：宁可多一张，不可丢观点。长文章的每个核心论点都必须被呈现
+- **每张卡片自成一格**：有独立标题、独立分格、独立叙事弧。不是把长内容硬切
+- **系列编号**：多卡时右上角标注 `01/N` ~ `N/N`
+- **首卡破题，末卡收束**：第一张建立冲突/问题，最后一张给出结论/解法
+
+### 2.3 提取原文配图
+
+当原文包含图片时（WebFetch 返回的 markdown 中的 `![](url)` 或 HTML `<img>` 标签）：
+- 收集所有图片 URL
+- 判断哪些图片与核心观点相关（忽略 logo、广告、装饰图）
+- 相关图片将在步骤 4 中嵌入分格
+
+### 2.4 选择漫画风格
 
 | 风格 | 视觉特征 | 触发信号 | CSS 变量覆盖 |
 |------|---------|---------|-------------|
@@ -300,6 +323,15 @@ Read `~/.claude/skills/ljg-card/assets/comic_template.html`
 ```
 特征：规整格子、宽银幕横格、安静均匀
 
+### 3.4 原文配图处理
+
+当步骤 2.3 收集到相关配图时：
+- **优先使用原图**：用 `<img>` 标签直接引用原文图片 URL，放入漫画分格中
+- **图片作为格子内容**：原图占据一个完整分格，加 3px 边框，融入分格系统
+- **黑白调性**：`filter: grayscale(100%) contrast(1.2);` 保持漫画黑白感。如原图本身是黑白/线条风格，可保留原色
+- **图片 CSS**：`width: 100%; height: auto; object-fit: cover; display: block;`
+- **图片不可用时**（404 / CORS），跳过该图，不用占位图替代
+
 ## 步骤 4：写 CSS + HTML
 
 所有 CSS 写入 `{{CUSTOM_CSS}}`。所有 HTML 写入 `{{CONTENT_HTML}}`。
@@ -320,7 +352,9 @@ Read `~/.claude/skills/ljg-card/assets/comic_template.html`
 | `{{CONTENT_HTML}}` | 全部 HTML |
 | `{{SOURCE_LINE}}` | 内容来源（可选）：`<span class="info-source">来源文字</span>`，无来源时空字符串 |
 
-写入：`/tmp/ljg_cast_comic_{name}.html`
+写入：
+- 单张：`/tmp/ljg_cast_comic_{name}.html`
+- 多张：`/tmp/ljg_cast_comic_{name}_{N}.html`（N = 01, 02, ...）
 
 ## 步骤 5：自检
 
@@ -336,6 +370,14 @@ Read `~/.claude/skills/ljg-card/assets/comic_template.html`
 
 ## 步骤 6：截图
 
+单张：
 ```bash
-node ~/.claude/skills/ljg-card/assets/capture.js /tmp/ljg_cast_comic_{name}.html ~/Downloads/{name}.png 1080 800 fullpage
+node assets/capture.js /tmp/ljg_cast_comic_{name}.html ~/Downloads/{name}.png 1080 800 fullpage
+```
+
+多张：逐张截图，文件名带序号
+```bash
+node assets/capture.js /tmp/ljg_cast_comic_{name}_01.html ~/Downloads/{name}_01.png 1080 800 fullpage
+node assets/capture.js /tmp/ljg_cast_comic_{name}_02.html ~/Downloads/{name}_02.png 1080 800 fullpage
+# ... 逐张执行
 ```
