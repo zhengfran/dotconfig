@@ -248,6 +248,15 @@ PARAMS is ignored (date comes from filename)."
    ("C-c n r" . denote-rename-file)
    ("C-c n R" . denote-rename-file-using-front-matter)
    ("C-c n a" . denote-keywords-add)
+   ;; Journal / date navigation (migrated from leader keys)
+   ("C-c n j" . my/denote-create-journal-note)
+   ("C-c n d" . my/denote-journal-goto-today)
+   ("C-c n y" . my/denote-journal-goto-yesterday)
+   ("C-c n m" . my/denote-journal-goto-tomorrow)
+   ("C-c n D" . my/denote-journal-goto-date)
+   ("C-c n T" . my/denote-capture-trade)
+   ("C-c n Y" . my/denote-goto-year)
+   ("C-c n M" . my/denote-goto-month)
    :map org-mode-map
    ("C-M-i" . completion-at-point))
   :config
@@ -273,26 +282,7 @@ PARAMS is ignored (date comes from filename)."
   (dolist (subdir '("journal" "ref" "trades" "habits" "projects" "blog"))
     (let ((dir (expand-file-name subdir denote-directory)))
       (unless (file-exists-p dir)
-        (make-directory dir t))))
-
-  ;; Leader key bindings
-  (zzc/leader-keys
-    "n" '(:ignore t :which-key "notes")
-    "n f" '(denote-open-or-create :which-key "find note")
-    "n i" '(denote-link-or-create :which-key "insert link")
-    "n c" '(denote :which-key "create note")
-    "n j" '(my/denote-create-journal-note :which-key "new journal")
-    "n d" '(my/denote-journal-goto-today :which-key "goto today")
-    "n y" '(my/denote-journal-goto-yesterday :which-key "goto yesterday")
-    "n m" '(my/denote-journal-goto-tomorrow :which-key "goto tomorrow")
-    "n D" '(my/denote-journal-goto-date :which-key "goto date")
-    "n p" '(my/denote-find-project :which-key "find project")
-    "n P" '(my/denote-insert-new-project :which-key "new project")
-    "n r" '(my/denote-capture-trade :which-key "capture trade")
-    "n t" '(my/denote-capture-task :which-key "capture task")
-    "n Y" '(my/denote-goto-year :which-key "goto year")
-    "n M" '(my/denote-goto-month :which-key "goto month")
-    "n l" '(denote-backlinks :which-key "backlinks")))
+        (make-directory dir t)))))
 
 ;; ============================================================================
 ;; YEAR/MONTH NAVIGATION
@@ -384,7 +374,7 @@ PARAMS is ignored (date comes from filename)."
                               (cons (denote-retrieve-title-value f 'org) f))
                             project-files)))
     (if (null candidates)
-        (message "No project files found. Create one with SPC n P")
+        (message "No project files found. Create one with C-c n P")
       (let* ((selected (completing-read "Project: " candidates nil t))
              (file (cdr (assoc selected candidates))))
         (find-file file)))))
@@ -397,7 +387,7 @@ PARAMS is ignored (date comes from filename)."
                               (cons (denote-retrieve-title-value f 'org) f))
                             project-files)))
     (if (null candidates)
-        (message "No project files found. Create one with SPC n P")
+        (message "No project files found. Create one with C-c n P")
       (let* ((selected (completing-read "Project: " candidates nil t))
              (file (cdr (assoc selected candidates))))
         (find-file file)

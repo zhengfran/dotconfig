@@ -66,7 +66,6 @@
           vterm-mode
           compilation-mode
           ibuffer-mode
-          treemacs-mode
           pdf-view-mode
           doc-view-mode
           magit-mode
@@ -79,7 +78,6 @@
         '("*Org Agenda*"
           "*Org Select*"
           "*which-key*"
-          "*Treemacs*"
           " *NeoTree*"
           "*Messages*"
           "*Warnings*"))

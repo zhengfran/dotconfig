@@ -50,6 +50,43 @@ Restarting is more reliable than in-place reloading."
   (when (y-or-n-p "Restart Emacs to reload configuration? ")
     (restart-emacs)))
 
+;; Modules in the same dependency order as init.el. Keep in sync if init.el
+;; changes. Used by `my/reload-config-in-place'.
+(defvar my/config-modules
+  '(core keybindings ui editor evil window-config completion bookmarks
+    workspace navigation snippets org-base org-agenda-config denote-config
+    habit-tracker blog org-babel buffer-tabs programming ai beancount
+    rime-config terminal-config)
+  "Ordered list of config module features for in-place reload.")
+
+(defun my/reload-config-in-place ()
+  "Re-load all config modules WITHOUT restarting Emacs.
+Re-evaluates init.el's custom file and every module in dependency order.
+Faster than `my/reload-emacs-config' for iterating on settings, but note:
+some changes (removed bindings/hooks, package :init, native modules) only
+take full effect after a real restart (`SPC r r')."
+  (interactive)
+  ;; Reload custom.el first (mirrors init.el).
+  (when (and (boundp 'custom-file) custom-file (file-exists-p custom-file))
+    (load custom-file 'noerror 'nomessage))
+  (let ((ok 0) (fail 0))
+    (dolist (mod my/config-modules)
+      (let ((file (locate-file (symbol-name mod)
+                               load-path '(".el" ".el.gz"))))
+        (condition-case err
+            (progn
+              ;; `load' re-evaluates even if already provided, unlike `require'.
+              (if file
+                  (load file nil 'nomessage)
+                (require mod))
+              (setq ok (1+ ok)))
+          (error
+           (setq fail (1+ fail))
+           (message "Reload error in %s: %s" mod (error-message-string err))))))
+    (message "Config reloaded in place: %d modules ok, %d failed%s"
+             ok fail
+             (if (> fail 0) " (see *Messages*; SPC r r for a clean restart)" ""))))
+
 ;; Keybindings for config reload
 (defun my/yank-file-path ()
   "Copy current file's full path to kill ring and clipboard."
@@ -66,7 +103,8 @@ Restarting is more reliable than in-place reloading."
 
 (zzc/leader-keys
   "r"  '(:ignore t :which-key "reload")
-  "rr" '(my/reload-emacs-config :which-key "restart & reload"))
+  "rr" '(my/reload-emacs-config :which-key "restart & reload")
+  "rc" '(my/reload-config-in-place :which-key "reload config (no restart)"))
 
 (provide 'keybindings)
 ;;; keybindings.el ends here
