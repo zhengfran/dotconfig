@@ -27,6 +27,31 @@
     (define-key vterm-mode-map (kbd "M-<left>") #'vterm-send-left)
     (define-key vterm-mode-map (kbd "M-<right>") #'vterm-send-right)
     (define-key vterm-mode-map (kbd "C-c C-t") #'vterm-copy-mode)
+    ;; ── Desktop save/restore for vterm ──────────────────────────────────
+    ;; NOTE: a live zsh process CANNOT survive an Emacs restart — the pty
+    ;; closes and the OS kills the child. What we persist is the *set* of
+    ;; vterm buffers and their working directories; on restart we respawn
+    ;; FRESH zsh shells in those same dirs (no scrollback / no running cmd).
+    (defun my/vterm-desktop-save (_desktop-dirname)
+      "Persist the vterm's working directory for desktop restore."
+      `((default-directory . ,default-directory)
+        (buffer-name . ,(buffer-name))))
+    (add-hook 'vterm-mode-hook
+              (lambda ()
+                ;; Mark this buffer as desktop-saveable via our handler.
+                (setq-local desktop-save-buffer #'my/vterm-desktop-save)))
+    (defun my/vterm-desktop-restore (_file-name buffer-name misc)
+      "Recreate a vterm in the saved directory MISC on desktop restore."
+      (let ((default-directory (or (cdr (assq 'default-directory misc))
+                                   default-directory)))
+        (vterm buffer-name)        ; spawn a fresh shell in that dir
+        (current-buffer)))
+    (with-eval-after-load 'desktop
+      (add-to-list 'desktop-buffer-mode-handlers
+                   '(vterm-mode . my/vterm-desktop-restore))
+      ;; Make sure vterm-mode is allowed to be saved/restored.
+      (setq desktop-modes-not-to-save
+            (delq 'vterm-mode desktop-modes-not-to-save)))
     :custom
     (vterm-shell (or (executable-find "zsh") (getenv "SHELL") "/bin/bash"))
     (vterm-kill-buffer-on-exit t)
@@ -43,9 +68,17 @@
           ("C-c C-p" . multi-vterm-prev)))
 
   (use-package vterm-toggle
-    :after vterm
+    ;; NOTE: do NOT use ":after vterm" here. That would wrap this whole
+    ;; declaration (including :bind) in (with-eval-after-load 'vterm ...),
+    ;; and since vterm is itself lazy, "C-c t" would stay unbound until
+    ;; vterm was loaded once. Autoload vterm-toggle on the keypress instead;
+    ;; it pulls in vterm on demand.
+    :commands (vterm-toggle)
     :config
+    ;; Never take over the whole frame; always a split.
     (setq vterm-toggle-fullscreen-p nil)
+    ;; Always pop the vterm buffer as a bottom window spanning the full
+    ;; frame width, sized to 1/3 of the frame height.
     (add-to-list 'display-buffer-alist
                  '((lambda (buffer-or-name _)
                      (let ((buffer (get-buffer buffer-or-name)))
@@ -54,18 +87,16 @@
                              (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
                    (display-buffer-reuse-window display-buffer-at-bottom)
                    (reusable-frames . visible)
-                   (window-height . 0.3)))
+                   (window-height . 0.33)))
     :bind
-    (("C-`" . vterm-toggle)
-     ("C-~" . vterm-toggle-cd)))
+    ;; Single toggle entry point.
+    (("C-c t" . vterm-toggle)))
 
   (zzc/leader-keys
     "v"  '(:ignore t :which-key "vterm")
     "vv"  '(vterm :which-key "open vterm")
     "vn"  '(multi-vterm :which-key "new vterm")
-    "vp"  '(multi-vterm-project :which-key "vterm in project")
-    "vt"  '(vterm-toggle :which-key "toggle vterm")
-    "vd"  '(vterm-toggle-cd :which-key "toggle vterm in current dir")))
+    "vp"  '(multi-vterm-project :which-key "vterm in project")))
 
 ;; ============================================================================
 ;; EAT - Non-Windows only (requires POSIX pty: /usr/bin/env, stty, sh)

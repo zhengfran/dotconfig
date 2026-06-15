@@ -114,7 +114,7 @@
   ;; Adjust margins when text scale changes
   (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
 
-;; For org-mode specifically: prefer olivetti (added below) over visual-fill-column.
+;; For org-mode specifically: visual-fill-column is available if desired.
 ;; (add-hook 'org-mode-hook #'my/org-mode-visual-fill)
 
 ;; ============================================================================
@@ -233,6 +233,9 @@
     ;; Lijigang-style visual polish
     (setq org-hide-emphasis-markers t
           org-pretty-entities t
+          ;; Keep \alpha -> α prettification, but don't render text after
+          ;; a bare "_" / "^" as sub/superscript.
+          org-pretty-entities-include-sub-superscripts nil
           org-fontify-quote-and-verse-blocks t
           org-fontify-whole-heading-line t
           org-fontify-done-headline t
@@ -271,12 +274,6 @@
   :hook (org-mode . valign-mode)
   :config
   (setq valign-fancy-bar t))
-
-;; Centered, fixed-width body for distraction-free org writing
-(use-package olivetti
-  :hook (org-mode . olivetti-mode)
-  :config
-  (setq olivetti-body-width 80))
 
 ;; Auto-spacing between CJK and ASCII characters for readability
 (use-package pangu-spacing

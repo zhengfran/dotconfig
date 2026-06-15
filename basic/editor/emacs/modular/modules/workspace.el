@@ -47,7 +47,13 @@
   ;; Files to exclude from desktop save
   (add-to-list 'desktop-modes-not-to-save 'dired-mode)
   (add-to-list 'desktop-modes-not-to-save 'Info-mode)
-  (add-to-list 'desktop-modes-not-to-save 'fundamental-mode))
+  (add-to-list 'desktop-modes-not-to-save 'fundamental-mode)
+
+  ;; vterm buffers are restored by a handler that calls `vterm', so the
+  ;; package (and its native module) must be loaded before desktop replays
+  ;; buffers on startup. Preload it on non-Windows where vterm exists.
+  (unless (eq system-type 'windows-nt)
+    (require 'vterm nil t)))
 
 ;; ============================================================================
 ;; PROJECT

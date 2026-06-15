@@ -24,7 +24,7 @@
 ;;   7. completion        -> Vertico, consult, corfu
 ;;   8. bookmarks         -> Bookmark management, URL capture
 ;;   9. workspace         -> Tab-bar workspaces, desktop sessions
-;;   10. navigation       -> Avy, treemacs, multiple-cursors
+;;   10. navigation       -> Avy, multiple-cursors
 ;;   11. snippets         -> Yasnippet, global snippet search
 ;;   12. org-base         -> Core org-mode setup
 ;;   13. org-agenda-config -> Org agenda and TODO management
@@ -143,7 +143,7 @@
 (require 'completion)      ; 7. Vertico, consult, corfu (needed by other modules)
 (require 'bookmarks)       ; 8. Bookmarks (uses consult)
 (require 'workspace)       ; 9. Workspaces, sessions, projects
-(require 'navigation)      ; 10. Avy, treemacs, multiple-cursors
+(require 'navigation)      ; 10. Avy, multiple-cursors
 (require 'snippets)        ; 11. Yasnippet + global snippet search
 (require 'org-base)           ; 12. Core org-mode setup
 (require 'org-agenda-config)  ; 13. Org agenda and TODO management (defines org-agenda-files)
