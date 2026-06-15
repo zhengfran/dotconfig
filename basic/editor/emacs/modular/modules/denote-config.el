@@ -47,81 +47,82 @@
     (denote title keywords 'org subdir nil body)))
 
 ;; ============================================================================
-;; DAILY/JOURNAL NOTE HELPERS
+;; JOURNAL (denote-journal): daily / weekly / monthly / yearly cadences
 ;; ============================================================================
+;; Each cadence is the SAME `denote-journal-new-or-existing-entry' command with
+;; the interval, keyword, and title format dynamically bound. Entries all live
+;; in the journal/ subdirectory but are distinguished by keyword:
+;;   daily -> journal, weekly -> weekly, monthly -> monthly, yearly -> yearly.
+;; The denote ID timestamp encodes the date, which the `tasks-done-today'
+;; dynamic block (below) parses for daily entries.
 
-(defun my/denote-get-journal-note-file (&optional date)
-  "Get the file path for journal note on DATE (defaults to today).
-Returns nil if no journal note exists for that date."
-  (let* ((time (or date (current-time)))
-         (date-str (format-time-string "%Y%m%d" time))
-         (journal-dir (expand-file-name "journal" denote-directory))
-         (file (when (file-exists-p journal-dir)
-                 (car (directory-files journal-dir nil
-                                       (concat "^" date-str "T[0-9]\\{6\\}--.*\\.org$"))))))
-    (when file
-      (expand-file-name file journal-dir))))
+(use-package denote-journal
+  :after denote
+  :commands (denote-journal-new-entry
+             denote-journal-new-or-existing-entry
+             denote-journal-link-or-create-entry
+             denote-journal-calendar-new-or-existing
+             denote-journal-calendar-find-file)
+  :hook (calendar-mode . denote-journal-calendar-mode)
+  :custom
+  (denote-journal-directory (expand-file-name "journal" my/org-base-dir))
+  (denote-journal-keyword "journal")
+  (denote-journal-title-format 'day-date-month-year))
 
-(defun my/denote-ensure-journal-note-exists ()
-  "Ensure today's journal note exists, creating it if necessary.
-Returns the file path of today's journal note."
-  (or (my/denote-get-journal-note-file)
-      (my/denote-create-journal-note)
-      (my/denote-get-journal-note-file)))
+;; These dynamic variables are defined by `denote-journal' (via defcustom).
+;; Declare them here so this file byte-compiles cleanly and the `let' bindings
+;; in `my/denote-journal-with' are dynamic (special), not lexical.
+(defvar denote-journal-interval)
+(defvar denote-journal-keyword)
+(defvar denote-journal-title-format)
 
-(defun my/denote-create-journal-note (&optional date)
-  "Create journal note for DATE (defaults to today) with template.
-Uses template from ~/org/templates/daily.org if it exists.
-Returns the file path of the created note."
+(defmacro my/denote-journal-with (interval keyword title-format &rest body)
+  "Run BODY with denote-journal bound to INTERVAL, KEYWORD and TITLE-FORMAT."
+  (declare (indent 3))
+  `(let ((denote-journal-interval ,interval)
+         (denote-journal-keyword ,keyword)
+         (denote-journal-title-format ,title-format))
+     ,@body))
+
+(defun my/denote-journal-daily (&optional date)
+  "Visit or create today's daily journal entry.
+With prefix arg, prompt for a DATE."
+  (interactive (list (when current-prefix-arg (denote-date-prompt))))
+  (my/denote-journal-with 'daily "journal" "%Y-%m-%d %a"
+    (denote-journal-new-or-existing-entry date)))
+
+(defun my/denote-journal-weekly (&optional date)
+  "Visit or create this week's journal entry.
+With prefix arg, prompt for a DATE within the desired week."
+  (interactive (list (when current-prefix-arg (denote-date-prompt))))
+  (my/denote-journal-with 'weekly "weekly" "Week %V %Y"
+    (denote-journal-new-or-existing-entry date)))
+
+(defun my/denote-journal-monthly (&optional date)
+  "Visit or create this month's journal entry.
+With prefix arg, prompt for a DATE within the desired month."
+  (interactive (list (when current-prefix-arg (denote-date-prompt))))
+  (my/denote-journal-with 'monthly "monthly" "%Y-%B"
+    (denote-journal-new-or-existing-entry date)))
+
+(defun my/denote-journal-yearly (&optional date)
+  "Visit or create this year's journal entry.
+With prefix arg, prompt for a DATE within the desired year."
+  (interactive (list (when current-prefix-arg (denote-date-prompt))))
+  (my/denote-journal-with 'yearly "yearly" "%Y"
+    (denote-journal-new-or-existing-entry date)))
+
+(defun my/denote-journal-yesterday ()
+  "Visit or create yesterday's daily journal entry."
   (interactive)
-  (let* ((time (or date (current-time)))
-         (title (format-time-string "%Y-%m-%d %a" time))
-         (template-file "~/org/templates/daily.org")
-         (template (if (file-exists-p template-file)
-                       (with-temp-buffer
-                         (insert-file-contents template-file)
-                         (buffer-string))
-                     ;; Default template if file doesn't exist
-                                           "* What's done today?\n\n#+BEGIN: tasks-done-today\n#+END:\n\n* Notes\n\n"))
-         (subdir (expand-file-name "journal" denote-directory)))
-    ;; Ensure journal directory exists
-    (unless (file-exists-p subdir)
-      (make-directory subdir t))
-    ;; Create denote note with specific date
-    (denote title '("journal") 'org subdir time template)
-    (message "Created journal note for %s" title)
-    ;; Return the file path (denote switches to the new buffer)
-    (buffer-file-name)))
+  (my/denote-journal-daily
+   (format-time-string "%Y-%m-%d" (time-subtract (current-time) (days-to-time 1)))))
 
-(defun my/denote-journal-goto-today ()
-  "Open or create today's journal note."
+(defun my/denote-journal-tomorrow ()
+  "Visit or create tomorrow's daily journal entry."
   (interactive)
-  (let ((journal-file (my/denote-ensure-journal-note-exists)))
-    (find-file journal-file)))
-
-(defun my/denote-journal-goto-yesterday ()
-  "Open yesterday's journal note, creating if needed."
-  (interactive)
-  (let* ((yesterday (time-subtract (current-time) (days-to-time 1)))
-         (file (or (my/denote-get-journal-note-file yesterday)
-                   (my/denote-create-journal-note yesterday))))
-    (find-file file)))
-
-(defun my/denote-journal-goto-tomorrow ()
-  "Open or create tomorrow's journal note."
-  (interactive)
-  (let* ((tomorrow (time-add (current-time) (days-to-time 1)))
-         (file (or (my/denote-get-journal-note-file tomorrow)
-                   (my/denote-create-journal-note tomorrow))))
-    (find-file file)))
-
-(defun my/denote-journal-goto-date ()
-  "Open or create journal note for a specific date selected from calendar."
-  (interactive)
-  (let* ((time (org-read-date nil t nil "Journal note date:"))
-         (file (or (my/denote-get-journal-note-file time)
-                   (my/denote-create-journal-note time))))
-    (find-file file)))
+  (my/denote-journal-daily
+   (format-time-string "%Y-%m-%d" (time-add (current-time) (days-to-time 1)))))
 
 ;; ============================================================================
 ;; COMPLETED TASKS DYNAMIC BLOCK
@@ -228,7 +229,7 @@ PARAMS is ignored (date comes from filename)."
   :demand t
   :custom
   (denote-directory my/org-base-dir)
-  (denote-known-keywords '("project" "journal" "trade" "work" "review" "ref" "archived" "habit" "blog"))
+  (denote-known-keywords '("project" "journal" "weekly" "monthly" "yearly" "trade" "work" "review" "ref" "archived" "habit" "blog"))
   (denote-infer-keywords t)
   (denote-sort-keywords t)
   (denote-eile-type 'org)
@@ -248,15 +249,15 @@ PARAMS is ignored (date comes from filename)."
    ("C-c n r" . denote-rename-file)
    ("C-c n R" . denote-rename-file-using-front-matter)
    ("C-c n a" . denote-keywords-add)
-   ;; Journal / date navigation (migrated from leader keys)
-   ("C-c n j" . my/denote-create-journal-note)
-   ("C-c n d" . my/denote-journal-goto-today)
-   ("C-c n y" . my/denote-journal-goto-yesterday)
-   ("C-c n m" . my/denote-journal-goto-tomorrow)
-   ("C-c n D" . my/denote-journal-goto-date)
+   ;; Journal / date navigation (denote-journal cadences)
+   ("C-c n j" . my/denote-journal-daily)
+   ("C-c n d" . my/denote-journal-daily)
+   ("C-c n y" . my/denote-journal-yesterday)
+   ("C-c n m" . my/denote-journal-tomorrow)
+   ("C-c n w" . my/denote-journal-weekly)
    ("C-c n T" . my/denote-capture-trade)
-   ("C-c n Y" . my/denote-goto-year)
-   ("C-c n M" . my/denote-goto-month)
+   ("C-c n Y" . my/denote-journal-yearly)
+   ("C-c n M" . my/denote-journal-monthly)
    :map org-mode-map
    ("C-M-i" . completion-at-point))
   :config
@@ -283,38 +284,6 @@ PARAMS is ignored (date comes from filename)."
     (let ((dir (expand-file-name subdir denote-directory)))
       (unless (file-exists-p dir)
         (make-directory dir t)))))
-
-;; ============================================================================
-;; YEAR/MONTH NAVIGATION
-;; ============================================================================
-
-(defun my/denote-goto-month ()
-  "Navigate to or create a monthly planning note in journal/ subdirectory."
-  (interactive)
-  (let* ((month-str (format-time-string "%Y-%B"))
-         (regexp (concat ".*--" (regexp-quote (downcase month-str))))
-         (existing (car (denote-directory-files regexp)))
-         (subdir (expand-file-name "journal" denote-directory)))
-    (if existing
-        (find-file existing)
-      (unless (file-exists-p subdir)
-        (make-directory subdir t))
-      (denote month-str '("journal") 'org subdir nil
-              "\n* Goals\n\n* Summary\n\n"))))
-
-(defun my/denote-goto-year ()
-  "Navigate to or create a yearly planning note in journal/ subdirectory."
-  (interactive)
-  (let* ((year-str (format-time-string "%Y"))
-         (regexp (concat ".*--" year-str "$"))
-         (existing (car (denote-directory-files regexp)))
-         (subdir (expand-file-name "journal" denote-directory)))
-    (if existing
-        (find-file existing)
-      (unless (file-exists-p subdir)
-        (make-directory subdir t))
-      (denote year-str '("journal") 'org subdir nil
-              "\n* Goals\n\n* Summary\n\n"))))
 
 ;; ============================================================================
 ;; CONSULT-DENOTE
