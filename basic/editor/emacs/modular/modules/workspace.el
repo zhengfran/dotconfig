@@ -151,29 +151,45 @@
        (directory-file-name default-directory))))
   
   ;; Helper function: Create new tab for project
+  ;; --- Per-tab data helpers (the tab is an alist; mutate it directly) ----
+  (defun my/tab-get-data (key)
+    "Return KEY's value stored in the current tab-bar tab, or nil."
+    (alist-get key (cdr (tab-bar--current-tab-find))))
+
+  (defun my/tab-set-data (key value)
+    "Store VALUE under KEY in the current tab-bar tab's alist."
+    (let ((tab (tab-bar--current-tab-find)))
+      (setf (alist-get key (cdr tab)) value)))
+
   (defun my/open-project-in-new-tab ()
-    "Open a project in a new tab and name it after the project."
+    "Open a project in a new tab, name it after the project, and link it."
     (interactive)
     (tab-bar-new-tab)
     (call-interactively 'project-switch-project)
     (tab-bar-rename-tab (my/tab-bar-name-from-project))
-    ;; Store project root in tab configuration
     (when-let* ((project (project-current)))
-      (set-frame-parameter nil 
-                          (intern (format "tab-project-%s" (tab-bar--current-tab-index)))
-                          (project-root project))))
-  
-  ;; Get the project root associated with current workspace
-  (defun my/workspace-project-root ()
-    "Get the project root for the current workspace."
-    (frame-parameter nil (intern (format "tab-project-%s" (tab-bar--current-tab-index)))))
-  
+      (my/tab-set-data 'linked-project (project-root project))))
+
+  ;; Get the linked project root for the current workspace (nil if unlinked)
+  (defun my/workspace-linked-project ()
+    "Return the linked project root for the current workspace, or nil."
+    (my/tab-get-data 'linked-project))
+
+  ;; Link (or re-link) the current workspace to a chosen project
+  (defun my/workspace-relink-project ()
+    "Set or change the current workspace's linked project interactively."
+    (interactive)
+    (let* ((project (project-prompt-project-dir))
+           (root (file-truename (expand-file-name project))))
+      (my/tab-set-data 'linked-project root)
+      (message "Workspace linked to %s" root)))
+
   ;; Project-aware consult-buffer for workspaces
   (defun my/consult-project-buffer ()
-    "Show buffers filtered by current workspace's project."
+    "Show buffers filtered by current workspace's linked project."
     (interactive)
-    (if-let* ((project-root (my/workspace-project-root)))
-        (let ((default-directory project-root)
+    (if-let* ((root (my/workspace-linked-project)))
+        (let ((default-directory root)
               (consult-buffer-sources '(consult--source-project-buffer-hidden
                                        consult--source-project-buffer
                                        consult--source-project-recent-file)))
@@ -204,6 +220,7 @@
     "w u"   '(tab-bar-undo-close-tab :which-key "undo close workspace")
     "w ."   '(tab-bar-switch-to-recent-tab :which-key "recent workspace")
     "w p"   '(my/open-project-in-new-tab :which-key "open project in new tab")
+    "w P"   '(my/workspace-relink-project :which-key "relink workspace project")
     "w R"   '(tab-bar-rename-tab-by-name :which-key "rename workspace by name")
     "w s"   '(my/desktop-save-default :which-key "save session")
     "w S"   '(desktop-save-in-desktop-dir :which-key "save session now")

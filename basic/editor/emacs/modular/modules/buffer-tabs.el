@@ -32,18 +32,31 @@
     (when (re-search-forward "^#\\+TITLE:\\s-*\\(.+\\)$" nil t)
       (string-trim (match-string 1)))))
 
+(defun my/extract-denote-title (buffer)
+  "Extract title from a denote-style filename for BUFFER.
+Denote filenames: 20240101T120000--slug-title__tags.ext
+Returns slug with hyphens as spaces, capitalised, or nil."
+  (when-let* ((file (buffer-file-name buffer))
+              (base (file-name-base file))
+              (_ (string-match "--\\([^_]+\\)" base)))
+    (capitalize (replace-regexp-in-string "-" " " (match-string 1 base)))))
+
 (defun my/get-org-buffer-name (buffer)
-  "Get display name for org-mode BUFFER using #+TITLE: if available."
+  "Get display name for BUFFER on the tab-line.
+Priority: org #+TITLE: > denote filename title > buffer-name."
   (with-current-buffer buffer
-    (if (not (eq major-mode 'org-mode))
-        (buffer-name buffer)
-      (let* ((file (buffer-file-name))
-             (cached (and file (gethash file my/org-title-cache))))
-        (or cached
-            (let ((title (my/extract-org-title)))
-              (when (and title file)
-                (puthash file title my/org-title-cache))
-              (or title (buffer-name buffer))))))))
+    (if (eq major-mode 'org-mode)
+        (let* ((file (buffer-file-name))
+               (cached (and file (gethash file my/org-title-cache))))
+          (or cached
+              (let ((title (my/extract-org-title)))
+                (when (and title file)
+                  (puthash file title my/org-title-cache))
+                (or title
+                    (my/extract-denote-title buffer)
+                    (buffer-name buffer)))))
+      (or (my/extract-denote-title buffer)
+          (buffer-name buffer)))))
 
 ;; ============================================================================
 ;; BUFFER FILTERING
@@ -88,30 +101,12 @@ separate group (see `my/tab-terminal-p')."
                        'helpful-mode
                        'magit-mode)))))
 
-(defun my/buffer-in-current-project-p (buffer)
-  "Return non-nil if BUFFER belongs to the current project."
-  (when-let* ((current-project (project-current))
-              (current-root (file-truename (expand-file-name (project-root current-project))))
-              (buf-file (buffer-file-name buffer)))
-    (string-prefix-p current-root (file-truename buf-file))))
+(defun my/buffer-under-root-p (buffer root)
+  "Return non-nil if BUFFER's file is under ROOT (path-prefix test)."
+  (when-let* ((buf-file (buffer-file-name buffer)))
+    (string-prefix-p (file-truename (expand-file-name root))
+                     (file-truename buf-file))))
 
-(defun my/debug-buffer-project ()
-  "Show debug info about current buffer's project status."
-  (interactive)
-  (let* ((buf (current-buffer))
-         (buf-file (buffer-file-name buf))
-         (buf-file-true (and buf-file (file-truename buf-file)))
-         (current-project (project-current))
-         (current-root (and current-project (project-root current-project)))
-         (current-root-expanded (and current-root (file-truename (expand-file-name current-root))))
-         (in-project (my/buffer-in-current-project-p buf)))
-    (message "Buffer: %s\nFile: %s\nFile (truename): %s\nProject root: %s\nProject root (expanded): %s\nIn project: %s"
-             (buffer-name buf)
-             (or buf-file "No file")
-             (or buf-file-true "No file")
-             (or current-root "Not in a project")
-             (or current-root-expanded "Not in a project")
-             (if in-project "YES" "NO"))))
 
 (defvar my/tab-buffer-order nil
   "Ordered list of buffers as they first appeared on the tab-line.
@@ -136,28 +131,26 @@ each other's positions."
   (seq-filter (lambda (b) (memq b buffers)) my/tab-buffer-order))
 
 (defun my/visible-buffer-list ()
-  "Return list of NORMAL buffers visible in tabs, filtered by current project.
-Excludes hidden buffers and terminal buffers (terminals are their own
-group, see `my/tab-terminal-p').  In a project, only buffers belonging to
-that project are shown; otherwise all non-hidden, non-terminal buffers."
-  (let* ((current-project (project-current))
+  "Return list of NORMAL buffers visible in tabs, filtered by the workspace's linked project.
+Excludes hidden buffers and terminal buffers.  When the current workspace has a
+Linked Project, only buffers whose file is under that root are shown; otherwise
+all non-hidden, non-terminal buffers are shown."
+  (let* ((linked-root (and (fboundp 'my/workspace-linked-project)
+                           (my/workspace-linked-project)))
          (all-buffers (buffer-list))
          (filtered-buffers
-          (if current-project
-              ;; In a project: show only buffers in this project
+          (if linked-root
               (seq-filter
                (lambda (buf)
                  (and (not (my/buffer-tab-hidden-p buf))
                       (not (my/tab-terminal-p buf))
-                      (my/buffer-in-current-project-p buf)))
+                      (my/buffer-under-root-p buf linked-root)))
                all-buffers)
-            ;; Not in a project: show all non-hidden, non-terminal buffers
             (seq-filter
              (lambda (buf)
                (and (not (my/buffer-tab-hidden-p buf))
                     (not (my/tab-terminal-p buf))))
              all-buffers))))
-    ;; Stable order: existing tabs stay put, new buffers append to the end.
     (my/tab-stable-order filtered-buffers)))
 
 ;; ============================================================================
@@ -176,42 +169,11 @@ that project are shown; otherwise all non-hidden, non-terminal buffers."
 ;; ── Line 2: tab-line shows BUFFERS in the current workspace ─────────────────
 ;; Reuse the project-aware buffer list and org #+TITLE: naming from above.
 
-;; Per-workspace terminals: tag each terminal buffer with the tab-bar
-;; workspace it was created in, then show only this workspace's terminals
-;; in the terminal tab group.
-(defvar-local my/tab-terminal-workspace nil
-  "Name of the tab-bar workspace a terminal buffer belongs to.")
-
-(defun my/current-workspace-name ()
-  "Return the current tab-bar workspace (tab) name, or nil."
-  (when (fboundp 'tab-bar-tab-name-current)
-    (ignore-errors (tab-bar-tab-name-current))))
-
-(defun my/tag-terminal-workspace ()
-  "Tag the current terminal buffer with the active workspace name.
-Added to terminal mode hooks so each terminal remembers where it was born."
-  (when (my/tab-terminal-p)
-    (setq my/tab-terminal-workspace (my/current-workspace-name))))
-
-(add-hook 'vterm-mode-hook  #'my/tag-terminal-workspace)
-(add-hook 'eshell-mode-hook #'my/tag-terminal-workspace)
-(add-hook 'term-mode-hook   #'my/tag-terminal-workspace)
-
-(defun my/terminal-in-current-workspace-p (buffer)
-  "Return non-nil if terminal BUFFER belongs to the current workspace.
-Untagged terminals (no recorded workspace) are shown everywhere so they
-never silently disappear."
-  (let ((tag (buffer-local-value 'my/tab-terminal-workspace buffer)))
-    (or (null tag)
-        (equal tag (my/current-workspace-name)))))
-
 (defun my/terminal-buffer-list ()
-  "Return live terminal buffers for the current workspace, in stable order."
+  "Return all live terminal buffers, in stable order.
+Terminals form a single iTerm-style group shared across workspaces."
   (my/tab-stable-order
-   (seq-filter (lambda (b)
-                 (and (my/tab-terminal-p b)
-                      (my/terminal-in-current-workspace-p b)))
-               (buffer-list))))
+   (seq-filter #'my/tab-terminal-p (buffer-list))))
 
 (defun my/tab-line-buffers ()
   "Return buffers for the tab-line, grouped by the current buffer's type.
@@ -235,6 +197,10 @@ The current buffer is always included even if filtering would drop it."
               name)
             " ")))
 
+;; Refresh all tab-lines when switching workspaces (linked project may change).
+(add-hook 'tab-bar-tab-post-select-functions
+          (lambda (&rest _) (force-mode-line-update t)))
+
 (use-package tab-line
   :init
   (setq tab-line-tabs-function #'my/tab-line-buffers)
@@ -250,10 +216,10 @@ The current buffer is always included even if filtering would drop it."
 ;; ============================================================================
 
 (defun my/next-buffer-tab ()
-  "Switch to the next buffer following the tab-line display order.
-Stays within the current tab group (normal vs terminal)."
+  "Switch to the next buffer in the tab-line display order.
+Walks the same list the tab-line shows (`tab-line-tabs-function')."
   (interactive)
-  (let* ((bufs (tab-line-tabs-window-buffers))
+  (let* ((bufs (funcall tab-line-tabs-function))
          (len (length bufs))
          (pos (seq-position bufs (current-buffer))))
     (when (and pos (> len 1))
@@ -261,10 +227,10 @@ Stays within the current tab group (normal vs terminal)."
                                   (selected-window)))))
 
 (defun my/prev-buffer-tab ()
-  "Switch to the previous buffer following the tab-line display order.
-Stays within the current tab group (normal vs terminal)."
+  "Switch to the previous buffer in the tab-line display order.
+Walks the same list the tab-line shows (`tab-line-tabs-function')."
   (interactive)
-  (let* ((bufs (tab-line-tabs-window-buffers))
+  (let* ((bufs (funcall tab-line-tabs-function))
          (len (length bufs))
          (pos (seq-position bufs (current-buffer))))
     (when (and pos (> len 1))

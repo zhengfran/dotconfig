@@ -23,6 +23,9 @@
     (setq vterm-buffer-name-string "%s")
     (add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode 0)))
     (evil-set-initial-state 'vterm-mode 'emacs)
+    ;; evil-collection-vterm sets its own initial state (normal); re-assert
+    ;; emacs state on buffer creation so vterm always starts in editing mode.
+    (add-hook 'vterm-mode-hook #'evil-emacs-state)
     (define-key vterm-mode-map (kbd "C-q") #'vterm-send-next-key)
     (define-key vterm-mode-map (kbd "M-<left>") #'vterm-send-left)
     (define-key vterm-mode-map (kbd "M-<right>") #'vterm-send-right)
@@ -85,7 +88,10 @@
                        (with-current-buffer buffer
                          (or (equal major-mode 'vterm-mode)
                              (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
-                   (display-buffer-reuse-window display-buffer-at-bottom)
+                   (display-buffer-reuse-window
+                    display-buffer-reuse-mode-window
+                    display-buffer-at-bottom)
+                   (mode . vterm-mode)
                    (reusable-frames . visible)
                    (window-height . 0.33)))
     :bind
