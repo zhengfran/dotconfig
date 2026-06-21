@@ -69,10 +69,21 @@ being hidden, so they can be navigated like iTerm-style tabs."
   (with-current-buffer (or buffer (current-buffer))
     (derived-mode-p 'vterm-mode 'eshell-mode 'term-mode)))
 
+(defun my/tab-agent-p (&optional buffer)
+  "Return non-nil if BUFFER (default current) is an agent-shell buffer.
+Agent buffers (agent-shell shell and viewport buffers) form their own
+tab group rather than being mixed with normal or terminal buffers.
+Covers all three agent-shell modes even when viewport interaction is
+disabled, so the group stays correct if it is enabled later."
+  (with-current-buffer (or buffer (current-buffer))
+    (derived-mode-p 'agent-shell-mode
+                    'agent-shell-viewport-view-mode
+                    'agent-shell-viewport-edit-mode)))
+
 (defun my/buffer-tab-hidden-p (buffer)
   "Return non-nil if BUFFER should be hidden from tabs entirely.
-Note: terminal buffers are NOT hidden here; they are handled as a
-separate group (see `my/tab-terminal-p')."
+Note: terminal and agent buffers are NOT hidden here; they are handled
+as separate groups (see `my/tab-terminal-p' and `my/tab-agent-p')."
   (let ((name (buffer-name buffer)))
     (or
      ;; Invisible buffers (space prefix)
@@ -93,7 +104,6 @@ separate group (see `my/tab-terminal-p')."
      (string-prefix-p "*eglot" name)
      (string-prefix-p "magit" name)
      (string-prefix-p "*fava" name)
-     (string-prefix-p "*gptel" name)
      ;; Modes to exclude
      (with-current-buffer buffer
        (derived-mode-p 'dired-mode
@@ -144,12 +154,14 @@ all non-hidden, non-terminal buffers are shown."
                (lambda (buf)
                  (and (not (my/buffer-tab-hidden-p buf))
                       (not (my/tab-terminal-p buf))
+                      (not (my/tab-agent-p buf))
                       (my/buffer-under-root-p buf linked-root)))
                all-buffers)
             (seq-filter
              (lambda (buf)
                (and (not (my/buffer-tab-hidden-p buf))
-                    (not (my/tab-terminal-p buf))))
+                    (not (my/tab-terminal-p buf))
+                    (not (my/tab-agent-p buf))))
              all-buffers))))
     (my/tab-stable-order filtered-buffers)))
 
@@ -175,14 +187,22 @@ Terminals form a single iTerm-style group shared across workspaces."
   (my/tab-stable-order
    (seq-filter #'my/tab-terminal-p (buffer-list))))
 
+(defun my/agent-buffer-list ()
+  "Return all live agent-shell buffers, in stable order.
+Agents form a single group shared across workspaces (global, like
+terminals), never mixed with normal or terminal buffers."
+  (my/tab-stable-order
+   (seq-filter #'my/tab-agent-p (buffer-list))))
+
 (defun my/tab-line-buffers ()
   "Return buffers for the tab-line, grouped by the current buffer's type.
+- In an agent-shell buffer: show only agent buffers.
 - In a terminal buffer: show only terminal buffers (iTerm-style group).
 - Otherwise: show the project-filtered normal buffer list.
 The current buffer is always included even if filtering would drop it."
-  (let ((bufs (if (my/tab-terminal-p)
-                  (my/terminal-buffer-list)
-                (my/visible-buffer-list))))
+  (let ((bufs (cond ((my/tab-agent-p) (my/agent-buffer-list))
+                    ((my/tab-terminal-p) (my/terminal-buffer-list))
+                    (t (my/visible-buffer-list)))))
     (if (memq (current-buffer) bufs)
         bufs
       (cons (current-buffer) bufs))))
@@ -247,13 +267,19 @@ Walks the same list the tab-line shows (`tab-line-tabs-function')."
 
 (defun my/switch-to-prev-buffer-skip (_win buf _bury-or-kill)
   "Predicate for `switch-to-prev-buffer-skip'.
-Skip BUF when navigating so that:
+Skip BUF when navigating so that each group stays in its own lane:
+- from an agent buffer, only other agent buffers are reachable;
 - from a terminal, only other terminals are reachable;
-- from a normal buffer, terminals and hidden buffers are skipped."
-  (if (my/tab-terminal-p)
-      (not (my/tab-terminal-p buf))
+- from a normal buffer, agents, terminals and hidden buffers are skipped."
+  (cond
+   ((my/tab-agent-p)
+    (not (my/tab-agent-p buf)))
+   ((my/tab-terminal-p)
+    (not (my/tab-terminal-p buf)))
+   (t
     (or (my/buffer-tab-hidden-p buf)
-        (my/tab-terminal-p buf))))
+        (my/tab-terminal-p buf)
+        (my/tab-agent-p buf)))))
 
 (setq switch-to-prev-buffer-skip #'my/switch-to-prev-buffer-skip)
 

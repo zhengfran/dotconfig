@@ -61,7 +61,7 @@ modular/
 15. **org-babel** → Code execution in org
 16. **buffer-tabs** → Buffer tab-line
 17. **programming** → LSP, language modes
-18. **ai** → GPTel AI integration
+18. **ai** → AI integration (agent-shell / Claude Code)
 19. **chinese** → Input methods, formatting
 20. **terminal** → vterm (non-Windows only)
 
