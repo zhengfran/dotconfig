@@ -94,7 +94,7 @@ Assistant: [Launches roundtable discussion on free will]
 7. **写入 org 文件（完整保存，一字不差）**
    将讨论**全部原文**写入 org-mode 文件，不压缩、不删减、不改写任何发言内容：
    1. 运行 `date +%Y%m%dT%H%M%S` 获取时间戳
-   2. 写入 `~/Documents/notes/{timestamp}--圆桌-{议题关键词}__roundtable.org`
+   2. 写入 `~/org/notes/{timestamp}--圆桌-{议题关键词}__roundtable.org`
    3. org 文件结构：
       ```org
       #+title: 圆桌：{议题}

@@ -35,7 +35,7 @@ version: "1.0.0"
 - 时间戳：`date +%Y%m%dT%H%M%S`
 - 可读时间：`date "+%Y-%m-%d %a %H:%M"`
 - 文件名：`{时间戳}--paper-river-{简短标题}__paper_river.org`
-- 输出目录：`~/Documents/notes/`
+- 输出目录：`~/org/notes/`
 
 ### Org 文件头
 
@@ -143,7 +143,7 @@ version: "1.0.0"
 - 因果链条是否连贯——把所有"它看到了什么问题"串起来读，逻辑通不通
 - 差异是否突出——每篇论文的重点是不是在讲"和前面有什么不同"
 
-读 `references/template.org`，按 Denote 规范写入 `~/Documents/notes/`。
+读 `references/template.org`，按 Denote 规范写入 `~/org/notes/`。
 
 ## 验收
 

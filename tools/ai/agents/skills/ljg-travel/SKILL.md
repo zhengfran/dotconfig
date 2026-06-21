@@ -151,7 +151,7 @@ version: "1.0.0"
    - {书名} — {为什么值得读}
 ```
 
-**文件命名**：使用 denote naming schema，保存到 `~/Documents/notes/` 目录：
+**文件命名**：使用 denote naming schema，保存到 `~/org/notes/` 目录：
 `{YYYYMMDDTHHMMSS}==z--{城市}旅行研究.org`
 
 **写作要求**：
