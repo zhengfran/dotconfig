@@ -32,7 +32,7 @@ scripts/setup-packages-arch.sh
 The setup script symlinks configs to standard locations:
 - `basic/shell/zsh/zshrc` → `~/.zshrc`
 - `basic/shell/zsh/zimrc` → `~/.zimrc`
-- `basic/editor/emacs/` → `~/.config/emacs`
+- `basic/editor/emacs/modular/` → `~/.config/emacs` (loaded directly via XDG; no chemacs)
 - `tools/yazi/` → `~/.config/yazi`
 - `tools/wm/sway/` → `~/.config/sway`
 - `tools/ai/opencode/` → `~/.config/opencode`
