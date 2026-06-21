@@ -154,6 +154,9 @@
   :custom
   (org-download-heading-lvl 1)
   (org-download-method #'my/org-download-method)
+  ;; Don't insert the "#+DOWNLOADED: <source> @ <time>" annotation; it only
+  ;; records the temporary staging path, not where the image actually lives.
+  (org-download-annotate-function (lambda (_link) ""))
   :after org
   :bind (:map org-mode-map
               ("C-c i y" . org-download-yank)

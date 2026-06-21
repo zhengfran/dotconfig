@@ -101,9 +101,27 @@
       (delete-file file)
       (kill-buffer))))
 
+(defun my/rename-current-file (new-name)
+  "Rename the file visited by the current buffer to NEW-NAME.
+Move the file on disk and switch the buffer to visit the new path."
+  (interactive
+   (let ((file (or (buffer-file-name)
+                   (error "Buffer is not visiting a file"))))
+     (list (read-file-name "Rename to: " (file-name-directory file)
+                           nil nil (file-name-nondirectory file)))))
+  (let ((old-name (buffer-file-name)))
+    (when (and (file-exists-p new-name)
+               (not (string= old-name new-name)))
+      (unless (y-or-n-p (format "%s exists; overwrite? " new-name))
+        (error "Rename aborted")))
+    (rename-file old-name new-name 1)
+    (set-visited-file-name new-name t t)
+    (message "Renamed to %s" new-name)))
+
 (zzc/leader-keys
  "f"  '(:ignore t :which-key "file")
- "fd" '(my/delete-current-file :which-key "delete file"))
+ "fd" '(my/delete-current-file :which-key "delete file")
+ "fr" '(my/rename-current-file :which-key "rename file"))
 
 (provide 'editor)
 ;;; editor.el ends here
