@@ -77,11 +77,12 @@ nvim_dir_path=$(find ~/dotconfig -type d -path "*/basic/editor/nvim" | head -n 1
 symlink_config "nvim dir" "$nvim_dir_path" ~/.config/nvim
 
 ## emacs
-emacs_dir_path=$(find ~/dotconfig -type d -name "emacs" | head -n 1)
-if [ -n "$emacs_dir_path" ]; then
-    symlink_config "emacs dir" "$emacs_dir_path" ~/.config/emacs
+# Single modular config loaded directly via XDG ~/.config/emacs (no chemacs).
+emacs_modular_path=$(find ~/dotconfig -type d -path "*editor/emacs/modular" | head -n 1)
+if [ -n "$emacs_modular_path" ]; then
+    symlink_config "emacs config" "$emacs_modular_path" ~/.config/emacs
 else
-    echo "[WARN] emacs directory not found in dotconfig."
+    echo "[WARN] emacs modular config not found in dotconfig."
 fi
 
 ## sway
