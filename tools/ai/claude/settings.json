@@ -3,19 +3,7 @@
     "defaultMode": "bypassPermissions"
   },
   "model": "sonnet",
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$HOME/.claude/validate-commit-msg.sh\""
-          }
-        ]
-      }
-    ]
-  },
+  "voiceEnabled": true,
   "statusLine": {
     "type": "command",
     "command": "bash \"$HOME/.claude/statusline-command.sh\""
