@@ -79,24 +79,9 @@ else
 fi
 
 ## emacs
-if [ ! -e ~/.emacs.d ] && [ ! -L ~/.emacs.d ]; then
-    echo "[INFO] Cloning chemacs2 into ~/.emacs.d..."
-    git clone --depth 1 https://github.com/plexus/chemacs2.git ~/.emacs.d
-else
-    read -r -p "[PROMPT] ~/.emacs.d already exists. Replace with chemacs2? [y/N] " answer
-    if [[ "$answer" =~ ^[Yy]$ ]]; then
-        rm -rf ~/.emacs.d
-        echo "[INFO] Cloning chemacs2 into ~/.emacs.d..."
-        git clone --depth 1 https://github.com/plexus/chemacs2.git ~/.emacs.d
-    else
-        echo "[INFO] Skipping chemacs2 clone."
-    fi
-fi
-
 emacs_dir_path=$(find ~/dotconfig -type d -name "emacs" | head -n 1)
 if [ -n "$emacs_dir_path" ]; then
     symlink_config "emacs dir" "$emacs_dir_path" ~/.config/emacs
-    symlink_config "emacs-profiles.el" "$emacs_dir_path/chemacs/.emacs-profiles.el" ~/.emacs-profiles.el
 else
     echo "[WARN] emacs directory not found in dotconfig."
 fi
@@ -143,14 +128,6 @@ if [ -n "$claude_statusline_path" ]; then
     symlink_config "Claude Code statusline" "$claude_statusline_path" ~/.claude/statusline-command.sh
 else
     echo "[WARN] Claude Code statusline-command.sh not found in dotconfig."
-fi
-
-claude_validate_path=$(find ~/dotconfig -type f -path "*/tools/ai/claude/validate-commit-msg.sh" | head -n 1)
-if [ -n "$claude_validate_path" ]; then
-    mkdir -p ~/.claude
-    symlink_config "Claude Code commit-message hook" "$claude_validate_path" ~/.claude/validate-commit-msg.sh
-else
-    echo "[WARN] Claude Code validate-commit-msg.sh not found in dotconfig."
 fi
 
 claude_skills_path=$(find ~/dotconfig -type d -path "*/tools/ai/agents/skills" | head -n 1)
