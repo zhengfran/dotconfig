@@ -29,3 +29,11 @@ Workspace, which lives on the tab-bar (line 1).
 A buffer belongs to a workspace's project when its file's truename is under the
 Linked Project root (path-prefix test). Nested sub-projects count as members
 because they sit physically inside the tree. Non-file buffers are not members.
+
+**Tab Group**:
+A mutually-exclusive partition of buffers on the tab-line, selected by the
+current buffer's type. A window showing a buffer from one group displays only
+buffers from that same group. Groups: Normal (project-filtered, file-backed),
+Terminal (global, vterm/eshell/term), and Agent (global, agent-shell shell and
+viewport buffers). A buffer belongs to exactly one group.
+_Avoid_: Tab (ambiguous — see Buffer Tab and Workspace)
