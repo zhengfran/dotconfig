@@ -326,14 +326,41 @@ PARAMS is ignored (date comes from filename)."
 ;; ============================================================================
 
 (defun my/denote-insert-new-project ()
-  "Create a new project note in projects/ subdirectory."
+  "Create a new project note in the projects/ subdirectory.
+Seeds the richer skeleton used by the `new-org-project' skill: an Overview
+heading (Description/Priority/Due drawer, Goal, Scope, Risks) plus a starter
+Epic, and the `#+columns:' line that powers the per-project column-view
+dashboard (C-c C-x C-c).  Point is left on the Description value to fill in."
   (interactive)
   (let* ((title (read-string "Project title: "))
-         (subdir (expand-file-name "projects" denote-directory)))
+         (subdir (expand-file-name "projects" denote-directory))
+         (template
+          (concat
+           "#+status:   Active\n"
+           "#+category: " title "\n"
+           "#+columns:  %40ITEM(Task) %TODO %PRIORITY(Pri) %DEADLINE(Due)\n"
+           "#+startup:  content\n\n"
+           "* Overview\n"
+           ":PROPERTIES:\n"
+           ":Description:\n"
+           ":Priority:\n"
+           ":Due:\n"
+           ":END:\n\n"
+           "** 🎯 Goal\n\n\n"
+           "** 📐 Scope\n"
+           "- *In*:\n"
+           "- *Out*:\n"
+           "- *Success*:\n\n"
+           "** ⚠️ Risks & Constraints\n\n\n"
+           "* Epic:  [/] :epic:\n"
+           "** TODO \n")))
     (unless (file-exists-p subdir)
       (make-directory subdir t))
-    (denote title '("project") 'org subdir nil
-            "#+status: Active\n\n* Tasks\n\n")))
+    (denote title '("project") 'org subdir nil template)
+    ;; Land on the Description value so the user can start filling it in.
+    (goto-char (point-min))
+    (when (re-search-forward "^:Description:" nil t)
+      (end-of-line))))
 
 (defun my/denote-find-project ()
   "Find and open a project note."
@@ -348,8 +375,52 @@ PARAMS is ignored (date comes from filename)."
              (file (cdr (assoc selected candidates))))
         (find-file file)))))
 
+(defun my/denote--project-headings-with-tags (tags)
+  "Return an alist of (DISPLAY . POINT) for headings in the current org buffer
+whose own (non-inherited) tags include any of TAGS.  DISPLAY is indented to
+reflect outline depth so Epics and their Stories read as a tree in the prompt.
+POINT is the start of the heading line, suitable as a parent anchor."
+  (let (result)
+    (org-with-wide-buffer
+     (goto-char (point-min))
+     (while (re-search-forward (concat "^" org-outline-regexp) nil t)
+       (when (seq-intersection tags (org-get-tags nil t))
+         (push (cons (format "%s%s"
+                             (make-string (* 2 (1- (org-current-level))) ?\s)
+                             (org-get-heading t t t t))
+                     (line-beginning-position))
+               result))))
+    (nreverse result)))
+
+(defun my/denote--insert-project-heading (parent-point level text tag cookie)
+  "Insert a new heading TEXT at LEVEL stars under PARENT-POINT.
+When PARENT-POINT is nil the heading is appended at end of buffer (separated by
+one blank line).  TAG, if non-nil, becomes a local tag; COOKIE, if non-nil,
+appends a \" [/]\" statistics cookie.  Leaves point at end of the heading line."
+  (if parent-point
+      (progn
+        (goto-char parent-point)
+        (org-end-of-subtree t t)
+        (unless (bolp) (insert "\n")))
+    (goto-char (point-max))
+    (skip-chars-backward "\n")
+    (delete-region (point) (point-max))
+    (insert "\n\n"))
+  (insert (make-string level ?*) " " text (if cookie " [/]" "") "\n")
+  (forward-line -1)
+  (when tag (org-set-tags (list tag)))
+  (org-back-to-heading t)
+  (end-of-line))
+
 (defun my/denote-capture-task ()
-  "Capture a task to an existing project."
+  "Capture an Epic, Story, or Task into an existing project note.
+Prompts for the project, then the item type:
+  - Epic  : a top-level axis of work (\"* Epic: ...\" tagged :epic:)
+  - Story : an intermediate grouping under a chosen Epic (\"** Story: ...\")
+  - Task  : a TODO leaf under a chosen Epic or Story
+Epics and Stories get a [/] statistics cookie; Tasks get a TODO keyword.
+For legacy projects with no Epics yet, Task falls back to the old
+\"* Tasks\" capture so existing notes keep working."
   (interactive)
   (let* ((project-files (my/denote-list-project-files))
          (candidates (mapcar (lambda (f)
@@ -358,15 +429,45 @@ PARAMS is ignored (date comes from filename)."
     (if (null candidates)
         (message "No project files found. Create one with C-c n P")
       (let* ((selected (completing-read "Project: " candidates nil t))
-             (file (cdr (assoc selected candidates))))
+             (file (cdr (assoc selected candidates)))
+             (type (completing-read "Type: " '("Task" "Epic" "Story")
+                                    nil t nil nil "Task")))
         (find-file file)
-        (goto-char (point-min))
-        (if (re-search-forward "^\\* Tasks" nil t)
-            (progn
-              (org-end-of-subtree t t)
-              (insert "** TODO "))
-          (goto-char (point-max))
-          (insert "\n** TODO "))))))
+        (pcase type
+          ("Epic"
+           (let ((title (read-string "Epic title: ")))
+             (my/denote--insert-project-heading
+              nil 1 (concat "Epic: " title) "epic" t)))
+          ("Story"
+           (let ((epics (my/denote--project-headings-with-tags '("epic"))))
+             (if (null epics)
+                 (let ((title (read-string "Story title (no Epic — added at top level): ")))
+                   (my/denote--insert-project-heading
+                    nil 1 (concat "Story: " title) "story" t))
+               (let* ((parent (assoc (completing-read "Under Epic: " epics nil t) epics))
+                      (ppoint (cdr parent))
+                      (level (1+ (save-excursion (goto-char ppoint) (org-current-level))))
+                      (title (read-string "Story title: ")))
+                 (my/denote--insert-project-heading
+                  ppoint level (concat "Story: " title) "story" t)))))
+          ("Task"
+           (let ((parents (my/denote--project-headings-with-tags '("epic" "story"))))
+             (if (null parents)
+                 ;; Legacy fallback: append under "* Tasks" or at end of file.
+                 (progn
+                   (goto-char (point-min))
+                   (if (re-search-forward "^\\* Tasks" nil t)
+                       (progn (org-end-of-subtree t t)
+                              (unless (bolp) (insert "\n")))
+                     (goto-char (point-max))
+                     (unless (bolp) (insert "\n")))
+                   (insert "** TODO "))
+               (let* ((parent (assoc (completing-read "Under: " parents nil t) parents))
+                      (ppoint (cdr parent))
+                      (level (1+ (save-excursion (goto-char ppoint) (org-current-level))))
+                      (title (read-string "Task title: ")))
+                 (my/denote--insert-project-heading
+                  ppoint level (concat "TODO " title) nil nil))))))))))
 
 ;; ============================================================================
 ;; PROJECT TABLE (dynamic block, like SPC h t habit-tracker)
