@@ -35,7 +35,11 @@
   (evil-set-initial-state 'shell-mode 'emacs)
   (evil-set-initial-state 'comint-mode 'emacs)
   (evil-set-initial-state 'shell-maker-mode 'emacs)
-  (evil-set-initial-state 'agent-shell-mode 'emacs))
+  (evil-set-initial-state 'agent-shell-mode 'emacs)
+  ;; agent-shell's viewport buffers derive from `text-mode' (not comint),
+  ;; so they need their own entries to start in Emacs state too.
+  (evil-set-initial-state 'agent-shell-viewport-view-mode 'emacs)
+  (evil-set-initial-state 'agent-shell-viewport-edit-mode 'emacs))
   
 ;; ============================================================================
 ;; EVIL COLLECTION
