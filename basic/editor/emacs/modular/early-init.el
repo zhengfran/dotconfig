@@ -38,16 +38,16 @@
        (math . "Latin Modern Math")
        (chinese . "PingFang SC")))
     ('windows-nt
-     ;; Windows: Roboto Mono for Latin, LXGW WenKai for CJK/variable
+     ;; Windows: Roboto Mono for Latin, Inter for variable-pitch prose, LXGW WenKai for CJK
      '((default . "Roboto Mono")
-       (variable-pitch . "LXGW WenKai")
+       (variable-pitch . "Inter")
        (fixed-pitch . "Roboto Mono")
        (math . "Latin Modern Math")
        (chinese . "LXGW WenKai")))
     (_
-     ;; Linux/other: Roboto Mono for Latin, LXGW WenKai for CJK/variable
+     ;; Linux/other: Roboto Mono for Latin, Inter for variable-pitch prose, LXGW WenKai for CJK
      '((default . "Roboto Mono")
-       (variable-pitch . "LXGW WenKai")
+       (variable-pitch . "Inter")
        (fixed-pitch . "Roboto Mono")
        (math . "Latin Modern Math")
        (chinese . "LXGW WenKai"))))
@@ -106,7 +106,13 @@ Automatically selects correct font names based on platform.")
         ;; Set charset-specific fonts
         (set-fontset-font "fontset-default" 'mathematical math-font nil 'prepend)
         (set-fontset-font "fontset-default" 'han chinese-font nil 'prepend)
-        (set-fontset-font "fontset-default" 'unicode chinese-font nil 'prepend)
+        ;; NOTE: 'unicode is the generic Unicode charset and includes ASCII,
+        ;; so prepending chinese-font here used to hijack Latin text too
+        ;; (e.g. bold ASCII rendered via LXGW WenKai, whose bold weight is
+        ;; visually flat for Latin glyphs). Scope to actual CJK punctuation
+        ;; ranges instead: CJK Symbols/Punctuation and Halfwidth/Fullwidth Forms.
+        (set-fontset-font "fontset-default" '(#x3000 . #x303F) chinese-font nil 'prepend)
+        (set-fontset-font "fontset-default" '(#xFF00 . #xFFEF) chinese-font nil 'prepend)
         
         ;; Performance optimizations
         (setq inhibit-compacting-font-caches t)

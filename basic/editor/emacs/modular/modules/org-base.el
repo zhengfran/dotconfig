@@ -244,6 +244,17 @@
           org-fontify-done-headline t
           org-startup-with-inline-images t)
 
+    ;; Allow emphasis (*bold*, /italic/ ...) to touch CJK characters and
+    ;; fullwidth punctuation. Org only fontifies emphasis when the chars
+    ;; immediately around the markers are in an allowed (ASCII) set, so
+    ;; `*简言之*：' breaks because of the trailing fullwidth colon. Adding
+    ;; `[:nonascii:]' to the pre/post components fixes it.
+    (setcar org-emphasis-regexp-components
+            (concat (car org-emphasis-regexp-components) "[:nonascii:]"))
+    (setcar (cdr org-emphasis-regexp-components)
+            (concat (cadr org-emphasis-regexp-components) "[:nonascii:]"))
+    (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
+
     (my/set-org-font)
     (add-hook 'org-mode-hook 'my-org-hook)
     (add-hook 'org-mode-hook #'prettify-symbols-mode)
