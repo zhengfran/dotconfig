@@ -32,12 +32,8 @@ source ~/.zim/modules/fzf-tab/fzf-tab.plugin.zsh
 source ~/.config/zsh/prompt.zsh
 # opencode
 
-# API Keys
-export GEMINI_API_KEY=$(get_netrc_pass "generativelanguage.googleapis.com")
-export OPENAI_API_KEY=$(get_netrc_pass "api.openai.com")
-export ANTHROPIC_API_KEY=$(get_netrc_pass "api.anthropic.com")
-export OPENROUTER_API_KEY=$(get_netrc_pass "openrouter.ai")
-export GLM_API_KEY=$(get_netrc_pass "z.ai")
+# API Keys — loaded on demand from Bitwarden via `load_secrets`
+# (see basic/shell/common/secrets.json). Run `load_secrets` when you need them.
 
 # bun completions
 [ -s "/home/uie41442/.bun/_bun" ] && source "/home/uie41442/.bun/_bun"
