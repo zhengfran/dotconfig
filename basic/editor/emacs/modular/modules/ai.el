@@ -53,7 +53,48 @@
                                      'agent-shell-viewport-edit-mode)))
                  (display-buffer-reuse-window display-buffer-in-direction)
                  (direction . right)
-                 (window-width . 0.5))))
+                 (window-width . 0.5)))
+
+  ;; ── Desktop save/restore for agent-shell ────────────────────────────────
+  ;; Unlike a raw subprocess, an ACP/Claude-Code session is *persisted by the
+  ;; agent* on disk and can be resumed by id via `session/resume' /
+  ;; `session/load'. So on restart we don't lose the conversation: we save each
+  ;; agent buffer's session id, then respawn it on the next launch and resume
+  ;; that exact session (the live process is fresh, the transcript is restored).
+  ;;
+  ;; How much of the prior conversation is re-rendered on resume. `full' replays
+  ;; the entire transcript; drop to `last' or `minimal' if startup feels slow.
+  (setq agent-shell-session-restore-verbosity 'full)
+
+  (defun my/agent-shell-desktop-save (_desktop-dirname)
+    "Persist this agent buffer's session id + dir for desktop restore."
+    `((session-id . ,(map-nested-elt agent-shell--state '(:session :id)))
+      (default-directory . ,default-directory)))
+
+  (add-hook 'agent-shell-mode-hook
+            (lambda ()
+              ;; Mark this buffer as desktop-saveable via our handler.
+              (setq-local desktop-save-buffer #'my/agent-shell-desktop-save)))
+
+  (defun my/agent-shell-desktop-restore (_file-name _buffer-name misc)
+    "Respawn an agent on desktop restore, resuming the saved session in MISC.
+When no session id was captured, just start a fresh agent."
+    (let ((default-directory (or (cdr (assq 'default-directory misc))
+                                 default-directory))
+          (session-id (cdr (assq 'session-id misc)))
+          ;; Bypass the session picker; we resume an explicit id.
+          (agent-shell-session-strategy 'latest))
+      (if session-id
+          (agent-shell-start :config (agent-shell-anthropic-make-claude-code-config)
+                             :session-id session-id)
+        (agent-shell-start :config (agent-shell-anthropic-make-claude-code-config)))))
+
+  (with-eval-after-load 'desktop
+    (add-to-list 'desktop-buffer-mode-handlers
+                 '(agent-shell-mode . my/agent-shell-desktop-restore))
+    ;; Make sure agent-shell-mode is allowed to be saved/restored.
+    (setq desktop-modes-not-to-save
+          (delq 'agent-shell-mode desktop-modes-not-to-save))))
 
 ;; Manager: tabulated list view of all open agent sessions
 (use-package agent-shell-manager
