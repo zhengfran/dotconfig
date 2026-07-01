@@ -14,8 +14,9 @@
 ;; ============================================================================
 
 ;; Only needed on real GUI sessions where Emacs does NOT inherit the shell's
-;; PATH (macOS, native X). Under WSLg `window-system' is `x', but spawning a
-;; login shell here is slow and unnecessary, so skip it on WSL.
+;; PATH (macOS, native X).  This is a pgtk build, so under WSLg `window-system'
+;; is `pgtk' (not in the list below) and a login shell would be slow and
+;; unnecessary anyway; the WSL_DISTRO_NAME guard makes that skip explicit.
 (use-package exec-path-from-shell
   :if (and (memq window-system '(mac ns x))
            (not (getenv "WSL_DISTRO_NAME")))
@@ -107,6 +108,75 @@
    browse-url-generic-program  "/mnt/c/Windows/System32/cmd.exe"
    browse-url-generic-args     '("/c" "start")
    browse-url-browser-function #'browse-url-generic))
+
+;; ============================================================================
+;; WSL CLIPBOARD BRIDGE
+;; ============================================================================
+;; This is a pgtk (GTK/Wayland) build, so under WSLg Emacs is a native Wayland
+;; client -- and WSLg does NOT reliably mirror the Wayland selection to the
+;; Windows clipboard (its X11 bridge works, the Wayland one does not).  So a
+;; kill here never reaches the Windows clipboard.  Bridge it through PowerShell,
+;; which is Unicode-safe (Chinese survives intact):
+;;   - Cut  (Emacs -> Windows): debounced + async, so a burst of evil kills does
+;;     not spawn a PowerShell process each; also sets the Wayland selection, so
+;;     copy-to-another-Linux-app keeps working.
+;;   - Paste (Windows -> Emacs): synchronous (~0.3s/yank).  Turn it off with
+;;     (setq my/wsl-clipboard-sync-paste nil) for instant native Wayland paste
+;;     (Emacs -> Windows copy still works).
+(when (and my/is-WSL (not my/is-terminal) (executable-find "powershell.exe"))
+
+  (defvar my/wsl-clipboard-sync-paste t
+    "When non-nil, yanking pulls from the Windows clipboard via PowerShell.
+Set to nil for instant native Wayland paste; Emacs -> Windows copy is unaffected.")
+
+  (defvar my/wsl-clip--pending nil
+    "Latest killed text awaiting a debounced push to the Windows clipboard.")
+  (defvar my/wsl-clip--timer nil
+    "Idle timer that coalesces rapid kills into a single clipboard push.")
+
+  (defun my/wsl-clip--flush ()
+    "Push the most recent killed text to the Windows clipboard, once."
+    (when my/wsl-clip--pending
+      (let ((text my/wsl-clip--pending))
+        (setq my/wsl-clip--pending nil)
+        (ignore-errors
+          (let ((proc (make-process
+                       :name "wsl-clip-cut" :buffer nil
+                       :connection-type 'pipe :coding 'utf-8-unix :noquery t
+                       :command
+                       '("powershell.exe" "-NoProfile" "-NonInteractive" "-Command"
+                         "[Console]::InputEncoding=[Text.Encoding]::UTF8; Set-Clipboard -Value ([Console]::In.ReadToEnd())"))))
+            (process-send-string proc text)
+            (process-send-eof proc))))))
+
+  (defun my/wsl-clip-cut (text)
+    "`interprogram-cut-function': set the Wayland selection and, debounced, the
+Windows clipboard."
+    (gui-select-text text)
+    (setq my/wsl-clip--pending text)
+    (when (timerp my/wsl-clip--timer) (cancel-timer my/wsl-clip--timer))
+    (setq my/wsl-clip--timer (run-with-idle-timer 0.2 nil #'my/wsl-clip--flush)))
+
+  (defun my/wsl-clip-paste ()
+    "`interprogram-paste-function': return the Windows clipboard contents.
+Falls back to the native Wayland selection when `my/wsl-clipboard-sync-paste'
+is nil."
+    (if (not my/wsl-clipboard-sync-paste)
+        (gui-selection-value)
+      (let ((s (with-output-to-string
+                 (with-current-buffer standard-output
+                   (let ((coding-system-for-read 'utf-8-unix))
+                     (ignore-errors
+                       (call-process "powershell.exe" nil t nil
+                                     "-NoProfile" "-NonInteractive" "-Command"
+                                     "[Console]::OutputEncoding=[Text.Encoding]::UTF8; Get-Clipboard -Raw")))))))
+        ;; PowerShell emits CRLF line endings and a trailing newline; normalize.
+        (setq s (replace-regexp-in-string "\r" "" s))
+        (when (string-suffix-p "\n" s) (setq s (substring s 0 -1)))
+        (unless (string-empty-p s) s))))
+
+  (setq interprogram-cut-function   #'my/wsl-clip-cut)
+  (setq interprogram-paste-function #'my/wsl-clip-paste))
 
 ;; ============================================================================
 ;; FILE MANAGEMENT
