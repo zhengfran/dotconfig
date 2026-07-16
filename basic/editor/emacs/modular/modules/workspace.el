@@ -210,7 +210,9 @@
   ;; Key bindings with SPC w prefix
   (zzc/leader-keys
     "w"   '(:ignore t :which-key "workspace")
-    "w w" '(tab-bar-switch-to-tab :which-key "switch workspace")
+    ;; Rich chooser (name + linked project + buffer count) defined in
+    ;; buffer-tabs.el, which loads after this module; symbol resolves at keypress.
+    "w w" '(my/workspace-switch :which-key "switch workspace")
     "w n"   '(tab-bar-new-tab :which-key "new workspace")
     "w c"   '(tab-bar-close-tab :which-key "close workspace")
     "w C"   '(tab-bar-close-other-tabs :which-key "close other workspaces")

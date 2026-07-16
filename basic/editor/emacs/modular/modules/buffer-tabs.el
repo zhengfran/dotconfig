@@ -231,14 +231,10 @@ workspace starts with an empty tab-line."
 ;; TWO-LINE TABS: tab-bar = WORKSPACES, tab-line = BUFFERS
 ;; ============================================================================
 
-;; ── Line 1: tab-bar shows WORKSPACES (native tabs) ──────────────────────────
-;; Restore workspace tabs in the frame-level tab-bar (workspace.el hid it).
-(setq tab-bar-format '(tab-bar-format-tabs tab-bar-separator))
-(setq tab-bar-show t)
-(setq tab-bar-auto-width nil)
-;; Force tab-bar visible (workspace.el set tab-bar-lines to 0)
-(add-to-list 'default-frame-alist '(tab-bar-lines . 1))
-(set-frame-parameter nil 'tab-bar-lines 1)
+;; ── Line 1: WORKSPACES are hidden ───────────────────────────────────────────
+;; The frame-level tab-bar stays visually hidden (workspace.el sets
+;; `tab-bar-show' nil); `tab-bar-mode' remains on so workspaces still function.
+;; Switch workspaces via the rich chooser `my/workspace-switch' (SPC w w).
 
 ;; ── Line 2: tab-line shows BUFFERS in the current workspace ─────────────────
 ;; Reuse the project-aware buffer list and org #+TITLE: naming from above.
@@ -282,6 +278,64 @@ The current buffer is always included even if filtering would drop it."
 ;; Refresh all tab-lines when switching workspaces (linked project may change).
 (add-hook 'tab-bar-tab-post-select-functions
           (lambda (&rest _) (force-mode-line-update t)))
+
+;; ============================================================================
+;; WORKSPACE CHOOSER (tmux `prefix + s' style, replaces the hidden tab-bar)
+;; ============================================================================
+;; A completing-read list of workspaces annotated with their linked project and
+;; live buffer count -- the identity the hidden tab-bar used to show visually.
+;; Reuses this module's buffer-membership machinery so the count matches what
+;; each workspace's tab-line would display.
+
+(defun my/workspace--buffer-count-for-tab (tab)
+  "Return the number of normal buffers belonging to TAB.
+Mirrors `my/visible-buffer-list' but for an arbitrary TAB (not just the
+current one): a Linked-Project workspace counts live normal buffers under its
+root; an unlinked one counts the live normal buffers recorded as displayed in
+it (via its stored `workspace-id')."
+  (let* ((data (cdr tab))
+         (linked-root (alist-get 'linked-project data))
+         (id (alist-get 'workspace-id data)))
+    (cond
+     (linked-root
+      (seq-count (lambda (buf)
+                   (and (my/workspace-normal-buffer-p buf)
+                        (my/buffer-under-root-p buf linked-root)))
+                 (buffer-list)))
+     (id
+      (seq-count (lambda (buf)
+                   (and (buffer-live-p buf)
+                        (my/workspace-normal-buffer-p buf)))
+                 (gethash id my/workspace-buffer-table)))
+     (t 0))))
+
+(defun my/workspace--chooser-line (tab current-p)
+  "Return the padded chooser line for TAB; CURRENT-P marks the active one."
+  (let* ((name (alist-get 'name tab))
+         (root (alist-get 'linked-project (cdr tab)))
+         (project (if root (abbreviate-file-name root) "(unlinked)"))
+         (count (my/workspace--buffer-count-for-tab tab)))
+    (format "%s %-16s %-28s (%d bufs)"
+            (if current-p "*" " ") name project count)))
+
+(defun my/workspace-switch ()
+  "Switch workspaces via a rich completing-read list (replaces the tab-bar).
+Each entry shows the workspace name, its linked project (or `(unlinked)'), and
+its live buffer count.  Fuzzy input matches the whole line, so you can filter
+by project path just like tmux-fzf filters sessions."
+  (interactive)
+  (let* ((tabs (funcall tab-bar-tabs-function))
+         (current (assq 'current-tab tabs))
+         ;; Build candidate string -> tab-name, preserving tab order.
+         (candidates
+          (mapcar (lambda (tab)
+                    (cons (my/workspace--chooser-line tab (eq tab current))
+                          (alist-get 'name tab)))
+                  tabs))
+         (choice (completing-read "Workspace: " candidates nil t))
+         (target (cdr (assoc choice candidates))))
+    (when target
+      (tab-bar-select-tab-by-name target))))
 
 (use-package tab-line
   :init
