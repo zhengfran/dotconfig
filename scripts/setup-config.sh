@@ -138,6 +138,17 @@ else
     echo "[WARN] Claude Code skills directory not found in dotconfig."
 fi
 
+## kiro
+kiro_dir_path=$(find ~/dotconfig -type d -path "*/tools/ai/kiro" | head -n 1)
+if [ -n "$kiro_dir_path" ]; then
+    mkdir -p ~/.kiro
+    symlink_config "kiro settings" "$kiro_dir_path/settings/cli.json" ~/.kiro/settings/cli.json
+    symlink_config "kiro mcp.json" "$kiro_dir_path/settings/mcp.json" ~/.kiro/settings/mcp.json
+    symlink_config "kiro agents" "$kiro_dir_path/agents" ~/.kiro/agents
+    symlink_config "kiro scripts" "$kiro_dir_path/scripts" ~/.kiro/scripts
+    symlink_config "kiro skills" "$HOME/.agents/skills" ~/.kiro/skills
+fi
+
 ## aerospace (macOS only)
 if [[ "$OSTYPE" == "darwin"* ]]; then
     aerospace_dir_path=$(find ~/dotconfig -type d -path "*/tools/wm/aerospace" | head -n 1)

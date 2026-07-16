@@ -375,52 +375,12 @@ dashboard (C-c C-x C-c).  Point is left on the Description value to fill in."
              (file (cdr (assoc selected candidates))))
         (find-file file)))))
 
-(defun my/denote--project-headings-with-tags (tags)
-  "Return an alist of (DISPLAY . POINT) for headings in the current org buffer
-whose own (non-inherited) tags include any of TAGS.  DISPLAY is indented to
-reflect outline depth so Epics and their Stories read as a tree in the prompt.
-POINT is the start of the heading line, suitable as a parent anchor."
-  (let (result)
-    (org-with-wide-buffer
-     (goto-char (point-min))
-     (while (re-search-forward (concat "^" org-outline-regexp) nil t)
-       (when (seq-intersection tags (org-get-tags nil t))
-         (push (cons (format "%s%s"
-                             (make-string (* 2 (1- (org-current-level))) ?\s)
-                             (org-get-heading t t t t))
-                     (line-beginning-position))
-               result))))
-    (nreverse result)))
-
-(defun my/denote--insert-project-heading (parent-point level text tag cookie)
-  "Insert a new heading TEXT at LEVEL stars under PARENT-POINT.
-When PARENT-POINT is nil the heading is appended at end of buffer (separated by
-one blank line).  TAG, if non-nil, becomes a local tag; COOKIE, if non-nil,
-appends a \" [/]\" statistics cookie.  Leaves point at end of the heading line."
-  (if parent-point
-      (progn
-        (goto-char parent-point)
-        (org-end-of-subtree t t)
-        (unless (bolp) (insert "\n")))
-    (goto-char (point-max))
-    (skip-chars-backward "\n")
-    (delete-region (point) (point-max))
-    (insert "\n\n"))
-  (insert (make-string level ?*) " " text (if cookie " [/]" "") "\n")
-  (forward-line -1)
-  (when tag (org-set-tags (list tag)))
-  (org-back-to-heading t)
-  (end-of-line))
-
 (defun my/denote-capture-task ()
-  "Capture an Epic, Story, or Task into an existing project note.
-Prompts for the project, then the item type:
-  - Epic  : a top-level axis of work (\"* Epic: ...\" tagged :epic:)
-  - Story : an intermediate grouping under a chosen Epic (\"** Story: ...\")
-  - Task  : a TODO leaf under a chosen Epic or Story
-Epics and Stories get a [/] statistics cookie; Tasks get a TODO keyword.
-For legacy projects with no Epics yet, Task falls back to the old
-\"* Tasks\" capture so existing notes keep working."
+  "Capture a Task (a TODO heading) into an existing project note.
+Prompts for the project, appends a new TODO under its \"* Tasks\" heading
+\(creating that heading if absent), and leaves point ready to type the title.
+Issues are not captured by a command: an Issue is created by typing a heading
+and setting an ISSUE-sequence keyword (see docs/adr/0001)."
   (interactive)
   (let* ((project-files (my/denote-list-project-files))
          (candidates (mapcar (lambda (f)
@@ -429,45 +389,18 @@ For legacy projects with no Epics yet, Task falls back to the old
     (if (null candidates)
         (message "No project files found. Create one with C-c n P")
       (let* ((selected (completing-read "Project: " candidates nil t))
-             (file (cdr (assoc selected candidates)))
-             (type (completing-read "Type: " '("Task" "Epic" "Story")
-                                    nil t nil nil "Task")))
+             (file (cdr (assoc selected candidates))))
         (find-file file)
-        (pcase type
-          ("Epic"
-           (let ((title (read-string "Epic title: ")))
-             (my/denote--insert-project-heading
-              nil 1 (concat "Epic: " title) "epic" t)))
-          ("Story"
-           (let ((epics (my/denote--project-headings-with-tags '("epic"))))
-             (if (null epics)
-                 (let ((title (read-string "Story title (no Epic — added at top level): ")))
-                   (my/denote--insert-project-heading
-                    nil 1 (concat "Story: " title) "story" t))
-               (let* ((parent (assoc (completing-read "Under Epic: " epics nil t) epics))
-                      (ppoint (cdr parent))
-                      (level (1+ (save-excursion (goto-char ppoint) (org-current-level))))
-                      (title (read-string "Story title: ")))
-                 (my/denote--insert-project-heading
-                  ppoint level (concat "Story: " title) "story" t)))))
-          ("Task"
-           (let ((parents (my/denote--project-headings-with-tags '("epic" "story"))))
-             (if (null parents)
-                 ;; Legacy fallback: append under "* Tasks" or at end of file.
-                 (progn
-                   (goto-char (point-min))
-                   (if (re-search-forward "^\\* Tasks" nil t)
-                       (progn (org-end-of-subtree t t)
-                              (unless (bolp) (insert "\n")))
-                     (goto-char (point-max))
-                     (unless (bolp) (insert "\n")))
-                   (insert "** TODO "))
-               (let* ((parent (assoc (completing-read "Under: " parents nil t) parents))
-                      (ppoint (cdr parent))
-                      (level (1+ (save-excursion (goto-char ppoint) (org-current-level))))
-                      (title (read-string "Task title: ")))
-                 (my/denote--insert-project-heading
-                  ppoint level (concat "TODO " title) nil nil))))))))))
+        (goto-char (point-min))
+        (if (re-search-forward "^\\* Tasks" nil t)
+            (progn (org-end-of-subtree t t)
+                   (unless (bolp) (insert "\n")))
+          (goto-char (point-max))
+          (unless (bolp) (insert "\n"))
+          (insert "* Tasks\n"))
+        (insert "** TODO \n")
+        (forward-line -1)
+        (end-of-line)))))
 
 ;; ============================================================================
 ;; PROJECT TABLE (dynamic block, like SPC h t habit-tracker)
@@ -710,7 +643,9 @@ After the block refreshes, the project moves to the column of its new status."
 
 (with-eval-after-load 'general
   (zzc/leader-keys
-    "p t" '(my/project-insert-table-block :which-key "insert project table")))
+    "p t" '(my/project-insert-table-block :which-key "insert project table")
+    "p d" '(my/project-insert-dashboard :which-key "insert dashboard")
+    "p x" '(my/denote-extract-item :which-key "extract item to note")))
 
 (defun my/project-in-dblock-p (name)
   "Return non-nil if point is inside a dynamic block named NAME."
@@ -757,6 +692,380 @@ table action; returns nil otherwise to leave C-c C-c behaving normally."
 ;; project status; everywhere else org's default behaviour is untouched.
 (with-eval-after-load 'org
   (add-hook 'org-ctrl-c-ctrl-c-hook #'my/project-table-ctrl-c-ctrl-c))
+
+;; ============================================================================
+;; TASK & ISSUE TRACKING
+;; ============================================================================
+;; Tasks and Issues are ordinary Org headings inside a project note, identified
+;; purely by which TODO keyword sequence their keyword belongs to -- never by
+;; outline position (see docs/adr/0001).  The four keyword lists below are the
+;; single source of truth every piece here consults.
+;;   Task lifecycle : TODO -> ONGOING -> DONE / CANCEL
+;;   Issue lifecycle: ISSUE -> INVESTIGATING -> RESOLVED / WONTFIX
+
+(defvar my/project-task-keywords '("TODO" "ONGOING" "CANCEL" "DONE")
+  "All keywords of the Task lifecycle sequence, in cycle order.")
+
+(defvar my/project-task-open-keywords '("TODO" "ONGOING")
+  "Task keywords that count as open (not done or cancelled).")
+
+(defvar my/project-task-done-keywords '("DONE" "CANCEL")
+  "Task keywords that close a Task.")
+
+(defvar my/project-issue-keywords '("ISSUE" "INVESTIGATING" "WONTFIX" "RESOLVED")
+  "All keywords of the Issue lifecycle sequence, in cycle order.")
+
+(defvar my/project-issue-open-keywords '("ISSUE" "INVESTIGATING")
+  "Issue keywords that count as open (not resolved or won't-fixed).")
+
+(defun my/project-item-type (&optional keyword)
+  "Return the item type of KEYWORD, or of the heading at point.
+Value is `task', `issue', or nil.  With no KEYWORD, read the TODO state of the
+heading at point via `org-get-todo-state'."
+  (let ((kw (or keyword (org-get-todo-state))))
+    (cond
+     ((member kw my/project-task-keywords) 'task)
+     ((member kw my/project-issue-keywords) 'issue)
+     (t nil))))
+
+(defun my/project-item-open-p (keyword)
+  "Return non-nil if KEYWORD is an open Task or open Issue state."
+  (or (member keyword my/project-task-open-keywords)
+      (member keyword my/project-issue-open-keywords)))
+
+(defun my/project-item-next-state (keyword)
+  "Return the keyword after KEYWORD within its own sequence, wrapping.
+Return nil if KEYWORD belongs to no known sequence.  Unlike `org-todo' with
+`right' -- which walks the flat combined keyword list -- this never crosses
+from the Task sequence into the Issue sequence."
+  (let* ((seq (cond ((member keyword my/project-task-keywords) my/project-task-keywords)
+                    ((member keyword my/project-issue-keywords) my/project-issue-keywords)))
+         (tail (and seq (cdr (member keyword seq)))))
+    (when seq (if tail (car tail) (car seq)))))
+
+;; ----------------------------------------------------------------------------
+;; Ancestor helpers
+;; ----------------------------------------------------------------------------
+
+(defun my/project--ancestor-task-pos ()
+  "Return the buffer position of the nearest ancestor Task heading, or nil.
+Point is assumed to be within an entry."
+  (save-excursion
+    (catch 'found
+      (while (org-up-heading-safe)
+        (when (eq (my/project-item-type (org-get-todo-state)) 'task)
+          (throw 'found (point))))
+      nil)))
+
+(defun my/project--ancestor-task-title ()
+  "Return the clean title of the nearest ancestor Task heading, or nil."
+  (let ((pos (my/project--ancestor-task-pos)))
+    (when pos
+      (save-excursion (goto-char pos) (org-get-heading t t t t)))))
+
+;; ----------------------------------------------------------------------------
+;; Collection -- the query the dashboard tables render
+;; ----------------------------------------------------------------------------
+
+(defun my/project--item-at-point ()
+  "Return a plist describing the Task/Issue heading at point, or nil.
+Keys: :title :state :type :priority :deadline :open :blocks.  :blocks is the
+title of the nearest ancestor Task and is set only for Issues."
+  (let* ((components (org-heading-components))
+         (state (nth 2 components))
+         (type (my/project-item-type state)))
+    (when type
+      (let ((priority (nth 3 components)))
+        (list :title (org-get-heading t t t t)
+              :state state
+              :type type
+              :priority (and priority (char-to-string priority))
+              :deadline (org-entry-get nil "DEADLINE")
+              :open (my/project-item-open-p state)
+              :blocks (when (eq type 'issue) (my/project--ancestor-task-title)))))))
+
+(defun my/project-collect-items-in-buffer (&optional type open-only)
+  "Return item plists for Task/Issue headings in the current Org buffer.
+TYPE, when non-nil (`task' or `issue'), restricts to that type.  When
+OPEN-ONLY is non-nil, only open items are returned.  See
+`my/project--item-at-point' for the plist shape.  This is the seam the
+dashboard dynamic blocks build on and the unit tests exercise directly."
+  ;; `org-map-entries' honors `org-agenda-skip-function-global', which this
+  ;; config sets to hide done states.  Bind it off so OUR `open-only' argument
+  ;; is what decides membership -- otherwise closed items are never seen.
+  (org-with-wide-buffer
+   (let ((org-agenda-skip-function-global nil)
+         items)
+     (org-map-entries
+      (lambda ()
+        (let ((item (my/project--item-at-point)))
+          (when (and item
+                     (or (null type) (eq (plist-get item :type) type))
+                     (or (not open-only) (plist-get item :open)))
+            (push item items)))))
+     (nreverse items))))
+
+(defun my/project-collect-items (file &optional type open-only)
+  "Return item plists from FILE.  See `my/project-collect-items-in-buffer'."
+  (with-current-buffer (find-file-noselect file)
+    (my/project-collect-items-in-buffer type open-only)))
+
+;; ----------------------------------------------------------------------------
+;; Dashboard dynamic blocks: task-table and issue-table
+;; ----------------------------------------------------------------------------
+
+(defun my/project--item-link (item)
+  "Return an in-file Org link to ITEM's heading, described by its title."
+  (let ((title (plist-get item :title)))
+    (format "[[*%s][%s]]" title title)))
+
+(defun my/project--write-item-table (type headers row-fn)
+  "Insert a table of open items of TYPE from the current buffer.
+HEADERS is the list of column header strings.  ROW-FN maps an item plist to a
+list of cell strings.  Called from an `org-dblock-write:' writer."
+  (let ((items (my/project-collect-items-in-buffer type t)))
+    (insert "| " (mapconcat #'identity headers " | ") " |\n")
+    (insert "|" (mapconcat (lambda (_) "---") headers "+") "|\n")
+    (if (null items)
+        (insert "| "
+                (mapconcat #'identity
+                           (cons (format "(no open %ss)" (symbol-name type))
+                                 (make-list (1- (length headers)) ""))
+                           " | ")
+                " |\n")
+      (dolist (item items)
+        (insert "| " (mapconcat #'identity (funcall row-fn item) " | ") " |\n")))
+    (forward-line -1)
+    (org-table-align)))
+
+(defun org-dblock-write:task-table (_params)
+  "Dynamic block: a table of the current project's open Tasks.
+Columns: Task (link), State, Pri, Deadline."
+  (my/project--write-item-table
+   'task '("Task" "State" "Pri" "Deadline")
+   (lambda (item)
+     (list (my/project--item-link item)
+           (or (plist-get item :state) "")
+           (or (plist-get item :priority) "")
+           (or (plist-get item :deadline) "")))))
+
+(defun org-dblock-write:issue-table (_params)
+  "Dynamic block: a table of the current project's open Issues.
+Columns: Issue (link), State, Blocks (the Task the Issue blocks)."
+  (my/project--write-item-table
+   'issue '("Issue" "State" "Blocks")
+   (lambda (item)
+     (list (my/project--item-link item)
+           (or (plist-get item :state) "")
+           (or (plist-get item :blocks) "")))))
+
+(defun my/project-insert-dashboard ()
+  "Insert a \"* Dashboard\" heading with task-table and issue-table blocks."
+  (interactive)
+  (unless (bolp) (insert "\n"))
+  (insert "* Dashboard\n"
+          "** Open Tasks\n"
+          "#+BEGIN: task-table\n#+END:\n"
+          "** Open Issues\n"
+          "#+BEGIN: issue-table\n#+END:\n")
+  (org-update-all-dblocks))
+
+;; ----------------------------------------------------------------------------
+;; C-c C-c on a dashboard row: advance the linked item's state
+;; ----------------------------------------------------------------------------
+
+(defun my/project--row-item-title ()
+  "Return the item title linked on the current table row, or nil."
+  (let ((line (buffer-substring-no-properties
+               (line-beginning-position) (line-end-position))))
+    (when (string-match "\\[\\[\\*\\([^]]+\\)\\]\\[" line)
+      (match-string 1 line))))
+
+(defun my/project--goto-heading-by-title (title)
+  "Move point to the first heading whose clean title equals TITLE.
+Return point on success, nil otherwise.  Searches the whole buffer."
+  (goto-char (point-min))
+  (let (target)
+    (while (and (not target) (re-search-forward org-heading-regexp nil t))
+      (save-excursion
+        (beginning-of-line)
+        (when (equal (org-get-heading t t t t) title)
+          (setq target (point)))))
+    (when target (goto-char target) target)))
+
+(defun my/project-item-row-cycle ()
+  "Advance the state of the Task/Issue linked on the current dashboard row.
+Advances within the item's own lifecycle sequence (one step, wrapping), then
+refreshes the table and keeps point on the item's row when it is still open."
+  (interactive)
+  (let ((title (my/project--row-item-title))
+        (block-beg (save-excursion
+                     (forward-line 0)
+                     (when (re-search-backward
+                            "^[ \t]*#\\+BEGIN: +\\(?:task-table\\|issue-table\\)\\b"
+                            nil t)
+                       (point)))))
+    (unless title (user-error "No item link on this row"))
+    (unless block-beg (user-error "Not inside a task-table or issue-table block"))
+    (org-with-wide-buffer
+     (when (my/project--goto-heading-by-title title)
+       (let ((next (my/project-item-next-state (org-get-todo-state))))
+         (when next (org-todo next)))))
+    (save-buffer)
+    (goto-char block-beg)
+    (org-update-dblock)
+    (goto-char block-beg)
+    (when (re-search-forward (format "\\[\\[\\*%s\\]" (regexp-quote title)) nil t)
+      (forward-line 0))))
+
+(defun my/project-item-table-ctrl-c-ctrl-c ()
+  "Advance an item's state when C-c C-c is pressed on a dashboard table row.
+Registered on `org-ctrl-c-ctrl-c-hook'.  Returns non-nil when it handles the
+command so Org skips its default table action; nil otherwise."
+  (when (and (org-at-table-p)
+             (or (my/project-in-dblock-p "task-table")
+                 (my/project-in-dblock-p "issue-table"))
+             (my/project--row-item-title))
+    (my/project-item-row-cycle)
+    t))
+
+(with-eval-after-load 'org
+  (add-hook 'org-ctrl-c-ctrl-c-hook #'my/project-item-table-ctrl-c-ctrl-c))
+
+;; ----------------------------------------------------------------------------
+;; Blocking: an open child Issue blocks its parent Task from closing
+;; ----------------------------------------------------------------------------
+
+(defun my/task-blocked-by-open-issue-p (&optional pom)
+  "Return non-nil if the Task at POM owns an open Issue.
+An Issue is owned by its nearest ancestor Task, so a child Task never blocks a
+parent.  POM defaults to point."
+  (org-with-point-at (or pom (point))
+    (org-back-to-heading t)
+    (let ((org-agenda-skip-function-global nil)
+          (task-pos (point))
+          (found nil))
+      (org-map-entries
+       (lambda ()
+         (let ((state (org-get-todo-state)))
+           (when (and (eq (my/project-item-type state) 'issue)
+                      (member state my/project-issue-open-keywords)
+                      (equal (my/project--ancestor-task-pos) task-pos))
+             (setq found t))))
+       nil 'tree)
+      found)))
+
+(defun my/project--first-open-issue-heading ()
+  "Return the heading of the first open Issue owned by the Task at point."
+  (org-back-to-heading t)
+  (let ((org-agenda-skip-function-global nil)
+        (task-pos (point)) result)
+    (org-map-entries
+     (lambda ()
+       (let ((state (org-get-todo-state)))
+         (when (and (not result)
+                    (eq (my/project-item-type state) 'issue)
+                    (member state my/project-issue-open-keywords)
+                    (equal (my/project--ancestor-task-pos) task-pos))
+           (setq result (org-get-heading t t t t)))))
+     nil 'tree)
+    result))
+
+(defun my/task-block-on-open-issue (change-plist)
+  "Block closing a Task while it owns an open Issue.
+For `org-blocker-hook': return t to allow the change, nil to block.  Only
+guards transitions into a Task-closing keyword (DONE or CANCEL); the escapes
+are to Resolve/Won't-Fix the Issue or refile it out from under the Task."
+  (catch 'allow
+    (unless (eq (plist-get change-plist :type) 'todo-state-change)
+      (throw 'allow t))
+    (unless (member (plist-get change-plist :to) my/project-task-done-keywords)
+      (throw 'allow t))
+    (save-excursion
+      (goto-char (plist-get change-plist :position))
+      (if (my/task-blocked-by-open-issue-p)
+          (progn
+            (setq org-block-entry-blocking
+                  (or (my/project--first-open-issue-heading) "an open issue"))
+            nil)
+        t))))
+
+(with-eval-after-load 'org
+  (add-hook 'org-blocker-hook #'my/task-block-on-open-issue))
+
+;; ----------------------------------------------------------------------------
+;; Extraction: move a long Task/Issue body into its own Detail Note
+;; ----------------------------------------------------------------------------
+
+(defun my/denote--item-body-region ()
+  "Return (START . END) of the body of the item heading at point.
+The body excludes the heading's metadata (planning line, drawers) and any
+child headings.  Point must be on the heading."
+  (org-back-to-heading t)
+  (let* ((subtree-end (save-excursion (org-end-of-subtree t t)))
+         (start (save-excursion (org-end-of-meta-data t) (point)))
+         (end (save-excursion
+                (goto-char start)
+                (if (re-search-forward org-heading-regexp subtree-end t)
+                    (line-beginning-position)
+                  subtree-end))))
+    (cons start end)))
+
+(defun my/denote--extract-stub-rewrite (detail-id detail-title)
+  "Replace the body of the item heading at point with a link to DETAIL-ID.
+Keep the heading, its keyword, priority, metadata, and child headings intact.
+Return the extracted body string.  Point must be on the heading.  This is the
+buffer-rewrite seam, unit-tested independently of Denote file creation."
+  (org-back-to-heading t)
+  (let* ((region (my/denote--item-body-region))
+         (start (car region))
+         (end (cdr region))
+         (body (string-trim (buffer-substring-no-properties start end))))
+    (delete-region start end)
+    (goto-char start)
+    (unless (bolp) (insert "\n"))
+    (insert (format "See detail note: [[denote:%s][%s]]\n" detail-id detail-title))
+    body))
+
+(defun my/denote-extract-item ()
+  "Extract the body of the Task/Issue at point into its own Detail Note.
+Create a Denote note keyworded `task' or `issue' per the item type, move the
+heading's body text there, and leave a linked stub -- keeping the heading's
+keyword, priority, and child headings -- in the project note.  One-way: there
+is no merge-back command."
+  (interactive)
+  (org-back-to-heading t)
+  (let ((type (my/project-item-type (org-get-todo-state))))
+    (unless type
+      (user-error "Point is not on a Task or Issue heading"))
+    (let* ((title (org-get-heading t t t t))
+           (region (my/denote--item-body-region))
+           (body (string-trim (buffer-substring-no-properties (car region) (cdr region))))
+           (project-file (buffer-file-name))
+           (project-id (and project-file
+                            (denote-retrieve-filename-identifier project-file)))
+           (project-title (and project-file (my/project-get-title project-file)))
+           (project-buffer (current-buffer))
+           (heading-pos (point)))
+      (unless project-id
+        (user-error "This buffer is not a denote note"))
+      (when (string-empty-p body)
+        (user-error "This %s has no body to extract" (symbol-name type)))
+      (let* ((content (format "Extracted from [[denote:%s][%s]].\n\n%s\n"
+                              project-id project-title body))
+             (detail-file (denote title (list (symbol-name type)) 'org nil nil content))
+             (detail-id (denote-retrieve-filename-identifier detail-file)))
+        ;; `denote' leaves the new note in an unsaved buffer; write it so the
+        ;; stub's link points at a file that actually exists.
+        (when-let* ((buf (find-buffer-visiting detail-file)))
+          (with-current-buffer buf (save-buffer)))
+        (with-current-buffer project-buffer
+          (save-excursion
+            (goto-char heading-pos)
+            (my/denote--extract-stub-rewrite detail-id title))
+          (save-buffer))
+        (message "Extracted %s -> %s" (symbol-name type)
+                 (file-name-nondirectory detail-file))))))
 
 ;; ============================================================================
 ;; REFILE CONFIGURATION

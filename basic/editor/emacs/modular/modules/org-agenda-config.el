@@ -46,9 +46,13 @@
 (setq org-log-into-drawer t)
 (setq org-log-state-notes-insert-after-drawers nil)
 
-;; TODO keywords with logging
+;; TODO keywords with logging.
+;; Two sequences: Tasks (planned work) and Issues (unplanned problems).
+;; An item's type is decided by which sequence its keyword belongs to
+;; (see denote-config.el `my/project-item-type' and docs/adr/0001).
 (setq org-todo-keywords
-   '((sequence "TODO(t)" "ONGOING(o)" "|" "CANCEL(c@)" "DONE(d!)")))
+   '((sequence "TODO(t)" "ONGOING(o)" "|" "CANCEL(c@)" "DONE(d!)")
+     (sequence "ISSUE(i!)" "INVESTIGATING(v)" "|" "WONTFIX(w@)" "RESOLVED(r!)")))
 
 ;; ============================================================================
 ;; AGENDA APPEARANCE
@@ -57,18 +61,34 @@
 (setq org-agenda-start-with-log-mode t)
 (setq org-agenda-span 'week)
 (setq org-agenda-window-setup 'current-window)
-(setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo '("DONE" "CANCEL")))
+;; Treat both sequences' terminal states as "done" for skipping purposes.
+(setq org-agenda-skip-function-global
+      '(org-agenda-skip-entry-if 'todo '("DONE" "CANCEL" "RESOLVED" "WONTFIX")))
 (setq org-agenda-start-on-weekday 1)
 (setq org-agenda-time-grid
       '((daily today require-timed)
         (800 1000 1200 1400 1600 1800 2000)
         "......" "----------------"))
 (setq org-agenda-current-time-string "← now")
+
+(defun my/agenda-note-title ()
+  "Return this entry's note #+title, for `org-agenda-prefix-format'.
+Makes the agenda show the human note title instead of the long denote
+filename.  Falls back to the dynamically-bound agenda `category' (e.g. for
+diary lines that have no source file)."
+  (or (and buffer-file-name (org-get-title))
+      (and (boundp 'category) category)
+      ""))
+
+;; Show the note title (via `my/agenda-note-title') where category `%c' used to
+;; be, so denote project files read as e.g. "ADC590 Camera…" not the filename.
+;; A trailing space after the title keeps a gap even when a title is longer
+;; than the 16-wide field (unlike category, titles are not truncated).
 (setq org-agenda-prefix-format
-      '((agenda . " %i %-12:c%?-12t% s")
-        (todo . " %i %-12:c")
-        (tags . " %i %-12:c")
-        (search . " %i %-12:c")))
+      '((agenda . " %i %-16(my/agenda-note-title) %?-12t% s")
+        (todo . " %i %-16(my/agenda-note-title) ")
+        (tags . " %i %-16(my/agenda-note-title) ")
+        (search . " %i %-16(my/agenda-note-title) ")))
 
 ;; ============================================================================
 ;; CUSTOM AGENDA VIEWS
@@ -89,11 +109,18 @@ Returns position to skip to if item should be skipped, nil otherwise."
  '(("d" "Dashboard"
     ((agenda "" ((org-deadline-warning-days 7)
                  (org-agenda-overriding-header "Week Overview")))
-     (todo "ONGOING"
-           ((org-agenda-overriding-header "Active Tasks")))
+     ;; Active = Ongoing Tasks and Issues currently being investigated:
+     ;; what I am actually working on right now, plans and firefighting alike.
+     (todo "ONGOING|INVESTIGATING"
+           ((org-agenda-overriding-header "Active Tasks & Issues")))
      (tags-todo "+PRIORITY=\"A\""
                 ((org-agenda-overriding-header "High Priority")))))
-   
+
+   ("i" "Open Issues"
+    ((todo "ISSUE|INVESTIGATING"
+           ((org-agenda-overriding-header "Open Issues (by project)")
+            (org-agenda-sorting-strategy '(category-up priority-down))))))
+
    ("o" "Ongoing Tasks"
     ((todo "ONGOING"
            ((org-agenda-overriding-header "Currently Working On")))))

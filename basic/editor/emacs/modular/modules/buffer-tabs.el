@@ -2,7 +2,8 @@
 
 ;;; Commentary:
 ;; Frame-level buffer tabs using Emacs' built-in tab-bar (spans full width).
-;; Project-aware: only shows buffers in the current project.
+;; Workspace-aware: linked-project workspaces show buffers under the project
+;; root; unlinked workspaces only show buffers opened (displayed) in them.
 ;; Org-mode #+TITLE: extraction for tab names.
 ;; Evil keybindings (H/L for tab navigation, K for close).
 ;;
@@ -117,6 +118,73 @@ as separate groups (see `my/tab-terminal-p' and `my/tab-agent-p')."
     (string-prefix-p (file-truename (expand-file-name root))
                      (file-truename buf-file))))
 
+(defun my/workspace-normal-buffer-p (buffer)
+  "Return non-nil if BUFFER belongs to the normal tab-line group.
+Normal means not hidden, not a terminal, and not an agent buffer."
+  (and (not (my/buffer-tab-hidden-p buffer))
+       (not (my/tab-terminal-p buffer))
+       (not (my/tab-agent-p buffer))))
+
+;; ============================================================================
+;; PER-WORKSPACE BUFFER MEMBERSHIP
+;; ============================================================================
+;; Workspaces without a linked project only show buffers that were actually
+;; opened (displayed) in them. Membership lives in a hash table keyed by a
+;; unique id stored in the tab's alist (same mechanism as `linked-project'),
+;; so it survives tab renames.
+
+(defvar my/workspace-buffer-table (make-hash-table :test 'equal)
+  "Map workspace id -> list of buffers displayed in that workspace.")
+
+(defvar my/workspace-session-prefix (format "%x" (floor (float-time)))
+  "Session-unique prefix so ids restored from an old desktop never collide.")
+
+(defvar my/workspace-id-counter 0
+  "Counter for generating workspace ids within this session.")
+
+(defun my/workspace-id ()
+  "Return the current tab's workspace id, assigning one if missing.
+Returns nil when the tab data helpers from workspace.el are unavailable."
+  (when (fboundp 'my/tab-get-data)
+    (or (my/tab-get-data 'workspace-id)
+        (let ((id (format "%s-%d" my/workspace-session-prefix
+                          (setq my/workspace-id-counter
+                                (1+ my/workspace-id-counter)))))
+          (my/tab-set-data 'workspace-id id)
+          id))))
+
+(defun my/workspace-buffer-list ()
+  "Return live buffers that have been displayed in the current workspace."
+  (when-let* ((id (my/workspace-id)))
+    (seq-filter #'buffer-live-p (gethash id my/workspace-buffer-table))))
+
+(defun my/workspace-track-displayed-buffers (frame)
+  "Record FRAME's displayed normal buffers as members of the current workspace.
+Runs from `window-buffer-change-functions', so a buffer joins a workspace
+the first time it is shown in one of its windows."
+  (when-let* ((id (my/workspace-id)))
+    (let ((bufs (gethash id my/workspace-buffer-table)))
+      (dolist (win (window-list frame 'no-minibuf))
+        (let ((buf (window-buffer win)))
+          (when (and (buffer-live-p buf)
+                     (my/workspace-normal-buffer-p buf)
+                     (not (memq buf bufs)))
+            (setq bufs (append bufs (list buf))))))
+      (puthash id (seq-filter #'buffer-live-p bufs)
+               my/workspace-buffer-table))))
+
+(add-hook 'window-buffer-change-functions #'my/workspace-track-displayed-buffers)
+
+(defun my/workspace-remove-buffer (&optional buffer)
+  "Remove BUFFER (default current) from the current workspace's tab-line.
+The buffer stays alive and remains a member of other workspaces."
+  (interactive)
+  (when-let* ((id (my/workspace-id)))
+    (let ((buf (or buffer (current-buffer))))
+      (puthash id (delq buf (gethash id my/workspace-buffer-table))
+               my/workspace-buffer-table)
+      (force-mode-line-update t))))
+
 
 (defvar my/tab-buffer-order nil
   "Ordered list of buffers as they first appeared on the tab-line.
@@ -141,28 +209,22 @@ each other's positions."
   (seq-filter (lambda (b) (memq b buffers)) my/tab-buffer-order))
 
 (defun my/visible-buffer-list ()
-  "Return list of NORMAL buffers visible in tabs, filtered by the workspace's linked project.
-Excludes hidden buffers and terminal buffers.  When the current workspace has a
-Linked Project, only buffers whose file is under that root are shown; otherwise
-all non-hidden, non-terminal buffers are shown."
+  "Return list of NORMAL buffers visible in tabs for the current workspace.
+Excludes hidden, terminal and agent buffers.  When the current workspace has a
+Linked Project, buffers whose file is under that root are shown; otherwise only
+buffers that were opened (displayed) in this workspace are shown, so a fresh
+workspace starts with an empty tab-line."
   (let* ((linked-root (and (fboundp 'my/workspace-linked-project)
                            (my/workspace-linked-project)))
-         (all-buffers (buffer-list))
          (filtered-buffers
           (if linked-root
               (seq-filter
                (lambda (buf)
-                 (and (not (my/buffer-tab-hidden-p buf))
-                      (not (my/tab-terminal-p buf))
-                      (not (my/tab-agent-p buf))
+                 (and (my/workspace-normal-buffer-p buf)
                       (my/buffer-under-root-p buf linked-root)))
-               all-buffers)
-            (seq-filter
-             (lambda (buf)
-               (and (not (my/buffer-tab-hidden-p buf))
-                    (not (my/tab-terminal-p buf))
-                    (not (my/tab-agent-p buf))))
-             all-buffers))))
+               (buffer-list))
+            (seq-filter #'my/workspace-normal-buffer-p
+                        (my/workspace-buffer-list)))))
     (my/tab-stable-order filtered-buffers)))
 
 ;; ============================================================================

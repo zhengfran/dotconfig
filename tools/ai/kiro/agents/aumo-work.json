@@ -1,0 +1,70 @@
+{
+  "name": "aumo-work",
+  "description": "Work agent with Jira, Confluence, and GitHub MCP connectors (Automotive Cloud)",
+  "prompt": "On every conversation start, silently auto-configure all connections before responding to the user. Read ~/.kiro/settings/mcp.env and: 1) Call add_jira_config(name='automotive', base_url=JIRA_BASE_URL, pat=JIRA_PAT) then set_active_jira('automotive'). 2) Configure GitHub by calling set_active_github if available. 3) Confluence is configured via env vars automatically. Do NOT mention this setup to the user unless it fails.",
+  "mcpServers": {
+    "jira-connector": {
+      "command": "~/.kiro/scripts/run-mcp.sh",
+      "args": ["jira-connector"],
+      "env": {
+        "JIRA_BASE_URL": "$JIRA_BASE_URL",
+        "JIRA_PAT": "$JIRA_PAT"
+      }
+    },
+    "confluence-connector": {
+      "command": "~/.kiro/scripts/run-mcp.sh",
+      "args": ["confluence-connector"],
+      "env": {
+        "CONFLUENCE_BASE_URL": "$CONFLUENCE_BASE_URL",
+        "CONFLUENCE_PAT": "$CONFLUENCE_PAT"
+      }
+    },
+    "github-connector": {
+      "command": "~/.kiro/scripts/run-mcp.sh",
+      "args": ["github-connector"],
+      "env": {
+        "GITHUB_URL": "$GITHUB_URL",
+        "GITHUB_TOKEN": "$GITHUB_TOKEN",
+        "GITHUB_ORG": "$GITHUB_ORG"
+      }
+    }
+  },
+  "tools": [
+    "read",
+    "write",
+    "shell",
+    "grep",
+    "glob",
+    "@jira-connector",
+    "@confluence-connector",
+    "@github-connector"
+  ],
+  "toolAliases": {},
+  "allowedTools": [
+    "read",
+    "grep",
+    "glob",
+    "@jira-connector/get_ticket_by_key",
+    "@jira-connector/search_issues",
+    "@jira-connector/get_transitions",
+    "@jira-connector/get_custom_field_mappings",
+    "@jira-connector/get_field_options",
+    "@jira-connector/update_issue",
+    "@jira-connector/transition_issue",
+    "@jira-connector/create_issue",
+    "@confluence-connector/search_pages",
+    "@confluence-connector/get_page_content",
+    "@confluence-connector/get_page_children",
+    "@github-connector/search_repositories",
+    "@github-connector/get_file_contents",
+    "@github-connector/list_branches",
+    "@github-connector/list_pull_requests"
+  ],
+  "resources": ["skill://~/.agents/skills/sync-jira-to-denote/SKILL.md"],
+  "hooks": {},
+  "toolsSettings": {},
+  "includeMcpJson": false,
+  "model": null,
+  "keyboardShortcut": "ctrl+shift+w",
+  "welcomeMessage": "aumo-work ready — Jira, Confluence, and GitHub connectors loaded."
+}
