@@ -58,6 +58,13 @@ symlink_config "zsh dir" "$zsh_dir_path" ~/.config/zsh
 yazi_dir_path=$(find ~/dotconfig -type d -name "yazi" | head -n 1)
 symlink_config "yazi dir" "$yazi_dir_path" ~/.config/yazi
 
+## herdr
+herdr_conf_path=$(find ~/dotconfig -type f -path "*/tools/herdr/config.toml" | head -n 1)
+if [ -n "$herdr_conf_path" ]; then
+    mkdir -p ~/.config/herdr
+    symlink_config "herdr config" "$herdr_conf_path" ~/.config/herdr/config.toml
+fi
+
 ## nvim
 nvim_dir_path=$(find ~/dotconfig -type d -name "lazy" | head -n 1)
 if [ -n "$nvim_dir_path" ]; then
