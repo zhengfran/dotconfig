@@ -8,5 +8,6 @@
     "command": "bash \"$HOME/.claude/statusline-command.sh\""
   },
   "skipDangerousModePermissionPrompt": true,
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "effortLevel": "high"
 }
