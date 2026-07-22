@@ -60,7 +60,7 @@
     "@github-connector/list_branches",
     "@github-connector/list_pull_requests"
   ],
-  "resources": ["skill://~/.agents/skills/sync-jira-to-denote/SKILL.md"],
+  "resources": ["skill://~/projects/zzc-skills/skills/sync-jira-to-denote/SKILL.md"],
   "hooks": {},
   "toolsSettings": {},
   "includeMcpJson": false,

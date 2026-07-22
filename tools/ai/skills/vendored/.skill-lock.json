@@ -1,70 +1,6 @@
 {
   "version": 3,
   "skills": {
-    "find-skills": {
-      "source": "vercel-labs/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/vercel-labs/skills.git",
-      "skillPath": "skills/find-skills/SKILL.md",
-      "skillFolderHash": "c2f31172b6f256272305a5e6e7228b258446899f",
-      "installedAt": "2026-03-10T05:37:23.150Z",
-      "updatedAt": "2026-03-10T05:37:23.150Z"
-    },
-    "artifacts-builder": {
-      "source": "ComposioHQ/awesome-claude-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
-      "skillPath": "artifacts-builder/SKILL.md",
-      "skillFolderHash": "f89c02f23fbb7c5077ab960f46bdb6a3817d6fc2",
-      "installedAt": "2026-03-10T05:43:48.452Z",
-      "updatedAt": "2026-03-10T05:43:48.452Z"
-    },
-    "youtube-downloader": {
-      "source": "ComposioHQ/awesome-claude-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
-      "skillPath": "video-downloader/SKILL.md",
-      "skillFolderHash": "eac8b4684ba7d791f9941d0250d6a65ed2a01341",
-      "installedAt": "2026-03-10T05:43:48.522Z",
-      "updatedAt": "2026-03-10T05:43:48.522Z"
-    },
-    "skill-creator": {
-      "source": "anthropics/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/anthropics/skills.git",
-      "skillPath": "skills/skill-creator/SKILL.md",
-      "skillFolderHash": "98a510d1cfef9f82c3b1eec200229ca68725e613",
-      "pluginName": "example-skills",
-      "installedAt": "2026-03-10T05:43:48.591Z",
-      "updatedAt": "2026-03-12T12:19:45.813Z"
-    },
-    "content-research-writer": {
-      "source": "ComposioHQ/awesome-claude-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
-      "skillPath": "content-research-writer/SKILL.md",
-      "skillFolderHash": "560a65081b1fc097120e95f04ec82b3fff5549e6",
-      "installedAt": "2026-03-10T05:43:48.663Z",
-      "updatedAt": "2026-03-10T05:43:48.663Z"
-    },
-    "developer-growth-analysis": {
-      "source": "ComposioHQ/awesome-claude-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
-      "skillPath": "developer-growth-analysis/SKILL.md",
-      "skillFolderHash": "b7172297fbe76d7ea320eb7a889202e8525fb81b",
-      "installedAt": "2026-03-10T05:43:48.739Z",
-      "updatedAt": "2026-03-10T05:43:48.739Z"
-    },
-    "domain-name-brainstormer": {
-      "source": "ComposioHQ/awesome-claude-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
-      "skillPath": "domain-name-brainstormer/SKILL.md",
-      "skillFolderHash": "ee97909251c1e45f7babc118fbf66467314d4e46",
-      "installedAt": "2026-03-10T05:43:48.806Z",
-      "updatedAt": "2026-03-10T05:43:48.806Z"
-    },
     "mcp-builder": {
       "source": "ComposioHQ/awesome-claude-skills",
       "sourceType": "github",
@@ -73,78 +9,6 @@
       "skillFolderHash": "",
       "installedAt": "2026-03-10T05:43:48.861Z",
       "updatedAt": "2026-03-10T05:43:48.861Z"
-    },
-    "lead-research-assistant": {
-      "source": "ComposioHQ/awesome-claude-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
-      "skillPath": "lead-research-assistant/SKILL.md",
-      "skillFolderHash": "",
-      "installedAt": "2026-03-10T05:43:48.918Z",
-      "updatedAt": "2026-03-10T05:43:48.918Z"
-    },
-    "meeting-insights-analyzer": {
-      "source": "ComposioHQ/awesome-claude-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
-      "skillPath": "meeting-insights-analyzer/SKILL.md",
-      "skillFolderHash": "",
-      "installedAt": "2026-03-10T05:43:48.977Z",
-      "updatedAt": "2026-03-10T05:43:48.977Z"
-    },
-    "canvas-design": {
-      "source": "ComposioHQ/awesome-claude-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/ComposioHQ/awesome-claude-skills.git",
-      "skillPath": "canvas-design/SKILL.md",
-      "skillFolderHash": "",
-      "installedAt": "2026-03-10T05:43:49.038Z",
-      "updatedAt": "2026-03-10T05:43:49.038Z"
-    },
-    "brainstorming": {
-      "source": "obra/superpowers",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/obra/superpowers.git",
-      "skillPath": "skills/brainstorming/SKILL.md",
-      "skillFolderHash": "",
-      "installedAt": "2026-03-10T05:47:09.984Z",
-      "updatedAt": "2026-03-10T05:47:09.984Z"
-    },
-    "systematic-debugging": {
-      "source": "obra/superpowers",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/obra/superpowers.git",
-      "skillPath": "skills/systematic-debugging/SKILL.md",
-      "skillFolderHash": "828c239ac986cc1fc7edd10292f66e4a3640e9c0",
-      "installedAt": "2026-03-10T05:48:37.971Z",
-      "updatedAt": "2026-03-10T05:48:37.971Z"
-    },
-    "writing-plans": {
-      "source": "obra/superpowers",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/obra/superpowers.git",
-      "skillPath": "skills/writing-plans/SKILL.md",
-      "skillFolderHash": "b0a9e38ac6696f9b628c4a8d0cd9f7c71afd9f47",
-      "installedAt": "2026-03-10T05:50:00.859Z",
-      "updatedAt": "2026-03-10T05:50:00.859Z"
-    },
-    "executing-plans": {
-      "source": "obra/superpowers",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/obra/superpowers.git",
-      "skillPath": "skills/executing-plans/SKILL.md",
-      "skillFolderHash": "20087d25fb28f5f54578d873dc198ab24b34f967",
-      "installedAt": "2026-03-10T05:51:29.327Z",
-      "updatedAt": "2026-03-10T05:51:29.327Z"
-    },
-    "planning-with-files": {
-      "source": "othmanadi/planning-with-files",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/othmanadi/planning-with-files.git",
-      "skillPath": "skills/planning-with-files/SKILL.md",
-      "skillFolderHash": "d520f34584a46b8f7f5c488377508d98a9488251",
-      "installedAt": "2026-03-10T05:52:54.409Z",
-      "updatedAt": "2026-03-10T05:52:54.409Z"
     },
     "grill-me": {
       "source": "mattpocock/skills",
@@ -156,15 +20,6 @@
       "installedAt": "2026-03-31T06:19:20.135Z",
       "updatedAt": "2026-07-12T01:05:35.383Z"
     },
-    "deepinit": {
-      "source": "yeachan-heo/oh-my-claudecode",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/yeachan-heo/oh-my-claudecode.git",
-      "skillPath": "skills/deepinit/SKILL.md",
-      "skillFolderHash": "5839f9be75783f998424c936ce3b62d5a443718f",
-      "installedAt": "2026-03-31T09:49:34.812Z",
-      "updatedAt": "2026-03-31T09:49:34.812Z"
-    },
     "defuddle": {
       "source": "git@github.com:kepano/obsidian-skills.git",
       "sourceType": "git",
@@ -173,33 +28,6 @@
       "skillFolderHash": "",
       "installedAt": "2026-04-05T08:07:03.546Z",
       "updatedAt": "2026-04-05T08:07:03.546Z"
-    },
-    "obsidian-bases": {
-      "source": "git@github.com:kepano/obsidian-skills.git",
-      "sourceType": "git",
-      "sourceUrl": "git@github.com:kepano/obsidian-skills.git",
-      "skillPath": "skills/obsidian-bases/SKILL.md",
-      "skillFolderHash": "",
-      "installedAt": "2026-04-05T08:07:03.554Z",
-      "updatedAt": "2026-04-05T08:07:03.554Z"
-    },
-    "obsidian-markdown": {
-      "source": "git@github.com:kepano/obsidian-skills.git",
-      "sourceType": "git",
-      "sourceUrl": "git@github.com:kepano/obsidian-skills.git",
-      "skillPath": "skills/obsidian-markdown/SKILL.md",
-      "skillFolderHash": "",
-      "installedAt": "2026-04-05T08:07:03.555Z",
-      "updatedAt": "2026-04-05T08:07:03.555Z"
-    },
-    "obsidian-cli": {
-      "source": "git@github.com:kepano/obsidian-skills.git",
-      "sourceType": "git",
-      "sourceUrl": "git@github.com:kepano/obsidian-skills.git",
-      "skillPath": "skills/obsidian-cli/SKILL.md",
-      "skillFolderHash": "",
-      "installedAt": "2026-04-05T08:07:03.555Z",
-      "updatedAt": "2026-04-05T08:07:03.555Z"
     },
     "excalidraw-diagram": {
       "source": "git@github.com:axtonliu/axton-obsidian-visual-skills.git",
@@ -230,24 +58,6 @@
       "pluginName": "obsidian-visual-skills",
       "installedAt": "2026-04-05T08:15:10.989Z",
       "updatedAt": "2026-04-05T08:15:10.989Z"
-    },
-    "tutor": {
-      "source": "RoundTable02/tutor-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/RoundTable02/tutor-skills.git",
-      "skillPath": "skills/tutor/SKILL.md",
-      "skillFolderHash": "2086002c29352ef45ef2d5937a3100a44a99e6b8",
-      "installedAt": "2026-04-05T08:17:03.947Z",
-      "updatedAt": "2026-04-05T08:17:03.947Z"
-    },
-    "tutor-setup": {
-      "source": "RoundTable02/tutor-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/RoundTable02/tutor-skills.git",
-      "skillPath": "skills/tutor-setup/SKILL.md",
-      "skillFolderHash": "0028508546eb487fe8079e0b5660c23cf788be9c",
-      "installedAt": "2026-04-05T08:17:03.963Z",
-      "updatedAt": "2026-04-05T08:17:03.963Z"
     },
     "ljg-card": {
       "source": "lijigang/ljg-skills",
@@ -383,24 +193,6 @@
       "skillFolderHash": "93141fdb54d3b27a1195a937f45635674d18bd9c",
       "installedAt": "2026-04-05T08:32:37.757Z",
       "updatedAt": "2026-06-12T04:21:45.342Z"
-    },
-    "ljg-x-download": {
-      "source": "git@github.com:lijigang/ljg-skills.git",
-      "sourceType": "git",
-      "sourceUrl": "git@github.com:lijigang/ljg-skills.git",
-      "skillPath": "skills/ljg-x-download/SKILL.md",
-      "skillFolderHash": "",
-      "installedAt": "2026-04-05T08:32:37.757Z",
-      "updatedAt": "2026-04-05T08:32:37.757Z"
-    },
-    "conventional-commit": {
-      "source": "github/awesome-copilot",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/github/awesome-copilot.git",
-      "skillPath": "skills/conventional-commit/SKILL.md",
-      "skillFolderHash": "f29c9486cede6c7b2df0cfb0a2e4aa67446552b991bcf17d1b309e903171f03d",
-      "installedAt": "2026-05-07T06:22:17.415Z",
-      "updatedAt": "2026-05-07T06:22:17.415Z"
     },
     "caveman": {
       "source": "mattpocock/skills",
@@ -560,15 +352,6 @@
       "installedAt": "2026-06-12T04:18:37.811Z",
       "updatedAt": "2026-06-12T04:21:45.334Z"
     },
-    "ljg-push": {
-      "source": "lijigang/ljg-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/lijigang/ljg-skills.git",
-      "skillPath": "skills/ljg-push/SKILL.md",
-      "skillFolderHash": "772fe2ae54764722376412cc5eb20babaa850ff1",
-      "installedAt": "2026-06-12T04:18:37.812Z",
-      "updatedAt": "2026-06-12T04:20:00.745Z"
-    },
     "ljg-qa": {
       "source": "lijigang/ljg-skills",
       "sourceType": "github",
@@ -625,16 +408,6 @@
       "pluginName": "mattpocock-skills",
       "installedAt": "2026-07-12T01:05:35.380Z",
       "updatedAt": "2026-07-12T01:05:35.380Z"
-    },
-    "diagnosing-bugs": {
-      "source": "mattpocock/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/mattpocock/skills.git",
-      "skillPath": "skills/engineering/diagnosing-bugs/SKILL.md",
-      "skillFolderHash": "0ecacff09e31245c34727abe7cb7cff71f615a35",
-      "pluginName": "mattpocock-skills",
-      "installedAt": "2026-07-12T01:05:35.381Z",
-      "updatedAt": "2026-07-12T01:05:35.381Z"
     },
     "domain-modeling": {
       "source": "mattpocock/skills",
