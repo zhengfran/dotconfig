@@ -18,6 +18,7 @@ export PATH=$PATH:$HOME/.cargo/bin
 export PATH=$PATH:/snap/bin
 export PATH=$PATH:$HOME/.opencode/bin
 export PATH="$HOME/.config/doomemacs/bin/:$PATH"
+export PATH=$PATH:$HOME/dotconfig/tools/ai/skills/scripts  # skills-sync / skills-install
 
 export LANG=en_US.UTF-8
 unset LC_ALL
