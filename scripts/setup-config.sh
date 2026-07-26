@@ -65,25 +65,9 @@ if [ -n "$herdr_conf_path" ]; then
     symlink_config "herdr config" "$herdr_conf_path" ~/.config/herdr/config.toml
 fi
 
-## nvim
-nvim_dir_path=$(find ~/dotconfig -type d -name "lazy" | head -n 1)
-if [ -n "$nvim_dir_path" ]; then
-    if [ ! -e ~/.config/nvim ] && [ ! -L ~/.config/nvim ]; then
-        echo "[INFO] Cloning LazyVim starter into ~/.config/nvim"
-        git clone https://github.com/LazyVim/starter ~/.config/nvim
-    else
-        read -r -p "[PROMPT] ~/.config/nvim already exists. Replace? [y/N] " answer
-        if [[ "$answer" =~ ^[Yy]$ ]]; then
-            rm -rf ~/.config/nvim
-            echo "[INFO] Cloning LazyVim starter into ~/.config/nvim"
-            git clone https://github.com/LazyVim/starter ~/.config/nvim
-        else
-            echo "[INFO] Skipping nvim."
-        fi
-    fi
-else
-    echo "[WARN] lazy directory for nvim not found in dotconfig."
-fi
+## nvim (LazyVim config tracked in dotconfig)
+nvim_dir_path=$(find ~/dotconfig -type d -path "*/basic/editor/nvim" | head -n 1)
+symlink_config "nvim dir" "$nvim_dir_path" ~/.config/nvim
 
 ## emacs
 emacs_dir_path=$(find ~/dotconfig -type d -name "emacs" | head -n 1)
