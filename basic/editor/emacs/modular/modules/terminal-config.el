@@ -105,6 +105,109 @@
     "vp"  '(multi-vterm-project :which-key "vterm in project")))
 
 ;; ============================================================================
+;; GHOSTEL - Non-Windows trial, side-by-side with vterm (libghostty-vt engine)
+;; ============================================================================
+;; Trial run to evaluate replacing vterm.  Kept fully additive: the vterm block
+;; above is untouched and keeps C-c t / SPC v, so both engines can be compared.
+;; Ghostel lives on its own bindings (C-x m) per its README.  The native module
+;; (x86_64-linux prebuilt) auto-downloads on first use to a stable path OUTSIDE
+;; the repo.  See https://github.com/dakra/ghostel
+
+(unless (eq system-type 'windows-nt)
+  (use-package ghostel
+    ;; Monorepo: elisp is under lisp/ (covered by :defaults) and the shell
+    ;; integration + bundled terminfo under etc/ must ship in the build.
+    :straight (ghostel :type git :host github :repo "dakra/ghostel"
+                       :files (:defaults "etc"))
+    :commands (ghostel ghostel-project ghostel-project-list-buffers ghostel-other)
+    :bind (:map ghostel-semi-char-mode-map
+                ("C-s" . consult-line)
+                ;; Walk shell history with M-p/M-n by sending C-p/C-n to the pty.
+                ("M-p" . (lambda () (interactive) (ghostel-send-key "p" "ctrl")))
+                ("M-n" . (lambda () (interactive) (ghostel-send-key "n" "ctrl"))))
+    ;; NOTE: the README also binds M-<backspace> to `ghostel-backward-kill-word',
+    ;; which does not exist in ghostel.el; M-<backspace> already falls through to
+    ;; the global `backward-kill-word', so that binding is intentionally omitted.
+    :custom
+    ;; A straight rebuild can invalidate a module loaded from the package tree,
+    ;; and an in-tree binary would show up as an untracked blob in the dotfiles
+    ;; repo (~/.config/emacs is symlinked here).  Pin it outside the repo.
+    (ghostel-module-directory (expand-file-name "~/.cache/emacs/ghostel/"))
+    (ghostel-module-auto-install 'download)  ; silent prebuilt fetch on first use
+    (ghostel-shell (or (executable-find "zsh") (getenv "SHELL") "/bin/bash"))
+    :config
+    (make-directory ghostel-module-directory t))
+
+  (use-package evil-ghostel
+    :straight (evil-ghostel :type git :host github :repo "dakra/ghostel"
+                            :files ("extensions/evil-ghostel/evil-ghostel.el"))
+    :after (ghostel evil)
+    :hook (ghostel-mode . evil-ghostel-mode))
+
+  ;; ── Bottom drawer, mirroring the vterm-toggle display rule ───────────────
+  (add-to-list 'display-buffer-alist
+               '((lambda (buffer-or-name _)
+                   (with-current-buffer (get-buffer buffer-or-name)
+                     (derived-mode-p 'ghostel-mode)))
+                 (display-buffer-reuse-window
+                  display-buffer-reuse-mode-window
+                  display-buffer-at-bottom)
+                 (reusable-frames . visible)
+                 (window-height . 0.33)))
+
+  ;; ── Toggle entry point paralleling vterm's "C-c t" ───────────────────────
+  (defun my/ghostel-toggle (&optional arg)
+    "Summon or dismiss the ghostel drawer.
+With prefix ARG, always create a NEW ghostel buffer (ghostel's own
+prefix-arg convention)."
+    (interactive "P")
+    (if arg
+        (ghostel arg)
+      (let ((win (seq-find
+                  (lambda (w)
+                    (with-current-buffer (window-buffer w)
+                      (derived-mode-p 'ghostel-mode)))
+                  (window-list))))
+        (if (and win (not (one-window-p)))
+            (delete-window win)      ; dismiss the visible drawer
+          (ghostel)))))              ; summon / reuse an existing terminal
+  (global-set-key (kbd "C-x m") #'my/ghostel-toggle)  ; shadows `compose-mail'
+
+  ;; ── Project integration ──────────────────────────────────────────────────
+  (with-eval-after-load 'project
+    (define-key project-prefix-map "m" #'ghostel-project)
+    (define-key project-prefix-map "M" #'ghostel-project-list-buffers)
+    (add-to-list 'project-switch-commands '(ghostel-project "Ghostel") t)
+    (add-to-list 'project-switch-commands
+                 '(ghostel-project-list-buffers "Ghostel buffers") t))
+
+  ;; ── Desktop save/restore ─────────────────────────────────────────────────
+  ;; Registered at top level (NOT in :config) so the handler is present when
+  ;; `desktop-save-mode' replays buffers on `after-init-hook' — ghostel stays
+  ;; lazily loaded and is pulled in by the autoloaded `ghostel' call inside the
+  ;; restore handler.  As with vterm, a live shell cannot survive a restart, so
+  ;; we persist each terminal's cwd and respawn a FRESH shell there.  Buffer
+  ;; names are title-derived, so restore keys off the directory, not the name.
+  (defun my/ghostel-desktop-save (_desktop-dirname)
+    "Persist the ghostel's working directory for desktop restore."
+    `((default-directory . ,default-directory)
+      (buffer-name . ,(buffer-name))))
+  (add-hook 'ghostel-mode-hook
+            (lambda ()
+              (setq-local desktop-save-buffer #'my/ghostel-desktop-save)))
+  (defun my/ghostel-desktop-restore (_file-name buffer-name misc)
+    "Recreate a ghostel terminal in the saved directory from MISC."
+    (let ((default-directory (or (cdr (assq 'default-directory misc))
+                                 default-directory))
+          (ghostel-buffer-name buffer-name))
+      (save-window-excursion (ghostel))))
+  (with-eval-after-load 'desktop
+    (add-to-list 'desktop-buffer-mode-handlers
+                 '(ghostel-mode . my/ghostel-desktop-restore))
+    (setq desktop-modes-not-to-save
+          (delq 'ghostel-mode desktop-modes-not-to-save))))
+
+;; ============================================================================
 ;; EAT - Non-Windows only (requires POSIX pty: /usr/bin/env, stty, sh)
 ;; ============================================================================
 

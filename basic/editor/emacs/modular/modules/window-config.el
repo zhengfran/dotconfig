@@ -64,6 +64,7 @@
           dired-mode
           term-mode
           vterm-mode
+          ghostel-mode
           compilation-mode
           ibuffer-mode
           pdf-view-mode
