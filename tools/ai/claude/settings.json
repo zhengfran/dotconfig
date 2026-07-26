@@ -1,13 +1,27 @@
 {
+  "effortLevel": "high",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash '/home/uie41442/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ]
+  },
+  "model": "opus",
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
-  "model": "opus",
-  "statusLine": {
-    "type": "command",
-    "command": "bash \"$HOME/.claude/statusline-command.sh\""
-  },
   "skipDangerousModePermissionPrompt": true,
-  "voiceEnabled": true,
-  "effortLevel": "high"
+  "statusLine": {
+    "command": "bash \"$HOME/.claude/statusline-command.sh\"",
+    "type": "command"
+  },
+  "voiceEnabled": true
 }
