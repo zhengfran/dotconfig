@@ -65,10 +65,10 @@ Priority: org #+TITLE: > denote filename title > buffer-name."
 
 (defun my/tab-terminal-p (&optional buffer)
   "Return non-nil if BUFFER (default current) is a terminal buffer.
-Terminals (vterm/eshell/term) form their own tab group rather than
-being hidden, so they can be navigated like iTerm-style tabs."
+Terminals (vterm/ghostel/eshell/term) form their own tab group rather
+than being hidden, so they can be navigated like iTerm-style tabs."
   (with-current-buffer (or buffer (current-buffer))
-    (derived-mode-p 'vterm-mode 'eshell-mode 'term-mode)))
+    (derived-mode-p 'vterm-mode 'ghostel-mode 'eshell-mode 'term-mode)))
 
 (defun my/tab-agent-p (&optional buffer)
   "Return non-nil if BUFFER (default current) is an agent-shell buffer.
