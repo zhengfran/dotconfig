@@ -65,6 +65,13 @@ if [ -n "$herdr_conf_path" ]; then
     symlink_config "herdr config" "$herdr_conf_path" ~/.config/herdr/config.toml
 fi
 
+## pi (agent config; ~/.pi/agent is the whole config dir)
+pi_dir_path=$(find ~/dotconfig -type d -path "*/tools/ai/pi" | head -n 1)
+if [ -n "$pi_dir_path" ]; then
+    mkdir -p ~/.pi
+    symlink_config "pi agent dir" "$pi_dir_path" ~/.pi/agent
+fi
+
 ## nvim (LazyVim config tracked in dotconfig)
 nvim_dir_path=$(find ~/dotconfig -type d -path "*/basic/editor/nvim" | head -n 1)
 symlink_config "nvim dir" "$nvim_dir_path" ~/.config/nvim
@@ -119,6 +126,23 @@ if [ -n "$claude_statusline_path" ]; then
     symlink_config "Claude Code statusline" "$claude_statusline_path" ~/.claude/statusline-command.sh
 else
     echo "[WARN] Claude Code statusline-command.sh not found in dotconfig."
+fi
+
+## herdr agent integrations — herdr generates and owns these hook/plugin files,
+## so they are installed rather than symlinked. Claude's settings.json ships a
+## SessionStart hook pointing at ~/.claude/hooks/herdr-agent-state.sh, so the
+## install has to run on every machine or that hook fails each session.
+## (opencode lands inside ~/.config/opencode -> dotconfig, i.e. in this repo.)
+if command -v herdr >/dev/null 2>&1; then
+    for herdr_agent in claude codex opencode; do
+        if herdr integration install "$herdr_agent" >/dev/null 2>&1; then
+            echo "[OK] herdr integration: $herdr_agent"
+        else
+            echo "[WARN] herdr integration install $herdr_agent failed."
+        fi
+    done
+else
+    echo "[WARN] herdr not on PATH — skipping agent integrations; run 'herdr integration install claude' once installed."
 fi
 
 ## AI skills — distribute the assembled global pack into every agent (single source of truth).
