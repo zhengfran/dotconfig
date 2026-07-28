@@ -70,3 +70,9 @@
 **/*.log
 **/*.bak
 /.agent-shell/
+
+# Installed agent skill packs
+/.pi/skills
+/.claude/skills
+/.codex/skills
+/.kiro/skills
