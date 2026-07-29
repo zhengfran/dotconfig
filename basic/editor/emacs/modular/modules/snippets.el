@@ -31,7 +31,28 @@
   (defun my/yasnippet-capf-h ()
     (add-to-list 'completion-at-point-functions    #'yasnippet-capf))
   (add-hook 'prog-mode-hook #'my/yasnippet-capf-h)
-  (add-hook 'text-mode-hook #'my/yasnippet-capf-h))
+  (add-hook 'text-mode-hook #'my/yasnippet-capf-h)
+  :config
+  ;; `yasnippet-capf' delimits the completion region with
+  ;; "\\(?:\\sw\\|\\s_\\)+", which stops at punctuation.  Our snippet keys
+  ;; start with punctuation ("!el", "<date"), so typing "!el" produced a
+  ;; region covering only "el"; accepting the candidate inserted "!el" over
+  ;; "el" -> "!!el", and the :exit-function's `yas-expand' then found no
+  ;; matching key.  Pull the region start back over the trigger characters.
+  (defvar my/yasnippet-capf-prefix-chars "!<&%#@$~"
+    "Punctuation characters that may begin a snippet key.")
+
+  (defun my/yasnippet-capf--extend-bounds (result)
+    "Extend RESULT's start back over `my/yasnippet-capf-prefix-chars'.
+RESULT is a completion-at-point value (START END TABLE . PROPS)."
+    (when (consp result)
+      (save-excursion
+        (goto-char (nth 0 result))
+        (skip-chars-backward my/yasnippet-capf-prefix-chars)
+        (setf (nth 0 result) (point))))
+    result)
+
+  (advice-add 'yasnippet-capf :filter-return #'my/yasnippet-capf--extend-bounds))
 
 (zzc/leader-keys
   "s"  '(:ignore t :which-key "snippet")
