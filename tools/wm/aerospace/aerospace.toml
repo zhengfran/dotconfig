@@ -186,7 +186,7 @@ C = '1'
 V = '1'
 T = '1'
 N = '2'
-A = 'Built-in.*'
+A = '1'
 M = 'Built-in.*'
 
 [[on-window-detected]]
