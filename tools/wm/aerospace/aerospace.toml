@@ -190,7 +190,11 @@ A = 'Built-in.*'
 M = 'Built-in.*'
 
 [[on-window-detected]]
-if.app-id = 'com.electron.noi'
+if.app-id = 'com.openai.codex'
+run = 'move-node-to-workspace A'
+
+[[on-window-detected]]
+if.app-id = 'com.openai.chat'
 run = 'move-node-to-workspace A'
 
 [[on-window-detected]]
@@ -199,11 +203,11 @@ run = 'move-node-to-workspace B'
 
 [[on-window-detected]]
 if.app-id = 'com.microsoft.VSCode'
-run = 'move-node-to-workspace V'
+run = 'move-node-to-workspace C'
 
 [[on-window-detected]]
 if.app-id = 'org.gnu.Emacs'
-run = 'move-node-to-workspace E'
+run = 'move-node-to-workspace N'
 
 [[on-window-detected]]
 if.app-id="com.mitchellh.ghostty"
@@ -212,9 +216,10 @@ run = 'move-node-to-workspace T'
 [[on-window-detected]]
 if.app-id = 'cloud.lazycat.client'
 run = 'move-node-to-workspace N'
-# [[on-window-detected]]
-# if.app-id = 'md.obsidian'
-# run = 'move-node-to-workspace N'
+
+[[on-window-detected]]
+if.app-id = 'md.obsidian'
+run = 'move-node-to-workspace 1'
 
 # [[on-window-detected]]
 # if.app-id = 'app.projectmeta.projectmeta'
