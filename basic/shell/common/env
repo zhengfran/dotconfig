@@ -10,13 +10,13 @@ if [[ "$(uname)" != "Darwin" ]]; then
 fi
 export PATH=$PATH:$HOME/.bun/bin
 export PATH=$PATH:$HOME/.npm-global/bin
+export PATH=$PATH:$HOME/.npm/bin
 export PATH=$PATH:$HOME/.linuxbrew/bin
 export PATH=$PATH:$HOME/.linuxbrew/sbin
 export PATH=$PATH:/opt/homebrew/bin
 export PATH=$PATH:/opt/homebrew/sbin
 export PATH=$PATH:$HOME/.cargo/bin
 export PATH=$PATH:/snap/bin
-export PATH=$PATH:$HOME/.opencode/bin
 export PATH="$HOME/.config/doomemacs/bin/:$PATH"
 export PATH=$PATH:$HOME/dotconfig/tools/ai/skills/scripts  # skills-sync / skills-install
 
