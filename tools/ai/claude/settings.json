@@ -23,5 +23,9 @@
     "command": "bash \"$HOME/.claude/statusline-command.sh\"",
     "type": "command"
   },
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
   "voiceEnabled": true
 }
