@@ -193,4 +193,30 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     symlink_config "aerospace dir" "$aerospace_dir_path" ~/.config/aerospace
 fi
 
+## komorebi (Windows only)
+# git-bash's `ln -s` copies instead of linking on Windows, so use PowerShell
+# to create a real SYMLINKD that komorebic can follow.
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+    komorebi_dir_path=$(find ~/dotconfig -type d -path "*/tools/wm/komorebi" | head -n 1)
+    if [ -n "$komorebi_dir_path" ]; then
+        komorebi_dest="$HOME/.config/komorebi"
+        install_komorebi=1
+        if [ -e "$komorebi_dest" ] || [ -L "$komorebi_dest" ]; then
+            read -r -p "[PROMPT] $komorebi_dest already exists. Replace? [y/N] " answer
+            [[ "$answer" =~ ^[Yy]$ ]] || install_komorebi=0
+        fi
+        if [ "$install_komorebi" = "1" ]; then
+            mkdir -p "$HOME/.config"
+            powershell.exe -NoProfile -Command "Remove-Item -Recurse -Force '$HOME\\.config\\komorebi' -ErrorAction SilentlyContinue; New-Item -ItemType SymbolicLink -Path '$HOME\\.config\\komorebi' -Target '$HOME\\dotconfig\\tools\\wm\\komorebi' | Out-Null" \
+                && echo "[INFO] Symlinked komorebi config: $HOME/dotconfig/tools/wm/komorebi -> $komorebi_dest" \
+                || echo "[WARN] Failed to create komorebi symlink (developer mode / admin may be required)."
+        else
+            echo "[INFO] Skipping komorebi config."
+        fi
+        # komorebic reads config from $KOMOREBI_CONFIG_HOME; set it as a persistent user env var
+        powershell.exe -NoProfile -Command "[Environment]::SetEnvironmentVariable('KOMOREBI_CONFIG_HOME', '$HOME\\.config\\komorebi', 'User')" \
+            && echo "[INFO] Set KOMOREBI_CONFIG_HOME=$HOME/.config/komorebi (User)"
+    fi
+fi
+
 echo "[INFO] setup-config.sh completed."
