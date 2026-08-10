@@ -1,3 +1,4 @@
+onboarding = false
 # herdr configuration
 # Symlinked from ~/dotconfig/tools/herdr/config.toml.
 # Active bindings mirror tmux (~/dotconfig/tools/tmux/.tmux.conf) where possible.
