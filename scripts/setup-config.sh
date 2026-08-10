@@ -110,8 +110,11 @@ fi
 opencode_dir_path=$(find ~/dotconfig -type d -name "opencode" | head -n 1)
 symlink_config "opencode dir" "$opencode_dir_path" ~/.config/opencode
 
-# NOTE: legacy ~/.agents/skills flat dump removed — skills now live under
-# tools/ai/skills/ (vendored + assembled) and are distributed per-agent below.
+# NOTE: legacy ~/.agents/skills flat dump removed. Skills were later restructured
+# into tools/ai/skills/ (vendored + assembled), and as of 2026-08-10 extracted
+# entirely into the standalone github.com/zhengfran/zzc-skills repo (~/projects/zzc-skills).
+# That repo owns its own distribution (`skills-sync && skills-install global`) —
+# dotconfig no longer touches agent skill dirs.
 
 claude_settings_path=$(find ~/dotconfig -type f -path "*/tools/ai/claude/settings.json" | head -n 1)
 if [ -n "$claude_settings_path" ]; then
@@ -146,35 +149,9 @@ else
     echo "[WARN] herdr not on PATH — skipping agent integrations; run 'herdr integration install claude' once installed."
 fi
 
-## AI skills — distribute the assembled global pack into every agent (single source of truth).
-## Per-project packs (notes -> ~/org, coding -> a repo) are installed via
-## tools/ai/skills/scripts/skills-install; global skills go everywhere.
-skills_sync=$(find ~/dotconfig -type f -path "*/tools/ai/skills/scripts/skills-sync" | head -n 1)
-[ -n "$skills_sync" ] && bash "$skills_sync" >/dev/null 2>&1 || echo "[WARN] skills-sync did not run"
-assembled_global=$(find ~/dotconfig -type d -path "*/tools/ai/skills/assembled/global" | head -n 1)
-if [ -n "$assembled_global" ]; then
-    hermes_extra=$(find ~/dotconfig -type d -path "*/tools/ai/skills/assembled/hermes-only" | head -n 1)
-    link_global_pack() {
-        # $1 = destination skills dir, $2 = agent label
-        local dest="$1" label="$2"
-        [ -L "$dest" ] && rm -f "$dest"
-        mkdir -p "$dest"
-        find "$dest" -mindepth 1 -maxdepth 1 -exec rm -rf {} +   # clear stale entries
-        for s in "$assembled_global"/*; do ln -sfn "$s" "$dest/$(basename "$s")"; done
-        echo "[OK] $label skills -> assembled/global ($(ls "$dest" | wc -l))"
-    }
-    mkdir -p ~/.claude ~/.kiro ~/.pi/agent ~/.hermes
-    link_global_pack ~/.claude/skills "Claude"
-    link_global_pack ~/.kiro/skills "kiro"
-    link_global_pack ~/.pi/agent/skills "pi"
-    link_global_pack ~/.hermes/skills "hermes"
-    if [ -n "$hermes_extra" ]; then   # hermes-only extras (e.g. garmin-runcoach)
-        for s in "$hermes_extra"/*; do ln -sfn "$s" ~/.hermes/skills/"$(basename "$s")"; done
-        echo "[OK] hermes extras -> $(ls "$hermes_extra" | wc -l)"
-    fi
-else
-    echo "[WARN] assembled/global not found — run tools/ai/skills/scripts/skills-sync first."
-fi
+## AI skills — moved out to github.com/zhengfran/zzc-skills (~/projects/zzc-skills), which
+## owns its own distribution. Run `~/projects/zzc-skills/scripts/skills-sync && \
+## ~/projects/zzc-skills/scripts/skills-install global` there directly to (re)install.
 
 ## kiro
 kiro_dir_path=$(find ~/dotconfig -type d -path "*/tools/ai/kiro" | head -n 1)

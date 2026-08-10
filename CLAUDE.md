@@ -6,7 +6,7 @@ Personal dotfiles repository (`~/dotconfig`) for a cross-platform development en
 
 - **basic/shell/** — Shell configs: zsh (primary, with zim framework), bash, nushell, powershell. Common aliases/functions/env shared across shells via `basic/shell/common/`.
 - **basic/editor/emacs/** — Modular Emacs configuration (see `basic/editor/emacs/CLAUDE.md` for detailed architecture). This is the most actively developed part of the repo.
-- **tools/** — Application configs: tmux, wezterm, yazi (file manager), window managers (sway, aerospace), AI tools (Claude Code settings, opencode).
+- **tools/** — Application configs: tmux, wezterm, yazi (file manager), window managers (sway, aerospace), AI tools (Claude Code settings, opencode). AI agent skills live in a separate repo, [zhengfran/zzc-skills](https://github.com/zhengfran/zzc-skills) (`~/projects/zzc-skills`), not here.
 - **rime/** — Rime IME (Chinese input method) configuration with wanxiang schema.
 - **dev/** — Language-specific dev environment configs (C, Rust, Python, shell). Currently placeholder directories.
 - **scripts/** — Setup and utility scripts.
