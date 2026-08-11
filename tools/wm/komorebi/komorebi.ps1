@@ -1,11 +1,6 @@
 $logDir = Join-Path $env:APPDATA 'komorebi'
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
-$log       = Join-Path $logDir 'komorebi-launch.log'
-$komErrLog = Join-Path $logDir 'komorebi.stderr.log'
-$barErrLog = Join-Path $logDir 'komorebi-bar.stderr.log'
-$komOutLog = Join-Path $logDir 'komorebi.stdout.log'
-$barOutLog = Join-Path $logDir 'komorebi-bar.stdout.log'
-Start-Transcript -Path $log -Force | Out-Null
+Start-Transcript -Path (Join-Path $logDir 'komorebi-launch.log') -Force | Out-Null
 trap { Write-Host "ERROR: $_"; Stop-Transcript | Out-Null; continue }
 
 Write-Host "Boot uptime (min): $(((Get-Date) - (Get-CimInstance Win32_OperatingSystem).LastBootUpTime).TotalMinutes)"
@@ -34,23 +29,45 @@ $komorebiExe = Join-Path $env:USERPROFILE 'scoop\apps\komorebi\current\komorebi.
 $komorebiBar = Join-Path $env:USERPROFILE 'scoop\apps\komorebi\current\komorebi-bar.exe'
 $ahkExe      = Join-Path $env:USERPROFILE 'scoop\apps\autohotkey\current\v2\AutoHotkey.exe'
 
-function Start-AndVerify($name, $exe, $args, $errLog, $outLog) {
-    if ($exe -match '[\\/]' -and -not (Test-Path $exe)) { Write-Host "[$name] MISSING: $exe"; return }
-    $sp = @{ FilePath = $exe; PassThru = $true; WindowStyle = 'Hidden' }
-    if ($args) { $sp['ArgumentList'] = $args }
-    if ($errLog) { $sp['RedirectStandardError']  = $errLog }
-    if ($outLog) { $sp['RedirectStandardOutput'] = $outLog }
-    $p = Start-Process @sp
-    Start-Sleep -Seconds 3
+# Start-Process -WindowStyle Hidden breaks komorebi's AllowSetForegroundWindow
+# call, so use ShellExecute-based hidden launch via .NET ProcessStartInfo.
+# ShellExecute mode disallows stream redirection — worth it since komorebi/bar
+# have their own log files under $TEMP anyway.
+function Start-Hidden($name, $exe, $argString, $verifySeconds = 3) {
+    if ($exe -match '[\\/]' -and -not (Test-Path $exe)) { Write-Host "[$name] MISSING: $exe"; return $null }
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName        = $exe
+    $psi.Arguments       = $argString
+    $psi.UseShellExecute = $true
+    $psi.WindowStyle     = 'Hidden'
+    $p = [System.Diagnostics.Process]::Start($psi)
+    Start-Sleep -Seconds $verifySeconds
     $alive = $null -ne (Get-Process -Id $p.Id -ErrorAction SilentlyContinue)
-    Write-Host "[$name] PID=$($p.Id) alive-after-3s=$alive"
+    Write-Host "[$name] PID=$($p.Id) alive-after-${verifySeconds}s=$alive"
+    if ($alive) { return $p } else { return $null }
 }
 
-# komorebic v0.1.41's `start --config` mis-quotes args to komorebi.exe; launch the exe directly.
-Start-AndVerify 'komorebi'     $komorebiExe @('--clean-state', '--config', $configFile) $komErrLog $komOutLog
-Start-Sleep -Seconds 2  # let komorebi's socket come up before the bar attaches
-Start-AndVerify 'komorebi-bar' $komorebiBar $null $barErrLog $barOutLog
-Start-AndVerify 'autohotkey'   $ahkExe      @("`"$ahkScript`"") $null $null
-Start-AndVerify 'watcher'      'powershell.exe' @('-NoProfile', '-WindowStyle', 'Hidden', '-ExecutionPolicy', 'Bypass', '-File', $watcher) $null $null
+# komorebi's early AllowSetForegroundWindow call can fail during Windows startup
+# (subsystem not ready). Retry with backoff — first attempt uses --clean-state,
+# subsequent attempts don't, so we don't repeatedly wipe recovered state.
+# komorebic v0.1.41's `start --config` mis-quotes args, so launch the exe directly.
+$komorebiProc = $null
+$maxAttempts  = 8
+for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+    $prefix = if ($attempt -eq 1) { '--clean-state ' } else { '' }
+    $komorebiProc = Start-Hidden "komorebi (attempt $attempt/$maxAttempts)" $komorebiExe "$prefix--config `"$configFile`""
+    if ($komorebiProc) { break }
+    Start-Sleep -Seconds 5
+}
+
+if ($komorebiProc) {
+    Start-Sleep -Seconds 2  # let komorebi's socket come up before the bar attaches
+    Start-Hidden 'komorebi-bar' $komorebiBar '' | Out-Null
+} else {
+    Write-Host "[komorebi] FAILED after $maxAttempts attempts; skipping bar."
+}
+
+Start-Hidden 'autohotkey' $ahkExe "`"$ahkScript`"" | Out-Null
+Start-Hidden 'watcher'    'powershell.exe' "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$watcher`"" | Out-Null
 
 Stop-Transcript | Out-Null
