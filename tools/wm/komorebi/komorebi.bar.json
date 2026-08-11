@@ -40,8 +40,13 @@
       }
     },
     {
+      "Cpu": {
+        "enable": true
+      }
+    },
+    {
       "Memory": {
-        "enable": false
+        "enable": true
       }
     },
     {
@@ -49,23 +54,6 @@
         "enable": false,
         "show_activity": true,
         "show_total_activity": true
-      }
-    },
-    {
-      "Date": {
-        "enable": true,
-        "format": "DayDateMonthYear"
-      }
-    },
-    {
-      "Time": {
-        "enable": true,
-        "format": "TwentyFourHour"
-      }
-    },
-    {
-      "Battery": {
-        "enable": true
       }
     }
   ]
