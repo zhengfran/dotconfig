@@ -25,9 +25,11 @@ Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 
 # Full paths — scoop shims may not be on PATH at first-login Startup.
-$komorebiExe = Join-Path $env:USERPROFILE 'scoop\apps\komorebi\current\komorebi.exe'
-$komorebiBar = Join-Path $env:USERPROFILE 'scoop\apps\komorebi\current\komorebi-bar.exe'
-$ahkExe      = Join-Path $env:USERPROFILE 'scoop\apps\autohotkey\current\v2\AutoHotkey.exe'
+$komorebiExe  = Join-Path $env:USERPROFILE 'scoop\apps\komorebi\current\komorebi.exe'
+$komorebiBar  = Join-Path $env:USERPROFILE 'scoop\apps\komorebi\current\komorebi-bar.exe'
+$komorebicExe = Join-Path $env:USERPROFILE 'scoop\apps\komorebi\current\komorebic.exe'
+$ahkExe       = Join-Path $env:USERPROFILE 'scoop\apps\autohotkey\current\v2\AutoHotkey.exe'
+$barBaseConf  = Join-Path $komorebiConfig 'komorebi.bar.json'
 
 # Start-Process -WindowStyle Hidden breaks komorebi's AllowSetForegroundWindow
 # call, so use ShellExecute-based hidden launch via .NET ProcessStartInfo.
@@ -62,7 +64,28 @@ for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
 
 if ($komorebiProc) {
     Start-Sleep -Seconds 2  # let komorebi's socket come up before the bar attaches
-    Start-Hidden 'komorebi-bar' $komorebiBar '' | Out-Null
+
+    # One komorebi-bar process per monitor — the bar renders on a single monitor
+    # (default index 0), so multi-monitor coverage requires N processes with N
+    # per-monitor configs overriding `monitor.index`.
+    $baseBar = Get-Content $barBaseConf -Raw | ConvertFrom-Json
+    try {
+        $state = & $komorebicExe state | ConvertFrom-Json
+        $monitorCount = @($state.monitors.elements).Count
+    } catch {
+        Write-Host "komorebic state failed ($_); falling back to 1 bar."
+        $monitorCount = 1
+    }
+    Write-Host "Launching bars for $monitorCount monitor(s)."
+
+    for ($i = 0; $i -lt $monitorCount; $i++) {
+        $perMonitor = $baseBar.PSObject.Copy()
+        $perMonitor | Add-Member -NotePropertyName monitor -NotePropertyValue @{ index = $i } -Force
+        $perMonitorPath = Join-Path $env:TEMP "komorebi.bar.$i.json"
+        # Write without BOM — Set-Content -Encoding UTF8 emits a BOM that serde_json rejects.
+        [IO.File]::WriteAllText($perMonitorPath, ($perMonitor | ConvertTo-Json -Depth 32), (New-Object System.Text.UTF8Encoding $false))
+        Start-Hidden "komorebi-bar[$i]" $komorebiBar "--config `"$perMonitorPath`"" | Out-Null
+    }
 } else {
     Write-Host "[komorebi] FAILED after $maxAttempts attempts; skipping bar."
 }
