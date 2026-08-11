@@ -25,26 +25,8 @@
     {
       "workspaces": [
         {
-          "name": "AI",
-          "layout": "BSP",
-          "initial_workspace_rules": [
-            { "id": "Noi.exe", "kind": "Exe", "matching_strategy": "Equals" }
-          ]
-        },
-        {
-          "name": "Browser",
-          "layout": "BSP",
-          "initial_workspace_rules": [
-            { "id": "Arc.exe", "kind": "Exe", "matching_strategy": "Equals" }
-          ]
-        }
-      ]
-    },
-    {
-      "workspaces": [
-        {
           "name": "office",
-          "layout": "Rows",
+          "layout": "BSP",
           "initial_workspace_rules": [
             { "id": "olk.exe", "kind": "Exe", "matching_strategy": "Equals" },
             { "id": "ms-teams.exe", "kind": "Exe", "matching_strategy": "Equals" }
@@ -52,7 +34,7 @@
         },
         {
           "name": "time",
-          "layout": "Rows",
+          "layout": "BSP",
           "initial_workspace_rules": [
             { "id": "Tick", "kind": "Exe", "matching_strategy": "StartsWith" }
           ]
@@ -62,12 +44,24 @@
     {
       "workspaces": [
         {
+          "name": "Browser",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            { "id": "Arc.exe", "kind": "Exe", "matching_strategy": "Equals" },
+            { "id": "msedge.exe", "kind": "Exe", "matching_strategy": "Equals" }
+          ]
+        },
+        {
           "name": "terminal",
           "layout": "BSP",
           "initial_workspace_rules": [
-            { "id": "wezterm.exe", "kind": "Exe", "matching_strategy": "StartsWith" }
+            { "id": "WindowsTerminal.exe", "kind": "Exe", "matching_strategy": "Equals" }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "workspaces": [
         {
           "name": "code",
           "layout": "BSP",
@@ -79,7 +73,6 @@
           "name": "notes",
           "layout": "BSP",
           "initial_workspace_rules": [
-            { "id": "Heptabase.exe", "kind": "Exe", "matching_strategy": "Equals" },
             { "id": "Obsidian.exe", "kind": "Exe", "matching_strategy": "Equals" }
           ]
         }
