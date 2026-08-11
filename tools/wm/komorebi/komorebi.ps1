@@ -50,14 +50,15 @@ function Start-Hidden($name, $exe, $argString, $verifySeconds = 3) {
 }
 
 # komorebi's early AllowSetForegroundWindow call can fail during Windows startup
-# (subsystem not ready). Retry with backoff — first attempt uses --clean-state,
-# subsequent attempts don't, so we don't repeatedly wipe recovered state.
+# (subsystem not ready). Retry with backoff. Always use --clean-state: a
+# preserved state dump from a previous run resurrects old workspaces even when
+# the config has fewer, and a failed first attempt would leave attempt 2 to
+# reload that stale dump silently.
 # komorebic v0.1.41's `start --config` mis-quotes args, so launch the exe directly.
 $komorebiProc = $null
 $maxAttempts  = 8
 for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
-    $prefix = if ($attempt -eq 1) { '--clean-state ' } else { '' }
-    $komorebiProc = Start-Hidden "komorebi (attempt $attempt/$maxAttempts)" $komorebiExe "$prefix--config `"$configFile`""
+    $komorebiProc = Start-Hidden "komorebi (attempt $attempt/$maxAttempts)" $komorebiExe "--clean-state --config `"$configFile`""
     if ($komorebiProc) { break }
     Start-Sleep -Seconds 5
 }
