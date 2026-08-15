@@ -1,31 +1,48 @@
 {
-  "effortLevel": "high",
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
-            "timeout": 10,
-            "type": "command"
-          }
-        ],
-        "matcher": "*"
-      }
-    ]
-  },
-  "model": "opus",
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
-  "skipDangerousModePermissionPrompt": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/zhichengzheng/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
-    "command": "bash \"$HOME/.claude/statusline-command.sh\"",
-    "type": "command"
+    "type": "command",
+    "command": "bash \"$HOME/.claude/statusline-command.sh\""
   },
-  "voice": {
-    "enabled": true,
-    "mode": "hold"
+  "enabledPlugins": {
+    "nowledge-mem@nowledge-community": true
   },
+  "extraKnownMarketplaces": {
+    "nowledge-community": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/nowledge-co/community.git"
+      }
+    }
+  },
+  "effortLevel": "high",
+  "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
   "voiceEnabled": true
 }
