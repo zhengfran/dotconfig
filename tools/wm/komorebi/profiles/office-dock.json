@@ -44,14 +44,6 @@
     {
       "workspaces": [
         {
-          "name": "Browser",
-          "layout": "BSP",
-          "initial_workspace_rules": [
-            { "id": "Arc.exe", "kind": "Exe", "matching_strategy": "Equals" },
-            { "id": "msedge.exe", "kind": "Exe", "matching_strategy": "Equals" }
-          ]
-        },
-        {
           "name": "terminal",
           "layout": "BSP",
           "initial_workspace_rules": [
@@ -63,6 +55,14 @@
     {
       "workspaces": [
         {
+          "name": "Browser",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            { "id": "Arc.exe", "kind": "Exe", "matching_strategy": "Equals" },
+            { "id": "msedge.exe", "kind": "Exe", "matching_strategy": "Equals" }
+          ]
+        },
+        {
           "name": "code",
           "layout": "BSP",
           "initial_workspace_rules": [
@@ -73,7 +73,8 @@
           "name": "notes",
           "layout": "BSP",
           "initial_workspace_rules": [
-            { "id": "Obsidian.exe", "kind": "Exe", "matching_strategy": "Equals" }
+            { "id": "Obsidian.exe", "kind": "Exe", "matching_strategy": "Equals" },
+            { "id": "Zotero.exe", "kind": "Exe", "matching_strategy": "Equals" }
           ]
         }
       ]
