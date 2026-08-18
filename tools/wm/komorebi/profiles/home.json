@@ -25,24 +25,6 @@
     {
       "workspaces": [
         {
-          "name": "AI",
-          "layout": "BSP",
-          "initial_workspace_rules": [
-            { "id": "Noi.exe", "kind": "Exe", "matching_strategy": "Equals" }
-          ]
-        },
-        {
-          "name": "Browser",
-          "layout": "BSP",
-          "initial_workspace_rules": [
-            { "id": "Arc.exe", "kind": "Exe", "matching_strategy": "Equals" }
-          ]
-        }
-      ]
-    },
-    {
-      "workspaces": [
-        {
           "name": "office",
           "layout": "Rows",
           "initial_workspace_rules": [
@@ -55,6 +37,24 @@
           "layout": "Rows",
           "initial_workspace_rules": [
             { "id": "Tick", "kind": "Exe", "matching_strategy": "StartsWith" }
+          ]
+        }
+      ]
+    },
+    {
+      "workspaces": [
+        {
+          "name": "AI",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            { "id": "Noi.exe", "kind": "Exe", "matching_strategy": "Equals" }
+          ]
+        },
+        {
+          "name": "Browser",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            { "id": "Arc.exe", "kind": "Exe", "matching_strategy": "Equals" }
           ]
         }
       ]
