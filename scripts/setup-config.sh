@@ -111,10 +111,11 @@ opencode_dir_path=$(find ~/dotconfig -type d -name "opencode" | head -n 1)
 symlink_config "opencode dir" "$opencode_dir_path" ~/.config/opencode
 
 # NOTE: legacy ~/.agents/skills flat dump removed. Skills were later restructured
-# into tools/ai/skills/ (vendored + assembled), and as of 2026-08-10 extracted
-# entirely into the standalone github.com/zhengfran/zzc-skills repo (~/projects/zzc-skills).
-# That repo owns its own distribution (`skills-sync && skills-install global`) —
-# dotconfig no longer touches agent skill dirs.
+# into tools/ai/skills/ (vendored + assembled), extracted on 2026-08-10 into the
+# standalone github.com/zhengfran/zzc-skills repo, and re-attached here as a git
+# submodule at tools/ai/skills. That repo still owns its own distribution
+# (`skills-sync && skills-install global`) — dotconfig no longer touches agent
+# skill dirs itself.
 
 claude_settings_path=$(find ~/dotconfig -type f -path "*/tools/ai/claude/settings.json" | head -n 1)
 if [ -n "$claude_settings_path" ]; then
@@ -149,9 +150,13 @@ else
     echo "[WARN] herdr not on PATH — skipping agent integrations; run 'herdr integration install claude' once installed."
 fi
 
-## AI skills — moved out to github.com/zhengfran/zzc-skills (~/projects/zzc-skills), which
-## owns its own distribution. Run `~/projects/zzc-skills/scripts/skills-sync && \
-## ~/projects/zzc-skills/scripts/skills-install global` there directly to (re)install.
+## AI skills — github.com/zhengfran/zzc-skills, vendored as a submodule at
+## tools/ai/skills (populated by `git submodule update --init`, or by cloning
+## dotconfig with --recurse-submodules). Its scripts/ dir is on PATH via
+## basic/shell/common/env. That repo owns its own distribution: assembled/ is
+## gitignored there, so a freshly-initialised submodule needs
+##   skills-sync && skills-install global
+## run once before any agent sees the skills.
 
 ## kiro
 kiro_dir_path=$(find ~/dotconfig -type d -path "*/tools/ai/kiro" | head -n 1)
