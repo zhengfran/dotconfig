@@ -4,10 +4,13 @@ echo "[INFO] Starting setup-config.sh..."
 
 # Fetch config if not present and set them up
 if [ ! -d ~/dotconfig ]; then
-    echo "[INFO] Cloning dotconfig repository..."
-    git clone git@github.com:zhengfran/dotconfig.git ~/dotconfig
+    echo "[INFO] Cloning dotconfig repository and submodules..."
+    git clone --recurse-submodules git@github.com:zhengfran/dotconfig.git ~/dotconfig
 else
     echo "[INFO] dotconfig directory already exists."
+    echo "[INFO] Initializing dotconfig submodules..."
+    git -C ~/dotconfig submodule update --init --recursive || \
+        echo "[WARN] Failed to initialize one or more dotconfig submodules."
 fi
 
 # Helper: symlink src -> dest, prompting if dest already exists
@@ -65,9 +68,16 @@ if [ -n "$herdr_conf_path" ]; then
     symlink_config "herdr config" "$herdr_conf_path" ~/.config/herdr/config.toml
 fi
 
-## pi (agent config; ~/.pi/agent is the whole config dir)
+## pi (standalone config repo, attached at tools/ai/pi as a submodule)
 pi_dir_path=$(find ~/dotconfig -type d -path "*/tools/ai/pi" | head -n 1)
 if [ -n "$pi_dir_path" ]; then
+    if command -v npm >/dev/null 2>&1; then
+        echo "[INFO] Installing Pi config dependencies..."
+        npm --prefix "$pi_dir_path" run install:all || \
+            echo "[WARN] Failed to install one or more Pi config dependencies."
+    else
+        echo "[WARN] npm not found; Pi local extensions may be missing dependencies."
+    fi
     mkdir -p ~/.pi
     symlink_config "pi agent dir" "$pi_dir_path" ~/.pi/agent
 fi
