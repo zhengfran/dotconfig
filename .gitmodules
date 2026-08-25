@@ -2,3 +2,7 @@
 	path = tools/ai/skills
 	url = git@github.com:zhengfran/zzc-skills.git
 	branch = main
+[submodule "tools/ai/pi"]
+	path = tools/ai/pi
+	url = git@github.com:zhengfran/pi-config.git
+	branch = main
