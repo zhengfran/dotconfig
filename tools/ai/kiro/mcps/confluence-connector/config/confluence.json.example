@@ -1,5 +1,0 @@
-{
-  "base_url": "https://confluence.example.com",
-  "pat": "your_confluence_pat",
-  "timeout": 30
-}
