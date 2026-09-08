@@ -1,0 +1,20 @@
+# `codex` wrapper: with no arguments, pick a recent session with fzf and start
+# Codex in that session's directory. Any argument is passed straight through to
+# the real binary. Helpers live in `agent_session`.
+#
+#   enter    cd into the session's directory, start a fresh Codex there
+#   ctrl-r   cd into the session's directory, `codex resume` that session
+#   esc      just start Codex in the current directory
+
+function codex() {
+    if [ "$#" -gt 0 ]; then
+        command codex "$@"
+        return
+    fi
+
+    local files out
+    files=$(ls -t ~/.codex/sessions/*/*/*/*.jsonl 2>/dev/null | head -n 60)
+    out=$(_agent_sessions_list "$files" '"role":"user"' '"input_text","text":"[^"]*"' 2>/dev/null |
+          _agent_session_choose codex)
+    _agent_session_launch "$out" codex -- resume
+}

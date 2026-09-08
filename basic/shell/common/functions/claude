@@ -1,0 +1,20 @@
+# `claude` wrapper: with no arguments, pick a recent session with fzf and start
+# Claude Code in that session's directory. Any argument is passed straight
+# through to the real binary. Helpers live in `agent_session`.
+#
+#   enter    cd into the session's directory, start a fresh Claude there
+#   ctrl-r   cd into the session's directory, resume that session
+#   esc      just start Claude in the current directory
+
+function claude() {
+    if [ "$#" -gt 0 ]; then
+        command claude "$@"
+        return
+    fi
+
+    local files out
+    files=$(ls -t ~/.claude/projects/*/*.jsonl 2>/dev/null | head -n 60)
+    out=$(_agent_sessions_list "$files" '"role":"user"' '"role":"user","content":"[^"]*"' 2>/dev/null |
+          _agent_session_choose claude)
+    _agent_session_launch "$out" claude -- --resume
+}

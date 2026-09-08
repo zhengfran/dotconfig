@@ -1,0 +1,20 @@
+# `pi` wrapper: with no arguments, pick a recent session with fzf and start pi
+# in that session's directory. Any argument is passed straight through to the
+# real binary. Helpers live in `agent_session`.
+#
+#   enter    cd into the session's directory, start a fresh pi there
+#   ctrl-r   cd into the session's directory, resume that session
+#   esc      just start pi in the current directory
+
+function pi() {
+    if [ "$#" -gt 0 ]; then
+        command pi "$@"
+        return
+    fi
+
+    local files out
+    files=$(ls -t ~/.pi/agent/sessions/*/*.jsonl 2>/dev/null | head -n 60)
+    out=$(_agent_sessions_list "$files" '"role":"user"' '"type":"text","text":"[^"]*"' 2>/dev/null |
+          _agent_session_choose pi)
+    _agent_session_launch "$out" pi -- --session
+}

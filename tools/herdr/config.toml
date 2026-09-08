@@ -231,6 +231,7 @@ show_agent_labels_on_pane_borders = true
 # accent = "cyan"
 
 # Background notification popup delivery
+agent_panel_sort = "priority"
 [ui.toast]
 # off = disable pop-up notifications
 # herdr = show in-app toasts
@@ -283,6 +284,7 @@ enabled = true
 # manage_ssh_config = true
 
 [experimental]
+kitty_graphics = true
 # Allow launching herdr from inside a herdr-managed pane.
 allow_nested = true
 # Experimental local Kitty graphics rendering for attached clients.

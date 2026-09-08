@@ -1,0 +1,98 @@
+# Shared helpers for the fzf session pickers used by the `claude`, `codex`,
+# `kiro-cli` and `pi` wrappers (see those files in this directory).
+#
+# Every one of these CLIs records a per-session transcript holding a "cwd" and
+# the user's turns, so a single lister/picker/launcher serves them all; only
+# the file glob and the regexes that locate a session's label differ.
+
+# _agent_sessions_list <files> <line regex> <text regex> [skip-file regex]
+#   line regex  lines that may carry the session's label
+#   text regex  the "key": "value" pair to lift the label out of such a line
+#   skip regex  if any scanned line matches, the session is dropped entirely
+# Emits: <cwd> TAB <session-id> TAB <colored display columns>
+_agent_sessions_list() {
+    local list="$1" linere="$2" textre="$3" skipre="$4" statmap
+    [ -z "$list" ] && return 1
+
+    statmap=$(printf '%s\n' "$list" | tr '\n' '\0' |
+        { xargs -0 stat -c '%Y %n' 2>/dev/null || xargs -0 stat -f '%m %N' 2>/dev/null; })
+
+    printf '%s\n' "$list" | tr '\n' '\0' | xargs -0 awk \
+        -v now="$(date +%s)" -v home="$HOME" \
+        -v linere="$linere" -v textre="$textre" -v skipre="$skipre" '
+        function flush(   d, age, short, id) {
+            if (prev == "" || pcwd == "") return
+            d = now - mt[prev]
+            if (d < 3600)       age = int(d/60) "m"
+            else if (d < 86400) age = int(d/3600) "h"
+            else                age = int(d/86400) "d"
+            short = pcwd
+            sub("^" home, "~", short)
+            id = prev; sub(/.*\//, "", id); sub(/\.jsonl?$/, "", id)
+            if (length(id) > 36) id = substr(id, length(id)-35)
+            printf "%s\t%s\t\033[33m%5s\033[0m  \033[36m%-42s\033[0m  \033[90m%s\033[0m\n", \
+                pcwd, id, age, substr(short, 1, 42), substr(ppr, 1, 120)
+        }
+        NR==FNR { mt[$2]=$1; next }
+        FNR==1 { flush(); prev=FILENAME; pcwd=""; ppr="" }
+        skipre != "" && $0 ~ skipre { pcwd=""; nextfile }
+        pcwd=="" && match($0, /"cwd": *"[^"]*"/) {
+            pcwd = substr($0, RSTART, RLENGTH)
+            sub(/^.*: *"/, "", pcwd); sub(/"$/, "", pcwd)
+        }
+        ppr=="" && $0 ~ linere && match($0, textre) {
+            m = substr($0, RSTART, RLENGTH)
+            sub(/^.*: *"/, "", m); sub(/"$/, "", m)
+            gsub(/\\[nrt]/, " ", m); gsub(/\\"/, "\"", m)
+            gsub(/  +/, " ", m); sub(/^ +/, "", m)
+            # skip injected context (environment/instruction blocks, slash-command
+            # wrappers) and keep looking for a real prompt
+            if (m !~ /^</ && m !~ /^# AGENTS\.md/ && m != "") ppr = m
+        }
+        FNR>60 || (pcwd!="" && ppr!="") { nextfile }
+        END { flush() }
+    ' <(printf '%s\n' "$statmap") -
+}
+
+# _agent_session_choose <name>  — reads the list on stdin, prints "key\nselection"
+_agent_session_choose() {
+    fzf --ansi --delimiter=$'\t' --with-nth='3..' \
+        --prompt="$1 session > " --height=60% --reverse --expect=ctrl-r \
+        --header="enter: new session in that dir | ctrl-r: resume it | esc: stay here"
+}
+
+# _agent_session_launch <fzf output> <binary> [start args...] -- [resume args...]
+_agent_session_launch() {
+    local out="$1" bin="$2"
+    shift 2
+    local -a startargs resumeargs
+    local sep=0 a
+    for a in "$@"; do
+        if [ "$a" = "--" ]; then sep=1; continue; fi
+        if [ "$sep" -eq 1 ]; then resumeargs+=("$a"); else startargs+=("$a"); fi
+    done
+
+    local key line cwd id
+    key=$(printf '%s' "$out" | sed -n '1p')
+    line=$(printf '%s' "$out" | sed -n '2p')
+
+    if [ -z "$line" ]; then
+        command "$bin" "${startargs[@]}"
+        return
+    fi
+
+    cwd=$(printf '%s' "$line" | cut -f1)
+    id=$(printf '%s' "$line" | cut -f2)
+
+    if [ ! -d "$cwd" ]; then
+        echo "$bin: directory no longer exists: $cwd" >&2
+        return 1
+    fi
+    cd "$cwd" || return 1
+
+    if [ "$key" = "ctrl-r" ]; then
+        command "$bin" "${resumeargs[@]}" "$id"
+    else
+        command "$bin" "${startargs[@]}"
+    fi
+}

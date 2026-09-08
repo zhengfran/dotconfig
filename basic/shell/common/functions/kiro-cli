@@ -1,0 +1,25 @@
+# `kiro-cli` wrapper: with no arguments, pick a recent session with fzf and
+# start Kiro CLI's chat in that session's directory. Any argument is passed
+# straight through to the real binary. Helpers live in `agent_session`.
+#
+#   enter    cd into the session's directory, start a fresh chat there
+#   ctrl-r   cd into the session's directory, resume that session
+#   esc      just start a chat in the current directory
+#
+# Kiro's transcripts are pretty-printed JSON carrying a "title", which makes a
+# better label than a raw first prompt. Sessions spawned for subagents are
+# filtered out — they are not somewhere you would want to `cd` back into.
+
+function kiro-cli() {
+    if [ "$#" -gt 0 ]; then
+        command kiro-cli "$@"
+        return
+    fi
+
+    local files out
+    files=$(ls -t ~/.kiro/sessions/cli/*.json 2>/dev/null | head -n 60)
+    out=$(_agent_sessions_list "$files" '"title"' '"title": *"[^"]*"' \
+              '"session_created_reason": "subagent"' 2>/dev/null |
+          _agent_session_choose kiro)
+    _agent_session_launch "$out" kiro-cli chat -- chat --resume-id
+}
