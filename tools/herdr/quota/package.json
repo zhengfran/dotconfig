@@ -1,0 +1,6 @@
+{
+  "name": "herdr-quota",
+  "private": true,
+  "type": "module",
+  "description": "herdr-owned coding-agent quota refresher. Provider adapters vendored from pi-subscription-usage; no runtime dependency on pi."
+}

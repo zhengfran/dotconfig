@@ -131,6 +131,15 @@ command = "lazygit"
 width = "80%"
 height = "80%"
 
+# Refresh every coding-agent quota into herdr's own cache. Runs detached with no
+# window: the tab bar picks the new values up on its next tick. The status bar
+# also refreshes this on its own when the cache ages past its TTL.
+[[keys.command]]
+key = "prefix+q"
+type = "shell"
+command = "~/dotconfig/tools/herdr/quota-refresh.sh --quiet"
+description = "refresh agent quotas"
+
 # Legacy indexed shortcut config is still parsed for compatibility.
 # Prefer switch_tab, switch_workspace, and focus_agent for new configs.
 # [keys.indexed]
@@ -232,6 +241,22 @@ show_agent_labels_on_pane_borders = true
 
 # Background notification popup delivery
 agent_panel_sort = "priority"
+
+# tmux-style status area at the right edge of the tab row.
+# Command entries resolve on the herdr server, so `herdr --remote` reports the
+# remote host's numbers rather than this machine's.
+# The scripts live in ~/dotconfig rather than ~/.config/herdr (which symlinks
+# config.toml only) so they stay version-controlled with no setup-config change.
+tab_bar_right_separator = "  │  "
+tab_bar_right = [
+  { type = "command", command = "~/dotconfig/tools/herdr/status-sys.sh", interval_seconds = 5, timeout_seconds = 2 },
+  { type = "command", command = "~/dotconfig/tools/herdr/status-quota.sh", interval_seconds = 30, timeout_seconds = 2 },
+  { type = "zoom" },
+]
+
+# Put the tab row where tmux puts its status bar. Left on the default "top";
+# uncomment for the full tmux feel.
+# tab_bar_position = "bottom"
 [ui.toast]
 # off = disable pop-up notifications
 # herdr = show in-app toasts
