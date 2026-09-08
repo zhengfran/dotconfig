@@ -56,6 +56,20 @@ if (Test-Path $pwshProfile) {
     Write-Host "[WARN] PowerShell profile not found in dotconfig."
 }
 
+# --- git ---
+# ~/.gitconfig carries no identity: work identity + credential helpers live in
+# the untracked ~/.gitconfig-local, personal identity in gitconfig-personal,
+# picked per-repo by [includeIf] rules on the remote URL.
+New-ConfigLink -Source "$dotconfig\basic\git\gitconfig" `
+               -Target "$HOME\.gitconfig"
+New-ConfigLink -Source "$dotconfig\basic\git\gitconfig-personal" `
+               -Target "$HOME\.gitconfig-personal"
+
+if (-not (Test-Path "$HOME\.gitconfig-local")) {
+    Write-Host "[WARN] ~/.gitconfig-local not found - git has no default identity on this machine."
+    Write-Host "[WARN] Create it with a [user] block (and any credential.helper / safe.directory entries)."
+}
+
 # --- yazi ---
 New-ConfigLink -Source "$dotconfig\tools\yazi" `
                -Target "$env:APPDATA\yazi\config" -IsDirectory

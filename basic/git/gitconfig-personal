@@ -1,0 +1,5 @@
+# Personal identity — symlinked to ~/.gitconfig-personal, pulled in by the
+# [includeIf] blocks in gitconfig for repos under github.com:zhengfran/*.
+[user]
+	email = zhicheng.ink98@gmail.com
+	name = Zheng Zhicheng

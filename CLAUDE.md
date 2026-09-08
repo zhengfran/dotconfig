@@ -5,6 +5,7 @@ Personal dotfiles repository (`~/dotconfig`) for a cross-platform development en
 ## Repository Structure
 
 - **basic/shell/** — Shell configs: zsh (primary, with zim framework), bash, nushell, powershell. Common aliases/functions/env shared across shells via `basic/shell/common/`.
+- **basic/git/** — Git config. `gitconfig` (no identity) and `gitconfig-personal` are symlinked to `~/.gitconfig` / `~/.gitconfig-personal`; the work identity, credential helpers and machine-specific `safe.directory` entries live in the untracked `~/.gitconfig-local`. Identity is chosen per-repo by `[includeIf "hasconfig:remote.*.url:..."]` rules — this repo is public, so never commit the work email.
 - **basic/editor/emacs/** — Modular Emacs configuration (see `basic/editor/emacs/CLAUDE.md` for detailed architecture). This is the most actively developed part of the repo.
 - **tools/** — Application configs: tmux, wezterm, yazi (file manager), window managers (sway, aerospace), AI tools (Claude Code settings, opencode). AI agent skills live in a separate repo, [zhengfran/zzc-skills](https://github.com/zhengfran/zzc-skills), attached here as a git submodule at `tools/ai/skills` — edit and commit skills in that repo, then bump the pointer here.
 - **rime/** — Rime IME (Chinese input method) configuration with wanxiang schema.
@@ -36,6 +37,7 @@ The setup script symlinks configs to standard locations:
 - `tools/yazi/` → `~/.config/yazi`
 - `tools/wm/sway/` → `~/.config/sway`
 - `tools/ai/opencode/` → `~/.config/opencode`
+- `basic/git/gitconfig` → `~/.gitconfig`
 
 ## Key Conventions
 

@@ -1,0 +1,63 @@
+# Shared git config — symlinked to ~/.gitconfig by scripts/setup-config.sh.
+#
+# Identity is deliberately NOT set here: this repo is public, so the work
+# identity lives in the untracked ~/.gitconfig-local and the personal one in
+# gitconfig-personal, selected per-repo by the [includeIf] blocks at the bottom.
+
+# Machine-local: work identity, credential helpers, safe.directory.
+# Must be included BEFORE the [includeIf] blocks below — last value wins, so
+# this provides the default identity and the conditional includes override it.
+[include]
+	path = ~/.gitconfig-local
+
+[core]
+	editor = nvim
+	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
+[color]
+	ui = auto
+[color "branch"]
+	current = yellow bold
+	local = green bold
+	remote = cyan bold
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+[color "status"]
+	added = green bold
+	changed = yellow bold
+	untracked = red bold
+[alias]
+	a = add --all
+	ai = add -i
+	b = branch
+	ba = branch -a
+	bd = branch -d
+	bdd = branch -D
+	br = branch -r
+	bar = branch -a -r
+	c = commit
+	cm = commit -m
+	cem = commit --allow-empty -m
+	cam = commit --amend
+	pl = pull
+	pb = pull --rebase
+	ps = push
+	pf = push -f
+
+# --- identity split: personal vs work -------------------------------------
+# Matched on the repo's remote URL rather than its path on disk, because
+# personal and work checkouts are interleaved under ~/projects. Requires
+# git >= 2.36 for `hasconfig:`.
+#
+# Caveat: a repo created with `git init` has no remote yet, so its first commits
+# fall back to the work identity from ~/.gitconfig-local. Add the remote before
+# committing, or clone instead of init.
+[includeIf "hasconfig:remote.*.url:git@github.com:zhengfran/**"]
+	path = ~/.gitconfig-personal
+[includeIf "hasconfig:remote.*.url:https://github.com/zhengfran/**"]
+	path = ~/.gitconfig-personal
+[includeIf "hasconfig:remote.*.url:ssh://git@github.com/zhengfran/**"]
+	path = ~/.gitconfig-personal

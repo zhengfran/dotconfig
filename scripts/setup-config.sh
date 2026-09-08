@@ -57,6 +57,21 @@ symlink_config "common shell dir" "$shell_dir_path" ~/.config/common
 zsh_dir_path=$(find ~/dotconfig -type d -name "zsh" | head -n 1)
 symlink_config "zsh dir" "$zsh_dir_path" ~/.config/zsh
 
+## git
+# ~/.gitconfig carries no identity: work identity + credential helpers live in
+# the untracked ~/.gitconfig-local, personal identity in gitconfig-personal,
+# picked per-repo by [includeIf] rules on the remote URL.
+gitconfig_path=$(find ~/dotconfig -type f -path "*/basic/git/gitconfig" | head -n 1)
+symlink_config "gitconfig" "$gitconfig_path" ~/.gitconfig
+
+gitconfig_personal_path=$(find ~/dotconfig -type f -path "*/basic/git/gitconfig-personal" | head -n 1)
+symlink_config "personal git identity" "$gitconfig_personal_path" ~/.gitconfig-personal
+
+if [ ! -e ~/.gitconfig-local ]; then
+    echo "[WARN] ~/.gitconfig-local not found — git has no default identity on this machine."
+    echo "[WARN] Create it with a [user] block (and any credential.helper / safe.directory entries)."
+fi
+
 ## yazi
 yazi_dir_path=$(find ~/dotconfig -type d -name "yazi" | head -n 1)
 symlink_config "yazi dir" "$yazi_dir_path" ~/.config/yazi
