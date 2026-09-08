@@ -6,3 +6,7 @@
 	path = tools/ai/pi
 	url = git@github.com:zhengfran/pi-config.git
 	branch = main
+[submodule "tools/ai/orchestrator"]
+	path = tools/ai/orchestrator
+	url = git@github.com:zhengfran/zzc-orchestrator.git
+	branch = main
