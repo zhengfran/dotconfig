@@ -131,13 +131,14 @@ command = "lazygit"
 width = "80%"
 height = "80%"
 
-# Refresh every coding-agent quota into herdr's own cache. Runs detached with no
-# window: the tab bar picks the new values up on its next tick. The status bar
-# also refreshes this on its own when the cache ages past its TTL.
+# Refresh every coding-agent quota, then repaint the status area at once rather
+# than waiting out its 30s tick. The wrapper also toasts the result, because a
+# detached shell command is otherwise indistinguishable from a dead keybinding.
+# The status bar still refreshes on its own when the cache ages past its TTL.
 [[keys.command]]
 key = "prefix+q"
 type = "shell"
-command = "~/dotconfig/tools/herdr/quota-refresh.sh --quiet"
+command = "~/dotconfig/tools/herdr/status-refresh.sh"
 description = "refresh agent quotas"
 
 # Legacy indexed shortcut config is still parsed for compatibility.
