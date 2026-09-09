@@ -31,3 +31,10 @@ export ZSH_AUTOSUGGEST_USE_ASYNC=1
 export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 export HOMEBREW_DOWNLOAD_CONCURRENCY=auto
 export CLAUDE_PACKAGE_MANAGER=bun
+
+# Make Node trust the system CA bundle so it accepts the corporate
+# TLS-inspecting proxy's root cert (avoids SELF_SIGNED_CERT_IN_CHAIN).
+# Proper alternative to the insecure NODE_TLS_REJECT_UNAUTHORIZED=0.
+if [ -f /etc/ssl/certs/ca-certificates.crt ]; then
+  export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
+fi
