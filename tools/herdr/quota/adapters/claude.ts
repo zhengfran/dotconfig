@@ -3,6 +3,7 @@ import { join } from "node:path";
 import {
   asRecord,
   finiteNumber,
+  type PrivateJsonResult,
   readPrivateJson,
   safeString,
 } from "../security.ts";
@@ -27,12 +28,60 @@ import {
 
 const API_URL = "https://api.anthropic.com/api/oauth/usage";
 const CREDENTIAL_FILE = ".credentials.json";
+const KEYCHAIN_SERVICE = "Claude Code-credentials";
 
 function credentialPath(): string {
   return join(
     process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), ".claude"),
     CREDENTIAL_FILE,
   );
+}
+
+// On macOS, Claude Code keeps the OAuth token in the login Keychain and never
+// writes .credentials.json. A Mac that once ran an older build is still left
+// holding that file, frozen at whatever the token was when it stopped being
+// written -- so an answer from the Keychain has to win over one from disk,
+// not merely fill in for a missing file.
+async function readKeychainCredential(
+  runtime: Runtime,
+): Promise<{ value: unknown } | undefined> {
+  if (process.platform !== "darwin") return undefined;
+  const security = await runtime.resolveCommand("security");
+  if (!security) return undefined;
+  const result = await runtime.exec(
+    security,
+    ["find-generic-password", "-s", KEYCHAIN_SERVICE, "-w"],
+    { timeoutMs: 5_000 },
+  );
+  if (result.code !== 0) return undefined;
+  const raw = result.stdout.trim();
+  if (!raw) return undefined;
+  try {
+    // Wrapped, so that a Keychain item holding a literal `null` is still
+    // distinguishable from "the Keychain had nothing to say".
+    return { value: JSON.parse(raw) as unknown };
+  } catch {
+    return undefined;
+  }
+}
+
+// Where this machine's Claude credentials actually live, plus what was found
+// there. Both fetch and diagnose go through here so they can never disagree
+// about which source was consulted.
+async function credentialSource(
+  runtime: Runtime,
+): Promise<{ source: string; result: PrivateJsonResult }> {
+  const keychain = await readKeychainCredential(runtime);
+  if (keychain) {
+    return {
+      source: `macOS Keychain (${KEYCHAIN_SERVICE})`,
+      // The Keychain enforces owner-only access itself; 0600 is the file-mode
+      // equivalent the shared PrivateJsonResult shape expects.
+      result: { state: "available", value: keychain.value, mode: 0o600 },
+    };
+  }
+  const path = credentialPath();
+  return { source: path, result: await readPrivateJson(path) };
 }
 
 function fixedWindow(
@@ -176,9 +225,8 @@ export function normalizeClaudeUsage(
   };
 }
 
-async function readCredential() {
-  const path = credentialPath();
-  const result = await readPrivateJson(path);
+async function readCredential(runtime: Runtime) {
+  const { result } = await credentialSource(runtime);
   if (result.state === "missing") {
     throw new AdapterFailure(
       "not_authenticated",
@@ -232,7 +280,7 @@ export const claudeAdapter: UsageAdapter = {
     if (!(await runtime.resolveCommand("claude"))) {
       throw new AdapterFailure("not_installed", "Claude Code is not installed");
     }
-    const credential = await readCredential();
+    const credential = await readCredential(runtime);
     const response = await requestJson(
       API_URL,
       {
@@ -251,7 +299,7 @@ export const claudeAdapter: UsageAdapter = {
 
   async diagnose(runtime: Runtime): Promise<AdapterDiagnostic> {
     const commandPath = await runtime.resolveCommand("claude");
-    const credentials = await readPrivateJson(credentialPath());
+    const { source, result: credentials } = await credentialSource(runtime);
     const credentialRoot =
       credentials.state === "available"
         ? asRecord(credentials.value)
@@ -269,7 +317,7 @@ export const claudeAdapter: UsageAdapter = {
       command: "claude",
       commandPath,
       version: await commandVersion(commandPath, runtime.exec),
-      credentialSource: credentialPath(),
+      credentialSource: source,
       credentialState:
         credentials.state === "available"
           ? hasOauthToken

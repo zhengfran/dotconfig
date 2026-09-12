@@ -12,6 +12,10 @@
 #   ?            cache older than its staleness threshold (refresh failing)
 set -uo pipefail
 
+root="$(cd "$(dirname "$0")" && pwd)"
+# stat, ping and setsid all differ or go missing between Linux and macOS.
+. "$root/portable.sh"
+
 cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/herdr-status"
 quota_cache="$cache_dir/quota.json"
 mkdir -p "$cache_dir" 2>/dev/null || true
@@ -30,7 +34,16 @@ CORP_TTL=${HERDR_STATUS_CORP_TTL:-300}
 COPILOT_CREDITS=${HERDR_STATUS_COPILOT_CREDITS:-20000}
 
 now=$(date +%s)
-declare -A seg_of
+
+# The providers this bar knows how to render, in display order. Also the only
+# values ever spliced into a seg_* variable name below.
+PROVIDERS="claude codex copilot kiro"
+
+# macOS ships bash 3.2, which has no associative arrays, so each provider's
+# rendered segment lives in a seg_<provider> variable reached by indirect
+# expansion.
+seg_set() { printf -v "seg_$1" '%s' "$2"; }
+seg_get() { local name="seg_$1"; printf '%s' "${!name-}"; }
 
 label_for() {
     case "$1" in
@@ -56,34 +69,27 @@ as_percent() {
 # probe is cached: an off-network miss costs a full ping timeout, which would
 # otherwise blow the entry's timeout_seconds budget on every tick.
 is_corporate() {
-    local f="$cache_dir/corp.check" age result
-    if [ -r "$f" ]; then
-        age=$(( now - $(stat -c %Y "$f" 2>/dev/null || echo 0) ))
-        if [ "$age" -ge 0 ] && [ "$age" -lt "$CORP_TTL" ]; then
-            [ "$(cat "$f" 2>/dev/null)" = "1" ]
-            return
-        fi
+    local f="$cache_dir/corp.check" result
+    if [ -r "$f" ] && [ "$(herdr_file_age "$f")" -lt "$CORP_TTL" ]; then
+        [ "$(cat "$f" 2>/dev/null)" = "1" ]
+        return
     fi
     result=0
-    if command -v ping >/dev/null 2>&1 && ping -c 1 -W 1 -n "$CORP_IP" >/dev/null 2>&1; then
-        result=1
-    fi
+    herdr_host_reachable "$CORP_IP" && result=1
     printf '%s' "$result" > "$f" 2>/dev/null || true
     [ "$result" = "1" ]
 }
 
 # Refresh detached: the status bar must never wait on the network.
 maybe_refresh() {
-    local age
-    age=$(( now - $(stat -c %Y "$quota_cache" 2>/dev/null || echo 0) ))
-    if [ ! -r "$quota_cache" ] || [ "$age" -ge "$REFRESH_TTL" ]; then
-        ( setsid "$(dirname "$0")/quota-refresh.sh" --quiet >/dev/null 2>&1 & ) 2>/dev/null || true
+    if [ ! -r "$quota_cache" ] || [ "$(herdr_file_age "$quota_cache")" -ge "$REFRESH_TTL" ]; then
+        herdr_spawn_detached "$root/quota-refresh.sh" --quiet
     fi
 }
 
 # The cache stores usedPercent; the bar shows what is left.
 read_provider() {
-    local provider=$1 kind=$2 want=$3 row observed a b flag
+    local provider=$1 kind=$2 want=$3 row observed a b flag seg
     [ -r "$quota_cache" ] || return 0
 
     row=$(jq -r --arg p "$provider" --arg w "$want" --arg k "$kind" '
@@ -118,20 +124,20 @@ read_provider() {
 
     if [ "$kind" = "pair" ]; then
         [ "$a" != "-" ] && [ "$a" != "inf" ] && [ "$a" -le "$LOW_PERCENT" ] 2>/dev/null && flag="!"
-        seg_of[$provider]="$(label_for "$provider") $(as_percent "$a")/$(as_percent "$b")"
+        seg="$(label_for "$provider") $(as_percent "$a")/$(as_percent "$b")"
         [ "$observed" -gt 0 ] 2>/dev/null && [ $((now - observed)) -gt "$PAIR_STALE_AFTER" ] && flag="${flag}?"
     else
         [ "$b" != "-" ] && [ "$b" != "inf" ] && [ "$b" -le "$LOW_PERCENT" ] 2>/dev/null && flag="!"
-        seg_of[$provider]="$(label_for "$provider") $(as_percent "$b")"
+        seg="$(label_for "$provider") $(as_percent "$b")"
         [ "$observed" -gt 0 ] 2>/dev/null && [ $((now - observed)) -gt "$MONTHLY_STALE_AFTER" ] && flag="${flag}?"
     fi
-    seg_of[$provider]="${seg_of[$provider]}${flag}"
+    seg_set "$provider" "${seg}${flag}"
 }
 
 # Copilot reports AI credits used with no entitlement, so the percentage is
 # derived against the configured budget rather than read from the provider.
 read_copilot() {
-    local row used observed pct flag
+    local row used observed pct flag seg
     [ -r "$quota_cache" ] || return 0
 
     row=$(jq -r '
@@ -154,13 +160,13 @@ read_copilot() {
         pct=$(( (COPILOT_CREDITS - used) * 100 / COPILOT_CREDITS ))
         [ "$pct" -lt 0 ] && pct=0
         [ "$pct" -le "$LOW_PERCENT" ] && flag="!"
-        seg_of[copilot]="$(label_for copilot) ${pct}%"
+        seg="$(label_for copilot) ${pct}%"
     else
         # No budget configured, so a percentage is not derivable; show the count.
-        seg_of[copilot]="$(label_for copilot) ${used}cr"
+        seg="$(label_for copilot) ${used}cr"
     fi
     [ "$observed" -gt 0 ] 2>/dev/null && [ $((now - observed)) -gt "$MONTHLY_STALE_AFTER" ] && flag="${flag}?"
-    seg_of[copilot]="${seg_of[copilot]}${flag}"
+    seg_set copilot "${seg}${flag}"
 }
 
 maybe_refresh
@@ -171,10 +177,11 @@ if is_corporate; then
     read_provider kiro monthly CREDIT
 fi
 
-out=()
-for p in claude codex copilot kiro; do
-    [ -n "${seg_of[$p]:-}" ] && out+=("${seg_of[$p]}")
+out=""
+for p in $PROVIDERS; do
+    seg=$(seg_get "$p")
+    [ -n "$seg" ] && out="${out:+$out }$seg"
 done
 
-[ ${#out[@]} -gt 0 ] || exit 0
-printf '%s\n' "$(IFS=' '; echo "${out[*]}")"
+[ -n "$out" ] || exit 0
+printf '%s\n' "$out"
