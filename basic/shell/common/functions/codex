@@ -5,6 +5,14 @@
 #   enter    cd into the session's directory, start a fresh Codex there
 #   ctrl-r   cd into the session's directory, `codex resume` that session
 #   esc      just start Codex in the current directory
+#
+# Codex records a rollout file per *thread*, not per conversation: spawned
+# subagents and the guardian approval reviewer each get their own file, and
+# those files open with the parent's inherited context — so they show up in the
+# picker wearing the parent's first prompt and `codex resume` lands you in the
+# subagent instead of the session you picked. Skip them by their session_meta
+# `thread_source`. Sessions old enough to predate that field carry no marker
+# and are kept. The wider file window compensates for what gets dropped.
 
 function codex() {
     if [ "$#" -gt 0 ]; then
@@ -13,8 +21,9 @@ function codex() {
     fi
 
     local files out
-    files=$(ls -t ~/.codex/sessions/*/*/*/*.jsonl 2>/dev/null | head -n 60)
-    out=$(_agent_sessions_list "$files" '"role":"user"' '"input_text","text":"[^"]*"' 2>/dev/null |
+    files=$(ls -t ~/.codex/sessions/*/*/*/*.jsonl 2>/dev/null | head -n 100)
+    out=$(_agent_sessions_list "$files" '"role":"user"' '"input_text","text":"[^"]*"' \
+              '"thread_source":"(subagent|guardian_review)"' 2>/dev/null |
           _agent_session_choose codex)
     _agent_session_launch "$out" codex -- resume
 }
