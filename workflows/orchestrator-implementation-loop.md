@@ -2,6 +2,8 @@
 
 Status: active. Authorized by the user's 2026-09-13 request to continue the remaining tickets with fresh Codex 5.6 Terra agents, high effort, YOLO mode, and review before advancing.
 
+Acceptance policy updated on 2026-09-13: the user wants forward progress once a ticket is mostly implemented and functionally correct. This supersedes the earlier requirement to keep reviewing until no actionable findings remain.
+
 ## Trigger and destination
 
 Begin after the preceding implementation has passed independent review. The scoped runtime API ticket already qualifies at runtime commit `bbdffa5fe72a55414a346b91eaf077ec88133223`, pinned by dotconfig `128e90b9f6048a23fb069e876dd59af5b639e7d6`, with 437/437 passing tests and clear Standards and Spec reviews.
@@ -25,10 +27,10 @@ The canonical map is `~/obsidian/06-Spaces/03-Projects/Orchestrator/Fully Functi
 3. If no ticket is active, select the first open, unclaimed ticket by filename whose dependencies are all resolved. Skip only a previously documented external blocker that still applies. Preserve concurrent user changes. Pin the accepted starting commit and create an isolated branch from it; use a separate worktree if another checkout owner would otherwise conflict.
 4. Atomically claim the child note with a named Terra assignee before dispatch. Regenerate the minimap from child state. Save a temporary, self-contained handoff with the ticket path, accepted contracts, repository instructions, baseline, permitted scope, tests and delivery requirements.
 5. Start the fresh agent and verify the requested settings and actual working state. Persist its identifiers immediately. Observe rather than edit its implementation concurrently. Continue useful independent verification preparation while it works.
-6. When it reports completion, freeze the actual commit and include any remaining tracked/untracked changes in the review snapshot. Apply the code-review skill with separate Standards and Spec reviewers against the recorded baseline. Check all ticket acceptance requirements; use independent probes where a plausible failure is not covered by the author's tests.
-7. Send actionable findings to the same ticket agent and repeat review after its corrections. Never advance merely because tests pass or the child says it is done. If the child is rate-limited, preserve its session and wait for the reported reset; do not switch models or open another session to evade limits. If that prevents useful progress, report the actual blocker once.
-8. Once both review axes have no actionable findings, run the relevant independent validation and required acceptance evidence. Capture source hashes during long test runs so results correspond to the reviewed revision. Preserve migrations, the two-rework limit in the runtime's domain model, and every previously accepted regression. Do not equate this supervisory review cycle with the runtime's two-rework accounting.
-9. Record the accepted commit, test results, migration/compatibility effects and live-evidence limits in the ticket's `## Answer`. Commit approved repository changes locally and update the parent submodule pin. Set only this ticket resolved; append its outcome pointer to the map, update the audited baseline and regenerate its minimap/frontier. Verify links, counts and working-tree state.
+6. When it reports completion, freeze the actual delivery. Perform one focused review of core ticket behavior, relevant integration and the changed code. Standards and Spec may run in parallel under the code-review skill, but together they are one review pass. Give reviewers the acceptance policy below: identify material blockers and separate non-blocking follow-ups; do not search for ever more edge cases after the core works.
+7. Consolidate material blockers into one correction request to the same agent. Normally allow one correction pass, then check the requested fixes and their direct regressions only. Do not restart a full independent review or broaden the search after each correction. Further correction is justified only by a demonstrated failure that still breaks core functionality or presents material data-loss/authorization risk in intended use; explain that concrete impact. A severity label alone does not justify another round. Defer remaining hardening and polish as described below.
+8. Independently verify representative core behavior and run the relevant existing tests. Run the full suite once on the final candidate when appropriate; rerun migrations when schema changes warrant it. After a correction, repeat only checks affected by it, plus any required final suite. Do not rerun unchanged expensive checks or build new adversarial fixture families without a material blocker. Passing author tests alone is insufficient, but zero review findings is not required. Preserve the runtime's two-rework domain rule; it is separate from this supervisory process.
+9. Once the ticket is mostly implemented, its core behavior is functionally correct and relevant validation passes, accept it. Record the accepted commit, tests, migration/compatibility effects, known follow-ups and live-evidence limits in `## Answer`. Commit approved repository changes locally and update the parent submodule pin. Set only this ticket resolved; append its outcome pointer to the map, update the audited baseline and regenerate its minimap/frontier. Verify links, counts and working-tree state.
 10. Mark the session completed in loop history and immediately choose the next eligible ticket with a fresh session. Never reuse the completed conversation.
 
 ## Durable state and recovery
@@ -42,6 +44,17 @@ An interrupted child, failed transport or ambiguous native status does not prove
 ## Checkpoints and limits
 
 Routine implementation, tests, reviews, local commits and requested vault updates proceed autonomously. The accepted architecture is already decided; do not reopen settled choices for routine implementation.
+
+### Functional acceptance and review budget
+
+- Accept when the ticket delivers its main user-visible behavior and the next dependent work can use it reliably. Broad implementation coverage and correct core behavior matter more than exhaustive edge-case closure.
+- Block acceptance for missing core capability, a reproducible failure of a representative intended workflow, a material regression, or credible data corruption or authorization bypass in intended use. Assess impact and likelihood, not just a reviewer's priority label.
+- Rare input combinations, adversarial scheduling variations, speculative robustness, code smells, cosmetic issues and optional refinements normally become non-blocking follow-ups. They must not repeatedly reopen the current ticket when normal operation is correct.
+- Record deferred findings concisely in the ticket's Answer, with an evidence pointer and the existing downstream ticket that owns them when applicable. Do not create a new blocking dependency or expand the current acceptance criteria merely to carry a follow-up. Broader hardening belongs in the existing acceptance, migration or backend-conformance work as appropriate.
+- Preserve explicit operational gates for the final deployment and support claims. Accepting a code ticket does not fabricate Linux, native backend or live-service evidence.
+- The already-running correction for “Unify execution admission, launch and dispatch” may finish. Then perform a targeted final check and advance if core functionality is sound. Its earlier nine reviews already satisfy the independent-review requirement; do not launch another full Standards/Spec review cycle for it.
+
+If the child is rate-limited, preserve its session and wait for the reported reset; do not switch models or open another session to evade limits. If that prevents useful progress, report the actual blocker once.
 
 For a genuine missing decision or operational target, prepare the concrete commands, configuration, evidence and alternatives first. Then present one concise brief explaining the decision, recommended action and artifact link. Do not fabricate Linux, live backend, managed service or activation evidence. Existing requirements for an explicitly authorized concrete operational namespace remain in force.
 
