@@ -1,6 +1,6 @@
 # Orchestrator implementation loop
 
-Status: finishing the current ticket, then stopping. The user's latest 2026-09-13 instruction is “end the loop after current ticket implementation.” Finish the existing Sonnet 5 implementation of ticket 07, “Validate the managed service and old-sender exclusion,” in its recorded conversation, perform the bounded functional review below, record the result and pause the heartbeat. Do not launch another ticket. This stop-after-current instruction supersedes all queue-advance and continuous-execution rules below until the user explicitly resumes the loop.
+Status: stopped after the current implementation, as requested on 2026-09-13. Ticket 07, “Validate the managed service and old-sender exclusion,” has a reviewed local implementation at `693b9f999cdd7e6b71519b268347fde24ece47a2`, with 589/589 independent Node 24.19.0 tests passing after one focused review and one correction. The existing Sonnet conversation has finished. Pause the heartbeat and do not launch another ticket unless the user explicitly resumes the loop. This instruction supersedes all queue-advance and continuous-execution rules below.
 
 For ticket 07, the stopping point is the reviewed local implementation and operational preparation package. Record any missing Linux host/service validation as pending; do not mark the ticket or map fully resolved without that evidence. An unresolved operational gate does not extend this loop into another ticket or require service experiments before stopping.
 
@@ -14,7 +14,7 @@ Herdr topology updated on 2026-09-13: for future tickets, create a new workspace
 
 Begin after the preceding implementation has passed independent review. The scoped runtime API ticket already qualifies at runtime commit `bbdffa5fe72a55414a346b91eaf077ec88133223`, pinned by dotconfig `128e90b9f6048a23fb069e876dd59af5b639e7d6`, with 437/437 passing tests and clear Standards and Spec reviews.
 
-The queue is closed to new tickets by the stop-after-current instruction above. A five-minute Codex thread heartbeat supervises only the current implementation and its bounded review until the result is recorded, then pauses. It must not launch overlapping or successor implementers.
+The queue is closed to new tickets by the stop-after-current instruction above. The current implementation and bounded review have finished; the five-minute Codex thread heartbeat is to remain paused. It must not launch successor implementers.
 
 The canonical map is `~/obsidian/06-Spaces/03-Projects/Orchestrator/Fully Functional Orchestrator/map.md`. Ticket details and accepted architecture stay there; do not duplicate them into this workflow. The user explicitly authorizes this supervisor to continue across tickets. Each child implementation session still owns exactly one ticket.
 
