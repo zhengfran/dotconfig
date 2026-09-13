@@ -1,6 +1,6 @@
 [submodule "tools/ai/skills"]
 	path = tools/ai/skills
-	url = git@github.com:zhengfran/zzc-skills.git
+	url = git@github.com:zhengfran/zzc-agentic-workflow.git
 	branch = main
 [submodule "tools/ai/pi"]
 	path = tools/ai/pi
