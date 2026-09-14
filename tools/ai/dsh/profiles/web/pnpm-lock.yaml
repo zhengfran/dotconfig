@@ -8,12 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@linxin666/dsh-client-ui-web-ui-settings':
+        specifier: ^0.3.22
+        version: 0.3.22
+      '@linxin666/dsh-remote-web-ui':
+        specifier: ^0.3.22
+        version: 0.3.22
       dsh-better-sidebar:
         specifier: 0.19.1
         version: 0.19.1
       dsh-context:
-        specifier: ^0.50.0
-        version: 0.50.0
+        specifier: ^0.52.0
+        version: 0.52.0
       dsh-thoughtdag:
         specifier: https://github.com/chenxiachan/thoughtdag/releases/download/v0.4.14/dsh-thoughtdag-0.4.14.tgz
         version: https://github.com/chenxiachan/thoughtdag/releases/download/v0.4.14/dsh-thoughtdag-0.4.14.tgz
@@ -155,6 +161,18 @@ packages:
   '@lezer/yaml@1.0.4':
     resolution: {integrity: sha512-2lrrHqxalACEbxIbsjhqGpSW8kWpUKuY6RHgnSAFZa6qK62wvnPxA8hGOwOoDbwHcOFs5M4o27mjGu+P7TvBmw==}
 
+  '@linxin666/dsh-client-ui-web-ui-settings@0.3.22':
+    resolution: {integrity: sha512-8oY3gJKgZmL5msS16znNmhLoBy37JkH8cwk3WroUfIlDkktzYb4XknpuxY1bPL/e/Vd/beoVbevxcWio0CuFdg==}
+    peerDependencies:
+      react: ^18.2.0
+
+  '@linxin666/dsh-remote-web-ui@0.3.22':
+    resolution: {integrity: sha512-kxlKdceta5XkAdvoM6m/aoTdFXXZAaXXFdx1iZ5qPFfPdMNf1s1vDPC+Ozffsy2aK2Olxf7AlhPigJh2JOMaew==}
+    engines: {node: ^22.19.0 || >=24.0.0}
+    peerDependencies:
+      react: ^18.2.0
+      react-dom: ^18.2.0
+
   '@marijn/find-cluster-break@1.0.3':
     resolution: {integrity: sha512-FY+MKLBoTsLNJF/eLWaOsXGdz6uh3Iu1axjPf6TUq92IYumcTcXWHoS747JARLkcdlJ/Waiaxc5wQfFO8jC6NA==}
 
@@ -268,6 +286,10 @@ packages:
 
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
+
+  cloudflared@0.7.3:
+    resolution: {integrity: sha512-dR4QMS4PbD287QqOV/vAoE1BcQCXphLOVrN9vjNUgkLrPDA5qxn9Dz0VId0P7/Czj4Mxu3hoLgbrVx5OtOWr5Q==}
+    hasBin: true
 
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
@@ -486,8 +508,8 @@ packages:
       '@huanlin/dsh-plugin-better-locale':
         optional: true
 
-  dsh-context@0.50.0:
-    resolution: {integrity: sha512-qQv5m7K2oVqsLXsynxseycMuKsgmGstb23zAz+vwOYzHsFlqacdk1nW1jU80ji1oZN63AEHNsKrYdKFxHA4RBw==}
+  dsh-context@0.52.0:
+    resolution: {integrity: sha512-twA+w43zeMwDPXGlZrQ0DQKvqqIt4wWcJKnebc449mArf5jaeBRxcUyivlKafr1EebJB1mbf8f70XVNxGAxn4w==}
     engines: {node: ^22.19.0 || >=24.0.0}
     peerDependencies:
       '@deepseek-ai/cordis': ^4.0.2
@@ -619,6 +641,11 @@ packages:
 
   points-on-path@0.2.1:
     resolution: {integrity: sha512-25ClnWWuw7JbWZcgqY/gJ4FQWadKxGWk+3kR/7kD0tCaDtPPMj7oHu2ToLaVhfpnHrZzYby2w6tUA0eOIuUg8g==}
+
+  qrcode.react@4.2.0:
+    resolution: {integrity: sha512-QpgqWi8rD9DsS9EP3z7BT+5lY5SFhsqGjpgW5DY/i3mK4M9DTBNz3ErMi8BWYEfI3L0d8GIbGmcdFAS1uIRGjA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   react-icons@5.7.0:
     resolution: {integrity: sha512-LBLy340Rzqy6+/yVhZKT3B/QpP1BZaesGqasf09HPOBzRarcDIFH0WwXlXQfE7q7ipxK4MSiC5DIBWURCny6fw==}
@@ -966,6 +993,18 @@ snapshots:
       '@lezer/highlight': 1.2.3
       '@lezer/lr': 1.4.10
 
+  '@linxin666/dsh-client-ui-web-ui-settings@0.3.22':
+    dependencies:
+      schemastery: 3.18.0
+
+  '@linxin666/dsh-remote-web-ui@0.3.22':
+    dependencies:
+      cloudflared: 0.7.3
+      clsx: 2.1.1
+      qrcode.react: 4.2.0
+      schemastery: 3.18.0
+      zod: 4.4.3
+
   '@marijn/find-cluster-break@1.0.3': {}
 
   '@mermaid-js/parser@1.2.1':
@@ -1102,6 +1141,8 @@ snapshots:
       d3-transition: 3.0.1(d3-selection@3.0.0)
 
   argparse@2.0.1: {}
+
+  cloudflared@0.7.3: {}
 
   clsx@2.1.1: {}
 
@@ -1351,7 +1392,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  dsh-context@0.50.0:
+  dsh-context@0.52.0:
     dependencies:
       zod: 4.4.3
 
@@ -1439,6 +1480,8 @@ snapshots:
     dependencies:
       path-data-parser: 0.1.0
       points-on-curve: 0.2.0
+
+  qrcode.react@4.2.0: {}
 
   react-icons@5.7.0: {}
 

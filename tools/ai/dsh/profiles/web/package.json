@@ -2,8 +2,10 @@
   "name": "dsh-profile-web",
   "private": true,
   "dependencies": {
+    "@linxin666/dsh-client-ui-web-ui-settings": "^0.3.22",
+    "@linxin666/dsh-remote-web-ui": "^0.3.22",
     "dsh-better-sidebar": "0.19.1",
-    "dsh-context": "^0.50.0",
+    "dsh-context": "^0.52.0",
     "dsh-thoughtdag": "https://github.com/chenxiachan/thoughtdag/releases/download/v0.4.14/dsh-thoughtdag-0.4.14.tgz",
     "dshmarket": "^1.46.0"
   },
@@ -15,7 +17,9 @@
         "dsh-better-sidebar",
         "dsh-context",
         "dsh-thoughtdag",
-        "dshmarket"
+        "dshmarket",
+        "@linxin666/dsh-client-ui-web-ui-settings",
+        "@linxin666/dsh-remote-web-ui"
       ]
     }
   }

@@ -5,9 +5,12 @@ nodeLinker: hoisted
 autoInstallPeers: false
 
 allowBuilds:
+  cloudflared: false
   node-pty: true
   protobufjs: true
 
 minimumReleaseAgeExclude:
   - dsh-better-sidebar
-  - dsh-context@0.9.0
+  - dsh-context@0.9.0 || 0.52.0
+  - '@linxin666/dsh-remote-web-ui@0.3.22'
+  - '@linxin666/dsh-client-ui-web-ui-settings@0.3.22'
