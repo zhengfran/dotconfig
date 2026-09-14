@@ -1,0 +1,13 @@
+packages:
+  - .
+
+nodeLinker: hoisted
+autoInstallPeers: false
+
+allowBuilds:
+  node-pty: true
+  protobufjs: true
+
+minimumReleaseAgeExclude:
+  - dsh-better-sidebar
+  - dsh-context@0.9.0

@@ -97,6 +97,26 @@ if [ -n "$pi_dir_path" ]; then
     symlink_config "pi agent dir" "$pi_dir_path" ~/.pi/agent
 fi
 
+## dsh (DeepSeek Harness) — the whole profiles dir is linked, not each profile:
+## plugins resolve host packages through the sibling profiles/node_modules that
+## dsh maintains, and Node finds it by walking up the profile's real path.
+## Credentials, sessions and settings.yaml stay untracked in ~/.dsh.
+dsh_profiles_path=$(find ~/dotconfig -type d -path "*/tools/ai/dsh/profiles" | head -n 1)
+if [ -n "$dsh_profiles_path" ]; then
+    mkdir -p ~/.dsh
+    symlink_config "dsh profiles dir" "$dsh_profiles_path" ~/.dsh/profiles
+    if command -v dsh >/dev/null 2>&1; then
+        for dsh_profile in "$dsh_profiles_path"/*/package.json; do
+            dsh_profile_name=$(basename "$(dirname "$dsh_profile")")
+            echo "[INFO] Installing dsh plugins for profile $dsh_profile_name..."
+            dsh plugin --profile "$dsh_profile_name" install || \
+                echo "[WARN] Failed to install dsh plugins for profile $dsh_profile_name."
+        done
+    else
+        echo "[WARN] dsh not on PATH — skipping dsh plugin installs."
+    fi
+fi
+
 ## nvim (LazyVim config tracked in dotconfig)
 nvim_dir_path=$(find ~/dotconfig -type d -path "*/basic/editor/nvim" | head -n 1)
 symlink_config "nvim dir" "$nvim_dir_path" ~/.config/nvim

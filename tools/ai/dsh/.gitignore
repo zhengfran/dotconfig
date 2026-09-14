@@ -1,0 +1,8 @@
+# ~/.dsh/profiles is symlinked here. Track each profile's manifest, lockfile
+# and patch layer; ignore installed/generated trees and runtime logs.
+# - profiles/node_modules: dsh's shared host-package mirror (rebuilt at boot)
+# - profiles/*/node_modules: pnpm install output
+# - profiles/*/.dsh-module-fallback: dsh's per-profile bundle links
+node_modules/
+.dsh-module-fallback/
+**/.dsh-market/log.ndjson
