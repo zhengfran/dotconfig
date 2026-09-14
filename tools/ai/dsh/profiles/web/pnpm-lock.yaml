@@ -20,6 +20,9 @@ importers:
       dsh-context:
         specifier: ^0.52.0
         version: 0.52.0
+      dsh-skill-picker:
+        specifier: ^0.5.9
+        version: 0.5.9
       dsh-thoughtdag:
         specifier: https://github.com/chenxiachan/thoughtdag/releases/download/v0.4.14/dsh-thoughtdag-0.4.14.tgz
         version: https://github.com/chenxiachan/thoughtdag/releases/download/v0.4.14/dsh-thoughtdag-0.4.14.tgz
@@ -524,6 +527,19 @@ packages:
       react:
         optional: true
 
+  dsh-skill-picker@0.5.9:
+    resolution: {integrity: sha512-gmry19MqaNRaIIbidQ1sg/WQIRkHraPkJaEmNomO5BViKEnw4/aHNR1cOqDY+VpqvviC7r3txJsNbM0ArnzASw==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@deepseek-ai/cordis': ^4.0.1
+      '@deepseek-ai/dsh-client-locale': ^0.1.0-rc.6
+      '@deepseek-ai/dsh-client-runtime': ^0.1.0-rc.6
+      '@deepseek-ai/dsh-client-ui-slots': ^0.1.0-rc.6
+      '@deepseek-ai/dsh-host-webserver': ^0.1.0-rc.6
+      '@deepseek-ai/dsh-skill': ^0.1.0-rc.6
+      '@deepseek-ai/dsh-system-prompt': ^0.1.0-rc.6
+      react: ^18.2.0
+
   dsh-thoughtdag@https://github.com/chenxiachan/thoughtdag/releases/download/v0.4.14/dsh-thoughtdag-0.4.14.tgz:
     resolution: {integrity: sha512-ihywsGfprgk/kBsKK6AGB/aLAH1b5H6cUmvBA94Wqr62iMVKl38bsdOzv11Hyup5SlCbBdR4yd4ndhMSNJmFTw==, tarball: https://github.com/chenxiachan/thoughtdag/releases/download/v0.4.14/dsh-thoughtdag-0.4.14.tgz}
     version: 0.4.14
@@ -635,6 +651,9 @@ packages:
 
   path-data-parser@0.1.0:
     resolution: {integrity: sha512-NOnmBpt5Y2RWbuv0LMzsayp3lVylAHLPUTut412ZA3l+C4uw4ZVkQbjShYCQ8TCpUMdPapr4YjUqLYD6v68j+w==}
+
+  pinyin-pro@3.29.4:
+    resolution: {integrity: sha512-SPXpDT2cHEy+d26V1RXYMlVzXN42hotFAak1fzyWPi4o2dKXb61UqD4pzxDJHwk6gbv8vQ6EfErd+hYX0Qhzug==}
 
   points-on-curve@0.2.0:
     resolution: {integrity: sha512-0mYKnYYe9ZcqMCWhUjItv/oHjvgEsfKvnUTg8sAtnHr3GVy7rGkXCb6d5cSyqrWqL4k81b9CPg3urd+T7aop3A==}
@@ -1396,6 +1415,10 @@ snapshots:
     dependencies:
       zod: 4.4.3
 
+  dsh-skill-picker@0.5.9:
+    dependencies:
+      pinyin-pro: 3.29.4
+
   dsh-thoughtdag@https://github.com/chenxiachan/thoughtdag/releases/download/v0.4.14/dsh-thoughtdag-0.4.14.tgz: {}
 
   dshmarket@1.46.0:
@@ -1473,6 +1496,8 @@ snapshots:
   package-manager-detector@1.8.0: {}
 
   path-data-parser@0.1.0: {}
+
+  pinyin-pro@3.29.4: {}
 
   points-on-curve@0.2.0: {}
 
