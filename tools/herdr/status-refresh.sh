@@ -8,6 +8,8 @@
 set -uo pipefail
 
 root="$(cd "$(dirname "$0")" && pwd)"
+# Herdr may launch this from a macOS GUI environment with a minimal PATH.
+. "$root/portable.sh"
 
 # --wait rather than the status bar's non-blocking mode. status-quota.sh kicks
 # off its own refresh whenever the cache goes stale, and quota-refresh.sh takes

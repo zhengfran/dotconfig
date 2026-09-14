@@ -55,6 +55,13 @@ label_for() {
     esac
 }
 
+codex_hides_five_hour() {
+    case "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')" in
+        pro | pro_* | pro-* | prolite) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 # "-" means the provider did not report the window; "inf" means it reported the
 # quota as unlimited. Neither takes a percent sign.
 as_percent() {
@@ -89,7 +96,7 @@ maybe_refresh() {
 
 # The cache stores usedPercent; the bar shows what is left.
 read_provider() {
-    local provider=$1 kind=$2 want=$3 row observed a b flag seg
+    local provider=$1 kind=$2 want=$3 row observed a b plan flag seg
     [ -r "$quota_cache" ] || return 0
 
     row=$(jq -r --arg p "$provider" --arg w "$want" --arg k "$kind" '
@@ -113,18 +120,24 @@ read_provider() {
                   | if . == "" then 0
                     else (sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601? // 0) end),
                  ($s | rem("five_hour")),
-                 ($s | if $k == "pair" then rem($w) else mono($w) end) ] | @tsv
+                 ($s | if $k == "pair" then rem($w) else mono($w) end),
+                 ($s.plan // "") ] | @tsv
           end
     ' "$quota_cache" 2>/dev/null) || return 0
     [ -n "$row" ] || return 0
 
-    IFS=$'\t' read -r observed a b <<< "$row"
+    IFS=$'\t' read -r observed a b plan <<< "$row"
     : "${observed:=0}"
     flag=""
 
     if [ "$kind" = "pair" ]; then
-        [ "$a" != "-" ] && [ "$a" != "inf" ] && [ "$a" -le "$LOW_PERCENT" ] 2>/dev/null && flag="!"
-        seg="$(label_for "$provider") $(as_percent "$a")/$(as_percent "$b")"
+        if [ "$provider" = codex ] && codex_hides_five_hour "$plan"; then
+            [ "$b" != "-" ] && [ "$b" != "inf" ] && [ "$b" -le "$LOW_PERCENT" ] 2>/dev/null && flag="!"
+            seg="$(label_for "$provider") $(as_percent "$b")"
+        else
+            [ "$a" != "-" ] && [ "$a" != "inf" ] && [ "$a" -le "$LOW_PERCENT" ] 2>/dev/null && flag="!"
+            seg="$(label_for "$provider") $(as_percent "$a")/$(as_percent "$b")"
+        fi
         [ "$observed" -gt 0 ] 2>/dev/null && [ $((now - observed)) -gt "$PAIR_STALE_AFTER" ] && flag="${flag}?"
     else
         [ "$b" != "-" ] && [ "$b" != "inf" ] && [ "$b" -le "$LOW_PERCENT" ] 2>/dev/null && flag="!"

@@ -17,6 +17,28 @@
 
 HERDR_OS=$(uname -s 2>/dev/null || echo unknown)
 
+# Herdr command hooks can be launched by a GUI-started server on macOS, where
+# PATH often lacks Homebrew even though interactive shells have it. Add the
+# common package-manager bins here so status scripts find node/herdr/jq without
+# depending on shell startup files.
+case "$HERDR_OS" in
+    Darwin)
+        for herdr_path_dir in \
+            "$HOME/.local/bin" \
+            /opt/homebrew/bin /opt/homebrew/sbin \
+            /usr/local/bin /usr/local/sbin
+        do
+            [ -d "$herdr_path_dir" ] || continue
+            case ":$PATH:" in
+                *":$herdr_path_dir:"*) ;;
+                *) PATH="$herdr_path_dir:$PATH" ;;
+            esac
+        done
+        export PATH
+        unset herdr_path_dir
+        ;;
+esac
+
 # Epoch seconds of a file's mtime, or 0 when it cannot be read. Always prints
 # an integer: callers feed this straight into $(( )), where an empty string is
 # a syntax error rather than a zero.
@@ -87,10 +109,28 @@ herdr_lock_acquire() {
         fi
 
         holder=$(cat "$dir/pid" 2>/dev/null)
+        if [ "$reaped" -eq 0 ]; then
+            case "$holder" in
+                '' | *[!0-9]*)
+                    # The owner writes pid immediately after mkdir. Give that
+                    # tiny race a moment before treating a missing/corrupt pid
+                    # as a stale lock left by an interrupted refresher.
+                    sleep 0.1
+                    holder=$(cat "$dir/pid" 2>/dev/null)
+                    case "$holder" in
+                        '' | *[!0-9]*)
+                            reaped=1
+                            rm -rf "$dir" 2>/dev/null || true
+                            continue
+                            ;;
+                    esac
+                    ;;
+            esac
+        fi
         # A pid we cannot signal is gone, so its lock is garbage. Reap it at
         # most once per call: two racing reapers that each retried forever
         # would take turns deleting the other's freshly taken lock.
-        if [ "$reaped" -eq 0 ] && [ -n "$holder" ] && ! kill -0 "$holder" 2>/dev/null; then
+        if [ "$reaped" -eq 0 ] && ! kill -0 "$holder" 2>/dev/null; then
             reaped=1
             rm -rf "$dir" 2>/dev/null || true
             continue
