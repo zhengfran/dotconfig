@@ -6,3 +6,5 @@
 node_modules/
 .dsh-module-fallback/
 **/.dsh-market/log.ndjson
+**/.dsh-market/*-cache*.json
+**/.dsh-market/discovery-*.json
