@@ -14,3 +14,17 @@
       name: '@deepseek-ai/dsh-host-directory-picker-browse'
     - id: directory-picker-browse-surface
       name: '@deepseek-ai/dsh-client-ui-directory-picker-browse'
+
+# Let thoughtdag's /thoughtdag/api answer through the Cloudflare tunnel.
+# Its Host check is that API's ONLY guard (dsh's webserver does not
+# authenticate plugin routes) and it can read sessions and inject into
+# agents, so this is safe only while Cloudflare Access gates
+# dsh.zhengzhicheng.com. A patch replaces `config` wholesale, so the
+# plugin's defaults are restated.
+- id: thoughtdag
+  config:
+    mountPrefix: /thoughtdag
+    trustedHosts:
+      - dsh.zhengzhicheng.com
+    whyTools: true
+    whyPrompt: true
