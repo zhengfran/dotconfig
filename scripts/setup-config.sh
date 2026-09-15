@@ -156,11 +156,10 @@ opencode_dir_path=$(find ~/dotconfig -type d -name "opencode" | head -n 1)
 symlink_config "opencode dir" "$opencode_dir_path" ~/.config/opencode
 
 # NOTE: legacy ~/.agents/skills flat dump removed. Skills were later restructured
-# into tools/ai/skills/ (vendored + assembled), extracted on 2026-08-10 into the
+# into tools/ai/skills/ (self + vendored), extracted on 2026-08-10 into the
 # standalone github.com/zhengfran/zzc-skills repo, and re-attached here as a git
-# submodule at tools/ai/skills. That repo still owns its own distribution
-# (`skills-sync && skills-install global`) — dotconfig no longer touches agent
-# skill dirs itself.
+# submodule at tools/ai/skills. That repo owns its own distribution through
+# `skills-install global`; dotconfig does not touch agent skill dirs itself.
 
 claude_settings_path=$(find ~/dotconfig -type f -path "*/tools/ai/claude/settings.json" | head -n 1)
 if [ -n "$claude_settings_path" ]; then
@@ -198,10 +197,8 @@ fi
 ## AI skills — github.com/zhengfran/zzc-skills, vendored as a submodule at
 ## tools/ai/skills (populated by `git submodule update --init`, or by cloning
 ## dotconfig with --recurse-submodules). Its scripts/ dir is on PATH via
-## basic/shell/common/env. That repo owns its own distribution: assembled/ is
-## gitignored there, so a freshly-initialised submodule needs
-##   skills-sync && skills-install global
-## run once before any agent sees the skills.
+## basic/shell/common/env. Run `skills-install global` once after initialising
+## the submodule; no generated assembly step is required.
 
 ## aerospace (macOS only)
 if [[ "$OSTYPE" == "darwin"* ]]; then
