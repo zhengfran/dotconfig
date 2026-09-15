@@ -5,10 +5,11 @@
     "@linxin666/dsh-client-ui-web-ui-settings": "^0.3.22",
     "@linxin666/dsh-remote-web-ui": "^0.3.22",
     "dsh-better-sidebar": "0.19.1",
-    "dsh-context": "^0.52.0",
-    "dsh-skill-picker": "^0.5.9",
+    "dsh-context": "^0.52.1",
+    "dsh-skill-picker": "^0.5.10",
     "dsh-thoughtdag": "https://github.com/chenxiachan/thoughtdag/releases/download/v0.4.14/dsh-thoughtdag-0.4.14.tgz",
-    "dshmarket": "^1.46.0"
+    "dshmarket": "^1.46.1",
+    "nowledge-mem-deepseek-harness": "github:nowledge-co/nowledge-mem-deepseek-harness"
   },
   "dsh": {
     "profile": {
@@ -21,7 +22,8 @@
         "dshmarket",
         "@linxin666/dsh-client-ui-web-ui-settings",
         "@linxin666/dsh-remote-web-ui",
-        "dsh-skill-picker"
+        "dsh-skill-picker",
+        "nowledge-mem-deepseek-harness"
       ]
     }
   }
