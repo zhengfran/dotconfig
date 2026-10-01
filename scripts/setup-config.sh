@@ -88,7 +88,7 @@ pi_dir_path=$(find ~/dotconfig -type d -path "*/tools/ai/pi" | head -n 1)
 if [ -n "$pi_dir_path" ]; then
     if command -v npm >/dev/null 2>&1; then
         echo "[INFO] Installing Pi config dependencies..."
-        npm --prefix "$pi_dir_path" run install:all || \
+        npm --prefix "$pi_dir_path" install || \
             echo "[WARN] Failed to install Pi config dependencies."
     else
         echo "[WARN] npm not found; Pi local extensions may be missing dependencies."
@@ -98,6 +98,8 @@ if [ -n "$pi_dir_path" ]; then
     symlink_config "Pi extensions" "$pi_dir_path/extensions" ~/.pi/agent/extensions
     symlink_config "Pi settings" "$pi_dir_path/settings.json" ~/.pi/agent/settings.json
     symlink_config "Pi themes" "$pi_dir_path/themes" ~/.pi/agent/themes
+    mkdir -p ~/.pi/agent/herdr-agents
+    symlink_config "Pi Herdr agents config" "$pi_dir_path/herdr-agents.json" ~/.pi/agent/herdr-agents/config.json
 fi
 
 ## dsh (DeepSeek Harness) — the whole profiles dir is linked, not each profile:
