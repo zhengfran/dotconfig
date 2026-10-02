@@ -1,0 +1,47 @@
+# Publish all release-stage Posts in one transaction, or one note by name.
+# Usage: blog_publish [note.md]   (optional file name or path relative to $OBSIDIAN_VAULT)
+function blog_publish() {
+    if [ $# -gt 1 ]; then
+        echo "usage: blog_publish [note.md]" >&2
+        return 1
+    fi
+
+    local root
+    root=$(git rev-parse --show-toplevel 2>/dev/null)
+    if [ -z "$root" ] || ! grep -q '"name": *"zhengzhicheng-site"' "$root/package.json" 2>/dev/null; then
+        echo "blog_publish: not inside the myblog project" >&2
+        return 1
+    fi
+
+    if [ -z "$OBSIDIAN_VAULT" ] || [ ! -d "$OBSIDIAN_VAULT" ]; then
+        echo "blog_publish: OBSIDIAN_VAULT '$OBSIDIAN_VAULT' does not exist" >&2
+        return 1
+    fi
+
+    if [ $# -eq 0 ]; then
+        (cd "$root" && node scripts/publish-all.mjs --vault "$OBSIDIAN_VAULT" --mode publish --push)
+        return $?
+    fi
+
+    local name="$1" matches count
+    case "$name" in *.md) ;; *) name="$name.md" ;; esac
+
+    if [ -f "$OBSIDIAN_VAULT/$name" ]; then
+        matches="$OBSIDIAN_VAULT/$name"
+    else
+        matches=$(find "$OBSIDIAN_VAULT" -path "$OBSIDIAN_VAULT/.*" -prune -o \
+                       -type f -name "$(basename "$name")" -print)
+    fi
+    count=$(printf '%s' "$matches" | grep -c .)
+
+    if [ "$count" -eq 0 ]; then
+        echo "blog_publish: '$name' not found in $OBSIDIAN_VAULT" >&2
+        return 1
+    elif [ "$count" -gt 1 ]; then
+        echo "blog_publish: '$name' is ambiguous, pass a path relative to the vault:" >&2
+        printf '%s\n' "$matches" | sed "s|^$OBSIDIAN_VAULT/|  |" >&2
+        return 1
+    fi
+
+    (cd "$root" && npm run publish -- --source "$matches" --vault "$OBSIDIAN_VAULT" --mode publish --push)
+}

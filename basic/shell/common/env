@@ -38,3 +38,5 @@ export CLAUDE_PACKAGE_MANAGER=bun
 if [ -f /etc/ssl/certs/ca-certificates.crt ]; then
   export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
 fi
+
+export OBSIDIAN_VAULT="$HOME/obsidian"
