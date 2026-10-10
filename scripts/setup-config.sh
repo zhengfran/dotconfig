@@ -211,6 +211,13 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     symlink_config "aerospace dir" "$aerospace_dir_path" ~/.config/aerospace
 fi
 
+## omniwm (macOS only) — the app rewrites settings.toml atomically, so link the
+## directory rather than the file.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    omniwm_dir_path=$(find ~/dotconfig -type d -path "*/tools/wm/omniwm" | head -n 1)
+    symlink_config "omniwm dir" "$omniwm_dir_path" ~/.config/omniwm
+fi
+
 ## komorebi (Windows only)
 # git-bash's `ln -s` copies instead of linking on Windows, so use PowerShell
 # to create a real SYMLINKD that komorebic can follow.
