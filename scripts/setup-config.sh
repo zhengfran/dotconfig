@@ -205,12 +205,6 @@ fi
 ## basic/shell/common/env. Run `skills-install global` once after initialising
 ## the submodule; no generated assembly step is required.
 
-## aerospace (macOS only)
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    aerospace_dir_path=$(find ~/dotconfig -type d -path "*/tools/wm/aerospace" | head -n 1)
-    symlink_config "aerospace dir" "$aerospace_dir_path" ~/.config/aerospace
-fi
-
 ## omniwm (macOS only) — the app rewrites settings.toml atomically, so link the
 ## directory rather than the file.
 if [[ "$OSTYPE" == "darwin"* ]]; then
