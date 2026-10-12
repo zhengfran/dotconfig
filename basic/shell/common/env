@@ -2,6 +2,7 @@
 export XDG_CONFIG_HOME=$HOME/.config
 export LOCALBIN=$XDG_CONFIG_HOME/bin
 export PATH=$PATH:/usr/local/bin
+export PATH=$PATH:/usr/local/go/bin
 export PATH=/usr/local/bin:/usr/bin:/bin:$PATH
 export PATH=$HOME/.local/bin:$PATH
 if [[ "$(uname)" != "Darwin" ]]; then
@@ -32,11 +33,15 @@ export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 export HOMEBREW_DOWNLOAD_CONCURRENCY=auto
 export CLAUDE_PACKAGE_MANAGER=bun
 
-# Make Node trust the system CA bundle so it accepts the corporate
-# TLS-inspecting proxy's root cert (avoids SELF_SIGNED_CERT_IN_CHAIN).
+# Make Node and Python trust the system CA bundle so they accept the corporate
+# TLS-inspecting proxy's root cert (avoids SELF_SIGNED_CERT_IN_CHAIN /
+# CERTIFICATE_VERIFY_FAILED). Python tools otherwise use certifi's bundle:
+# SSL_CERT_FILE covers ssl/httpx, REQUESTS_CA_BUNDLE covers requests.
 # Proper alternative to the insecure NODE_TLS_REJECT_UNAUTHORIZED=0.
 if [ -f /etc/ssl/certs/ca-certificates.crt ]; then
   export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
+  export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+  export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 fi
 
 export OBSIDIAN_VAULT="$HOME/obsidian"
