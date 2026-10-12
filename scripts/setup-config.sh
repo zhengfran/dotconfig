@@ -98,8 +98,6 @@ if [ -n "$pi_dir_path" ]; then
     symlink_config "Pi extensions" "$pi_dir_path/extensions" ~/.pi/agent/extensions
     symlink_config "Pi settings" "$pi_dir_path/settings.json" ~/.pi/agent/settings.json
     symlink_config "Pi themes" "$pi_dir_path/themes" ~/.pi/agent/themes
-    mkdir -p ~/.pi/agent/herdr-agents
-    symlink_config "Pi Herdr agents config" "$pi_dir_path/herdr-agents.json" ~/.pi/agent/herdr-agents/config.json
 fi
 
 ## dsh (DeepSeek Harness) — the whole profiles dir is linked, not each profile:
