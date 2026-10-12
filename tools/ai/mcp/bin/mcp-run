@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# mcp-run <server> [args...] — start a locally installed MCP server with its
+# credentials from an untracked env file, so harness configs hold no secrets.
+#
+#   MCP_SECRETS_FILE  default ~/.config/mcp/secrets.env
+#   MCP_SERVERS_DIR   default ~/.kiro/mcps (server checkouts + shared .venv)
+set -euo pipefail
+
+name=${1:?usage: mcp-run <server> [args...]}
+shift
+
+secrets=${MCP_SECRETS_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mcp/secrets.env}
+servers_dir=${MCP_SERVERS_DIR:-$HOME/.kiro/mcps}
+
+die() { echo "mcp-run: $*" >&2; exit 1; }
+
+case $name in
+    jira-connector)       vars=(JIRA_BASE_URL JIRA_PAT) ;;
+    confluence-connector) vars=(CONFLUENCE_BASE_URL CONFLUENCE_PAT) ;;
+    github-connector)     vars=(GITHUB_URL GITHUB_TOKEN GITHUB_ORG) ;;
+    *) die "unknown server '$name'" ;;
+esac
+
+[[ -r $secrets ]] || die "missing $secrets (template: tools/ai/mcp/secrets.env.example)"
+# Read only this server's variables from the file, not the whole thing.
+for v in "${vars[@]}"; do
+    line=$(grep -E "^[[:space:]]*(export[[:space:]]+)?$v=" "$secrets" | tail -n 1 || true)
+    val=${line#*=}
+    val=${val%\"}; val=${val#\"}; val=${val%\'}; val=${val#\'}
+    [[ -n $val ]] || die "$v is not set in $secrets"
+    export "$v=$val"
+done
+
+python=$servers_dir/.venv/bin/python3
+entry=$servers_dir/$name/src/server.py
+[[ -x $python ]] || die "no venv at $servers_dir/.venv"
+[[ -f $entry ]] || die "no server at $entry"
+exec "$python" "$entry" "$@"

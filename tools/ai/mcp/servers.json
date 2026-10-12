@@ -1,0 +1,26 @@
+{
+  "_comment": "Canonical MCP servers shared by every coding harness. Rendered into Pi, Claude Code and Kiro by sync-mcp.sh. Never put secrets or internal URLs here: \"command\": \"mcp-run\" resolves to bin/mcp-run, which reads them from ~/.config/mcp/secrets.env. \"secrets\": true servers are only synced when that file exists. \"autoApprove\" is Kiro-only.",
+  "mcpServers": {
+    "jira-connector": {
+      "command": "mcp-run",
+      "args": ["jira-connector"],
+      "description": "Work Jira Data Center: search, read, create and transition issues",
+      "secrets": true,
+      "autoApprove": ["get_ticket_by_key", "search_issues", "get_transitions", "get_custom_field_mappings"]
+    },
+    "confluence-connector": {
+      "command": "mcp-run",
+      "args": ["confluence-connector"],
+      "description": "Work Confluence Data Center: search, read and edit pages",
+      "secrets": true,
+      "autoApprove": ["search_pages", "get_page_by_id", "get_page_tree"]
+    },
+    "github-connector": {
+      "command": "mcp-run",
+      "args": ["github-connector"],
+      "description": "Work GitHub Enterprise: repositories, files, branches and pull requests",
+      "secrets": true,
+      "autoApprove": ["list_repos", "get_file_content", "list_branches", "list_pull_requests"]
+    }
+  }
+}

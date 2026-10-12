@@ -180,6 +180,16 @@ else
     echo "[WARN] Claude Code statusline-command.sh not found in dotconfig."
 fi
 
+## MCP servers — tools/ai/mcp/servers.json is rendered into Pi, Claude Code and
+## Kiro (merged, other entries kept). Credentials stay in the untracked
+## ~/.config/mcp/secrets.env; without it the secrets-backed servers are skipped.
+mcp_sync_path=$(find ~/dotconfig -type f -path "*/tools/ai/mcp/sync-mcp.sh" | head -n 1)
+if [ -n "$mcp_sync_path" ] && command -v jq >/dev/null 2>&1; then
+    "$mcp_sync_path" || echo "[WARN] MCP sync failed."
+else
+    echo "[WARN] MCP sync skipped (sync-mcp.sh or jq missing)."
+fi
+
 ## herdr agent integrations — herdr generates and owns these hook/plugin files,
 ## so they are installed rather than symlinked. Claude's settings.json ships a
 ## SessionStart hook pointing at ~/.claude/hooks/herdr-agent-state.sh, so the
