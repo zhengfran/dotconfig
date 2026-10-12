@@ -141,6 +141,15 @@ type = "shell"
 command = "~/dotconfig/tools/herdr/status-refresh.sh"
 description = "refresh agent quotas"
 
+# Even out pane sizes in the current tab (tmux/vim `=`). The same plugin also
+# rebalances automatically on every new pane; see plugins/balance/.
+# Linked once per machine with `herdr plugin link ~/dotconfig/tools/herdr/plugins/balance`.
+[[keys.command]]
+key = "prefix+="
+type = "plugin_action"
+command = "zzc.balance.balance"
+description = "balance panes"
+
 # Legacy indexed shortcut config is still parsed for compatibility.
 # Prefer switch_tab, switch_workspace, and focus_agent for new configs.
 # [keys.indexed]
