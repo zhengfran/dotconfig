@@ -44,6 +44,13 @@ symlink_config() {
 tmux_conf_path=$(find ~/dotconfig -type f -name ".tmux.conf" | head -n 1)
 symlink_config "tmux config" "$tmux_conf_path" ~/.tmux.conf
 
+## Omnigent host workspace viewer
+omnigent_tmux_path="$HOME/dotconfig/tools/omnigent/omnigent-tmux.py"
+if [ -f "$omnigent_tmux_path" ]; then
+    mkdir -p ~/.local/bin
+    symlink_config "Omnigent tmux workspace" "$omnigent_tmux_path" ~/.local/bin/omnigent-tmux
+fi
+
 ## zsh
 zshrc_path=$(find ~/dotconfig -type f -name "zshrc" | head -n 1)
 symlink_config "zshrc" "$zshrc_path" ~/.zshrc
