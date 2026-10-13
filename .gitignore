@@ -76,3 +76,6 @@
 /.claude/skills
 /.codex/skills
 /.kiro/skills
+
+# Local scratch docs (research notes etc.)
+/docs/
