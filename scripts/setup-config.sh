@@ -94,7 +94,6 @@ if [ -n "$pi_dir_path" ]; then
         echo "[WARN] npm not found; Pi local extensions may be missing dependencies."
     fi
     mkdir -p ~/.pi/agent
-    symlink_config "Pi global instructions" "$pi_dir_path/global-agents.md" ~/.pi/agent/AGENTS.md
     symlink_config "Pi extensions" "$pi_dir_path/extensions" ~/.pi/agent/extensions
     symlink_config "Pi settings" "$pi_dir_path/settings.json" ~/.pi/agent/settings.json
     symlink_config "Pi themes" "$pi_dir_path/themes" ~/.pi/agent/themes
@@ -155,9 +154,6 @@ else
 fi
 
 ## AI
-opencode_dir_path=$(find ~/dotconfig -type d -name "opencode" | head -n 1)
-symlink_config "opencode dir" "$opencode_dir_path" ~/.config/opencode
-
 # NOTE: legacy ~/.agents/skills flat dump removed. Skills were later restructured
 # into tools/ai/skills/ (self + vendored), extracted on 2026-08-10 into the
 # standalone github.com/zhengfran/zzc-skills repo, and re-attached here as a git
@@ -180,6 +176,17 @@ else
     echo "[WARN] Claude Code statusline-command.sh not found in dotconfig."
 fi
 
+# Global agent instructions, shared by every harness.
+global_agents_path=$(find ~/dotconfig -type f -path "*/tools/ai/shared/AGENTS.md" | head -n 1)
+if [ -n "$global_agents_path" ]; then
+    mkdir -p ~/.claude ~/.codex ~/.pi/agent
+    symlink_config "Claude Code global instructions" "$global_agents_path" ~/.claude/CLAUDE.md
+    symlink_config "Codex global instructions" "$global_agents_path" ~/.codex/AGENTS.md
+    symlink_config "Pi global instructions" "$global_agents_path" ~/.pi/agent/AGENTS.md
+else
+    echo "[WARN] Global AGENTS.md not found in dotconfig."
+fi
+
 ## MCP servers — tools/ai/mcp/servers.json is rendered into Pi, Claude Code and
 ## Kiro (merged, other entries kept). Credentials stay in the untracked
 ## ~/.config/mcp/secrets.env; without it the secrets-backed servers are skipped.
@@ -194,9 +201,8 @@ fi
 ## so they are installed rather than symlinked. Claude's settings.json ships a
 ## SessionStart hook pointing at ~/.claude/hooks/herdr-agent-state.sh, so the
 ## install has to run on every machine or that hook fails each session.
-## (opencode lands inside ~/.config/opencode -> dotconfig, i.e. in this repo.)
 if command -v herdr >/dev/null 2>&1; then
-    for herdr_agent in claude codex opencode; do
+    for herdr_agent in claude codex; do
         if herdr integration install "$herdr_agent" >/dev/null 2>&1; then
             echo "[OK] herdr integration: $herdr_agent"
         else

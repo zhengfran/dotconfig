@@ -30,7 +30,6 @@ source ~/.config/zsh/fzf.zsh
 autopair-init
 source ~/.zim/modules/fzf-tab/fzf-tab.plugin.zsh
 source ~/.config/zsh/prompt.zsh
-# opencode
 
 # API Keys — loaded on demand from Bitwarden via `load_secrets`
 # (see basic/shell/common/secrets.json). Run `load_secrets` when you need them.

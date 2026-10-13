@@ -1,6 +1,6 @@
 ## What This Is
 
-Personal dotfiles repository (`~/dotconfig`) for a cross-platform development environment (WSL2/Linux primary, macOS secondary, Windows tertiary). Configs are symlinked into place by `scripts/setup-config.sh`. `AGENTS.md` is a symlink to this file, so every coding harness (Claude Code, Pi, opencode, Kiro) reads the same instructions.
+Personal dotfiles repository (`~/dotconfig`) for a cross-platform development environment (WSL2/Linux primary, macOS secondary, Windows tertiary). Configs are symlinked into place by `scripts/setup-config.sh`. `AGENTS.md` is a symlink to this file, so every coding harness (Claude Code, Pi, Codex, Kiro) reads the same instructions.
 
 ## Repository Structure
 
@@ -9,7 +9,7 @@ Personal dotfiles repository (`~/dotconfig`) for a cross-platform development en
 - **basic/editor/emacs/** — Modular Emacs configuration (see `basic/editor/emacs/CLAUDE.md` for detailed architecture). This is the most actively developed part of the repo.
 - **basic/editor/nvim/** — Neovim config.
 - **tools/** — Application configs: tmux, wezterm, yazi, herdr, rime (Rime IME, wanxiang schema), window managers (sway, omniwm, komorebi, yasb), automation (AutoHotkey).
-- **tools/ai/** — AI harness configs: `claude/` (Claude Code settings, statusline), `opencode/`, `dsh/` (DeepSeek Harness profiles), `shared/`.
+- **tools/ai/** — AI harness configs: `claude/` (Claude Code settings, statusline), `dsh/` (DeepSeek Harness profiles), `shared/` (global `AGENTS.md` for every harness).
   - **tools/ai/pi/** — git submodule of [zhengfran/pi-config](https://github.com/zhengfran/pi-config): Pi settings, extensions, themes, agent routing. Edit and commit in the submodule, push it, then bump the pointer here.
   - **tools/ai/skills/** — git submodule of [zhengfran/zzc-skills](https://github.com/zhengfran/zzc-skills). Edit and commit skills in that repo, then bump the pointer here. The orchestrator runtime lives in the private [zhengfran/zzc-orchestrator](https://github.com/zhengfran/zzc-orchestrator) (on hold, not a submodule).
   - **tools/ai/mcp/** — MCP servers shared by every harness (Pi, Claude Code, Kiro). `servers.json` is secret-free; `bin/mcp-run` reads credentials from the untracked `~/.config/mcp/secrets.env`; `sync-mcp.sh` merges the servers into each harness's user config.
@@ -41,8 +41,8 @@ scripts/setup-packages-arch.sh
 - `basic/git/gitconfig` → `~/.gitconfig`
 - `tools/yazi/` → `~/.config/yazi`, `tools/wm/sway/` → `~/.config/sway`, `tools/herdr/config.toml` → `~/.config/herdr/config.toml`
 - `tools/ai/claude/settings.json` → `~/.claude/settings.json`
-- `tools/ai/pi/{settings.json,extensions,themes,global-agents.md}` → `~/.pi/agent/`
-- `tools/ai/opencode/` → `~/.config/opencode`
+- `tools/ai/pi/{settings.json,extensions,themes}` → `~/.pi/agent/`
+- `tools/ai/shared/AGENTS.md` → `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.pi/agent/AGENTS.md`
 
 The script is the source of truth for the full list.
 

@@ -11,6 +11,7 @@ To bring one back, `git mv` it to its old path and restore its block in
 | Tool | Path | Platform | Used | Replaced by |
 |---|---|---|---|---|
 | AeroSpace | `wm/aerospace/` | macOS | 2024-12-25 – 2026-10-10 | OmniWM (`tools/wm/omniwm`) |
+| opencode | `ai/opencode/` | all | 2026-01-05 – 2026-10-13 | Claude Code, Codex, Pi |
 
 ## Removed before this archive
 

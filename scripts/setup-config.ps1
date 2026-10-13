@@ -101,10 +101,6 @@ if (-not (Test-Path $nvimTarget)) {
 }
 
 # --- AI tools ---
-# opencode
-New-ConfigLink -Source "$dotconfig\tools\ai\opencode" `
-               -Target "$HOME\.config\opencode" -IsDirectory
-
 # agents
 New-ConfigLink -Source "$dotconfig\tools\ai\agents" `
                -Target "$HOME\.agents" -IsDirectory
