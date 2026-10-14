@@ -8,3 +8,6 @@ node_modules/
 **/.dsh-market/log.ndjson
 **/.dsh-market/*-cache*.json
 **/.dsh-market/discovery-*.json
+# - cordis.patch.yml: dsh writes runtime UI settings and secrets here
+#   (e.g. remote-web-ui tunnelToken), so it stays local per machine
+**/cordis.patch.yml
