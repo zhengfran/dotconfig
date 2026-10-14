@@ -117,9 +117,9 @@ if [ -n "$dsh_profiles_path" ]; then
     if command -v dsh >/dev/null 2>&1; then
         for dsh_profile in "$dsh_profiles_path"/*/package.json; do
             dsh_profile_name=$(basename "$(dirname "$dsh_profile")")
-            echo "[INFO] Installing dsh plugins for profile $dsh_profile_name..."
-            dsh plugin --profile "$dsh_profile_name" install || \
-                echo "[WARN] Failed to install dsh plugins for profile $dsh_profile_name."
+            echo "[INFO] Updating dsh plugins to latest for profile $dsh_profile_name..."
+            dsh plugin --profile "$dsh_profile_name" update --latest || \
+                echo "[WARN] Failed to update dsh plugins for profile $dsh_profile_name."
         done
     else
         echo "[WARN] dsh not on PATH — skipping dsh plugin installs."

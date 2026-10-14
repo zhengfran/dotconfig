@@ -2,13 +2,13 @@
   "name": "dsh-profile-web",
   "private": true,
   "dependencies": {
-    "@linxin666/dsh-client-ui-web-ui-settings": "^0.3.22",
-    "@linxin666/dsh-remote-web-ui": "^0.3.22",
-    "dsh-better-sidebar": "0.19.1",
-    "dsh-context": "^0.52.1",
-    "dsh-skill-picker": "^0.5.10",
-    "dsh-thoughtdag": "https://github.com/chenxiachan/thoughtdag/releases/download/v0.4.14/dsh-thoughtdag-0.4.14.tgz",
-    "dshmarket": "^1.46.1",
+    "@linxin666/dsh-client-ui-web-ui-settings": "latest",
+    "@linxin666/dsh-remote-web-ui": "latest",
+    "dsh-better-sidebar": "latest",
+    "dsh-context": "latest",
+    "dsh-skill-picker": "latest",
+    "dsh-thoughtdag": "latest",
+    "dshmarket": "latest",
     "nowledge-mem-deepseek-harness": "github:nowledge-co/nowledge-mem-deepseek-harness"
   },
   "dsh": {
