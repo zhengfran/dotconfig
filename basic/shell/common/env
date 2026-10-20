@@ -43,5 +43,3 @@ if [ -f /etc/ssl/certs/ca-certificates.crt ]; then
   export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
   export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 fi
-
-export OBSIDIAN_VAULT="$HOME/obsidian"

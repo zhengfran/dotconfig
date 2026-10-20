@@ -11,3 +11,5 @@ node_modules/
 # - cordis.patch.yml: dsh writes runtime UI settings and secrets here
 #   (e.g. remote-web-ui tunnelToken), so it stays local per machine
 **/cordis.patch.yml
+# Multica's bridge is a machine-local build and cannot be shared as a profile.
+profiles/multica

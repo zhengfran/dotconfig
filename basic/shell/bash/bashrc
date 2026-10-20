@@ -7,4 +7,3 @@ source ~/.config/common/aliases
 for f in ~/.config/common/functions/*; do
    [[ -f "$f" ]] && source "$f"
 done
-export SIYUAN_TOKEN=$(cat ~/.config/siyuan/token 2>/dev/null)
