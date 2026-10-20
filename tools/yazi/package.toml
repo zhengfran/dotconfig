@@ -13,6 +13,11 @@ use = "dedukun/relative-motions"
 rev = "a603d9e"
 hash = "e02a788e5b8ae0fb47fd0193dda589cc"
 
+[[plugin.deps]]
+use = "KKV9/compress"
+rev = "80e5268"
+hash = "868db729374b97871bc30b96d0e9061f"
+
 [[flavor.deps]]
 use = "PinThePenguine/sunset"
 rev = "64ad82e"
@@ -20,5 +25,5 @@ hash = "ae36775ed414cad1bcd7af692422df0f"
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-mocha"
-rev = "9276ffa"
-hash = "8d7799e4598ff079fa5ee5c770d9bc08"
+rev = "1183892"
+hash = "ce320f877fe709b189433941aba747c4"
