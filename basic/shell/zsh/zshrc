@@ -31,8 +31,8 @@ autopair-init
 source ~/.zim/modules/fzf-tab/fzf-tab.plugin.zsh
 source ~/.config/zsh/prompt.zsh
 
-# API Keys — loaded on demand from Bitwarden via `load_secrets`
-# (see basic/shell/common/secrets.json). Run `load_secrets` when you need them.
+# Run `ulk` once; subsequent shells import only the cached manifest keys.
+load_secrets_cache
 
 # bun completions
 [ -s "/home/uie41442/.bun/_bun" ] && source "/home/uie41442/.bun/_bun"

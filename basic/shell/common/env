@@ -32,6 +32,8 @@ export ZSH_AUTOSUGGEST_USE_ASYNC=1
 export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 export HOMEBREW_DOWNLOAD_CONCURRENCY=auto
 export CLAUDE_PACKAGE_MANAGER=bun
+# Herdr panes can lack SSH markers; also send Pi copies to the client terminal.
+export PI_CLIPBOARD_OSC52=1
 
 # Make Node and Python trust the system CA bundle so they accept the corporate
 # TLS-inspecting proxy's root cert (avoids SELF_SIGNED_CERT_IN_CHAIN /

@@ -1,0 +1,20 @@
+# Reboot into Windows once via UEFI BootNext; later boots follow the normal BootOrder.
+# Usage: reboot_windows
+function reboot_windows() {
+    if ! command -v efibootmgr >/dev/null 2>&1; then
+        echo "reboot_windows: efibootmgr not found" >&2
+        return 1
+    fi
+
+    local entry
+    entry=$(efibootmgr | sed -n 's/^Boot\([0-9A-Fa-f]\{4\}\)\*\{0,1\} Windows Boot Manager.*/\1/p' | head -1)
+    if [ -z "$entry" ]; then
+        echo "reboot_windows: no 'Windows Boot Manager' UEFI entry found" >&2
+        efibootmgr | grep '^Boot[0-9A-Fa-f]' >&2
+        return 1
+    fi
+
+    echo "Rebooting into Windows (Boot$entry) in 5 seconds... (Ctrl+C to cancel)"
+    sleep 5 || return 1
+    sudo efibootmgr --bootnext "$entry" >/dev/null && sudo systemctl reboot
+}

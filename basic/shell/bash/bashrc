@@ -7,3 +7,6 @@ source ~/.config/common/aliases
 for f in ~/.config/common/functions/*; do
    [[ -f "$f" ]] && source "$f"
 done
+
+# Run `ulk` once; subsequent shells import only the cached manifest keys.
+load_secrets_cache
