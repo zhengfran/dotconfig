@@ -3,3 +3,5 @@ packages:
 
 nodeLinker: hoisted
 autoInstallPeers: false
+minimumReleaseAgeExclude:
+  - billion-context@0.1.204

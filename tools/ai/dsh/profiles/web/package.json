@@ -4,6 +4,7 @@
   "dependencies": {
     "@linxin666/dsh-client-ui-web-ui-settings": "latest",
     "@linxin666/dsh-remote-web-ui": "latest",
+    "billion-context": "^0.1.204",
     "dsh-better-sidebar": "latest",
     "dsh-context": "latest",
     "dsh-skill-picker": "latest",
@@ -23,7 +24,8 @@
         "@linxin666/dsh-client-ui-web-ui-settings",
         "@linxin666/dsh-remote-web-ui",
         "dsh-skill-picker",
-        "nowledge-mem-deepseek-harness"
+        "nowledge-mem-deepseek-harness",
+        "billion-context"
       ]
     }
   }

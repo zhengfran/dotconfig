@@ -1,0 +1,16 @@
+{
+  "name": "dsh-profile-acp",
+  "private": true,
+  "dependencies": {
+    "billion-context": "0.1.204"
+  },
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-acp-app",
+        "billion-context"
+      ]
+    }
+  }
+}
