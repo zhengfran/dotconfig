@@ -150,6 +150,19 @@ type = "plugin_action"
 command = "zzc.balance.balance"
 description = "balance panes"
 
+# Install with `herdr plugin install AVGVSTVS96/herdr-drovr`.
+[[keys.command]]
+key = "prefix+shift+m"
+type = "plugin_action"
+command = "drovr.move-tab"
+description = "move tab to workspace"
+
+[[keys.command]]
+key = "prefix+m"
+type = "plugin_action"
+command = "drovr.move-pane"
+description = "move pane to tab"
+
 # Legacy indexed shortcut config is still parsed for compatibility.
 # Prefer switch_tab, switch_workspace, and focus_agent for new configs.
 # [keys.indexed]
