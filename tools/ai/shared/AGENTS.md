@@ -1,6 +1,6 @@
 # Global working agreement
 
-These are my personal defaults for every coding agent I run (Claude Code, Codex, Pi). Where a repository's own `AGENTS.md` / `CLAUDE.md` says something more specific, follow the repository.
+These are my personal defaults for every coding agent I run (Claude Code, Codex, Pi, dsh). Where a repository's own `AGENTS.md` / `CLAUDE.md` says something more specific, follow the repository.
 
 ## No unit tests
 

@@ -103,6 +103,7 @@ if [ -n "$pi_dir_path" ]; then
     mkdir -p ~/.pi/agent
     symlink_config "Pi extensions" "$pi_dir_path/extensions" ~/.pi/agent/extensions
     symlink_config "Pi settings" "$pi_dir_path/settings.json" ~/.pi/agent/settings.json
+    symlink_config "Pi FFF config" "$pi_dir_path/pi-fff.json" ~/.pi/agent/pi-fff.json
     symlink_config "Pi themes" "$pi_dir_path/themes" ~/.pi/agent/themes
 fi
 
@@ -181,6 +182,26 @@ if [ -n "$claude_statusline_path" ]; then
     symlink_config "Claude Code statusline" "$claude_statusline_path" ~/.claude/statusline-command.sh
 else
     echo "[WARN] Claude Code statusline-command.sh not found in dotconfig."
+fi
+
+## billion-context — portable policy; runtime state and credentials stay local.
+bili_config_path="$HOME/dotconfig/tools/ai/billion-context/billion-context.json"
+if [ -f "$bili_config_path" ]; then
+    mkdir -p ~/.config/billion-context
+    symlink_config "billion-context config" "$bili_config_path" ~/.config/billion-context/billion-context.json
+    if command -v bili >/dev/null 2>&1; then
+        for bili_client in pi claude codex dsh; do
+            if command -v "$bili_client" >/dev/null 2>&1; then
+                bili plugin install "$bili_client" || \
+                    echo "[WARN] billion-context install failed for $bili_client."
+            else
+                echo "[WARN] $bili_client not on PATH — skipping billion-context integration."
+            fi
+        done
+        echo "[INFO] Codex compression requires launching with 'bili codex', not plain 'codex'."
+    else
+        echo '[WARN] Install billion-context with: npm install -g billion-context --prefix="$HOME/.local"'
+    fi
 fi
 
 # Global agent instructions, shared by every harness.
