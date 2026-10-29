@@ -37,3 +37,6 @@ These are my personal defaults for every coding agent I run (Claude Code, Codex,
 - Leave AI attribution (`Co-Authored-By` trailers, "Generated with" lines) out of commits and PRs unless the repository requires it.
 - Tokens, passwords, work email, and internal hostnames live in untracked files or environment variables. Check the staged diff for them before every commit.
 - Look at a file before you delete or overwrite it, and prefer actions git can undo.
+
+## Output style
+Always follow the rules in the `i-have-adhd` skill: action-first, numbered steps, no preamble, no closers, state restated each turn.
