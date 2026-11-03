@@ -10,39 +10,39 @@ importers:
     dependencies:
       '@linxin666/dsh-client-ui-web-ui-settings':
         specifier: latest
-        version: 0.4.8
+        version: 0.4.14
       '@linxin666/dsh-remote-web-ui':
         specifier: latest
-        version: 0.4.8
+        version: 0.4.14
       billion-context:
-        specifier: ^0.1.204
-        version: 0.1.204(@types/node@16.9.1)
+        specifier: latest
+        version: 0.1.212(@types/node@16.9.1)
       dsh-better-sidebar:
         specifier: latest
-        version: 0.28.0
+        version: 0.28.2
       dsh-context:
         specifier: latest
-        version: 0.74.0(@deepseek-ai/schemastery@3.18.5)
+        version: 0.80.2(@deepseek-ai/schemastery@3.18.5)
       dsh-skill-picker:
         specifier: latest
-        version: 0.5.28
+        version: 0.5.29
       dsh-thoughtdag:
         specifier: latest
-        version: 0.5.22
+        version: 0.5.27
       dshmarket:
         specifier: latest
-        version: 1.66.47(@deepseek-ai/schemastery@3.18.5)
+        version: 1.73.9(@deepseek-ai/schemastery@3.18.5)
       nowledge-mem-deepseek-harness:
         specifier: github:nowledge-co/nowledge-mem-deepseek-harness
-        version: https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/0adf1e587c10e2ee0203b9e4648f0ee15375d6b2
+        version: https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/daecb54f6b41143dbf6a3c82836cdaf52aab7c02
 
 packages:
 
   '@antfu/install-pkg@2.1.0':
     resolution: {integrity: sha512-sdg9NxU3zR4Mnawfbc/x6GB5Wf17WYud5qOuEuxXjaKpYpMkISSJEjItGebXJ2bQ4DIcly4NYH23mtkGJjvKUw==}
 
-  '@borewit/text-codec@0.2.2':
-    resolution: {integrity: sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ==}
+  '@borewit/text-codec@0.2.3':
+    resolution: {integrity: sha512-49CycTz1aAZmvFcwkeFyhud1HUmRIB5Tabf7ALV+VA4Iu85MTfz2cUwzPagMFAdVBvrWdkCxG67I30tUwwpKsw==}
 
   '@braintree/sanitize-url@7.1.2':
     resolution: {integrity: sha512-jigsZK+sMF/cuiB7sERuo9V7N9jx+dhmHHnQyDSVdpZwVutaBu7WvNYqMDLSgFgfB30n452TP3vjDAvFC973mA==}
@@ -50,8 +50,8 @@ packages:
   '@chevrotain/types@11.1.2':
     resolution: {integrity: sha512-U+HFai5+zmJCkK86QsaJtoITlboZHBqrVketcO2ROv865xfCMSFpELQoz1GkX5GzME8pTa+3kbKrZHQtI0gdbw==}
 
-  '@codemirror/autocomplete@6.20.3':
-    resolution: {integrity: sha512-tlosUqb+3BbxCxZdu4tKeRghPFC+QM7q4X5YhKV2eCmPG+1r2F3f4AaSz5sCrFqUtX4Jh20VFTKecl16MgiV9g==}
+  '@codemirror/autocomplete@6.20.4':
+    resolution: {integrity: sha512-yF8RhOf2SXlg00+qtupzLhrglcas61boqaONiNcbPIebHCpJocpqTBA6dyrtUrQO47hqyTdeob/3XnYilT7TaQ==}
 
   '@codemirror/commands@6.11.1':
     resolution: {integrity: sha512-O/4hG3SC1YwcmQ0d2UVNDs+AsaNWd1iHVxbTeEBuqH+6bExAiPK3iS/BvpY6rZGURALv4ZD3sIgcCmRvw3ehBg==}
@@ -119,17 +119,11 @@ packages:
   '@codemirror/streamparser@6.0.0':
     resolution: {integrity: sha512-JTFPF6xrfjt0mnfGPgzcLiMwYmvIyNaoizp8BYzv8FE8KrT6GBGDZ190rtt+O7Wke3gG/MFHyiY9YGNeimof4w==}
 
-  '@codemirror/view@6.43.14':
-    resolution: {integrity: sha512-hC45YnmJNR1rz42OF57BLoQNFMV12/13drnvibDsR2quNDmldcb4WvYVV81hFQg56i9lcqQMEDqilhX2QDcGQQ==}
-
-  '@deepseek-ai/cosmokit@1.8.5':
-    resolution: {integrity: sha512-LXsrlem9z8dq4sLflj2yuCuYX7KqhdzF5hZly3eZyuTo8d6oDSOXuEgC5DbQWKW+lksm6zmOutQLsP/ma6wR6A==}
+  '@codemirror/view@6.43.15':
+    resolution: {integrity: sha512-HHsfpqFeHyXLs983pSRe38Xajs0vFWZQ2BuX0m7Ki8w3jZ5iD8cuR3lBz2/5/X53Dhf32SBHKh6rtSTB6tKeGw==}
 
   '@deepseek-ai/cosmokit@1.8.6':
     resolution: {integrity: sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ==}
-
-  '@deepseek-ai/schemastery@3.18.4':
-    resolution: {integrity: sha512-SSXO6tYuyrIqKVbmOnIq0s+riUywYzouFMcnBluHF9n4KMo2G8HvEzhCYj6pj2617/glOjbJuVInJ9hfONsjkg==}
 
   '@deepseek-ai/schemastery@3.18.5':
     resolution: {integrity: sha512-Mnobvqf9rHsZYv4g5edj5ddxS1oF1kIdSlz0DunUgnY3LWG5F26MqvH3YOOsSaodCgyzJ16OMN9O99/s5Crtdw==}
@@ -255,8 +249,8 @@ packages:
     resolution: {integrity: sha512-veFPRd93FCnS7AgmCkPgARVGoDRrJ9cm1ujuNyA+UfQ5VKbED2002sm5XfFLFwTsKC8j04heTrwe+tU1dluXOw==}
     engines: {node: '>=18'}
 
-  '@lezer/common@1.5.3':
-    resolution: {integrity: sha512-H0iErY4e43LpXbYDyBci5W4v/RwTgGV3YzYOlJPiGZ8RY8w51kVE+xLn1tg3Z6UmSfyETvtsUK3r7YsgDQEI7Q==}
+  '@lezer/common@1.5.5':
+    resolution: {integrity: sha512-Pw7PVCndruF1pb3ebCxpSVpkMHSDjwRCLcTRw+RizUKco5QbWylwq2g4lnG/RYN7yTTQDXE9F77MwtkAyphrjg==}
 
   '@lezer/cpp@1.1.6':
     resolution: {integrity: sha512-vh9gWWJOXFVY8HBHK3Twzq8MgwG2iN4GSyzBP9sCGTe37P15x2R14VaBQk0VA0ezTRN1KHYBBsHhvpGZ2Xy/pA==}
@@ -282,11 +276,11 @@ packages:
   '@lezer/json@1.0.3':
     resolution: {integrity: sha512-BP9KzdF9Y35PDpv04r0VeSTKDeox5vVr3efE7eBbx3r4s3oNLfunchejZhjArmeieBH+nVOpgIiBJpEAv8ilqQ==}
 
-  '@lezer/lr@1.4.11':
-    resolution: {integrity: sha512-UwgZcl1R66H2hDzBrA7kWyYmX6s8p5TQ+e/t7CuvgCtBEPxbEPaHYHu+pJBvTvDotEJpuQkJjbXuHiw5Cixxgw==}
+  '@lezer/lr@1.4.12':
+    resolution: {integrity: sha512-On9HU4oMMiHPMkQDgoTnGahjgG5n/MkN38CgG77sMraKLL+3JBbeQNi1FcCXV9QRqwF9/BUXP3caHyJC1fBOTQ==}
 
-  '@lezer/markdown@1.8.0':
-    resolution: {integrity: sha512-X6w3A2NpyhdtGqTWRJB8gR4QDXBaFMbTOs780ZdZ15KKCfBXOQTKcB3Vr+W6tqJHVlealt53tLmHRvOqPTQgYA==}
+  '@lezer/markdown@1.8.1':
+    resolution: {integrity: sha512-M5YmEcKWO4mJ45Y1hECwqyu8cLv25EiXOK554PVOvDOWOP0olwelHHQUWr9sjF+d1bENVhy0nfJ8E57XZUTiXg==}
 
   '@lezer/php@1.0.6':
     resolution: {integrity: sha512-QJ2xNXPmsm/Z3IpThq8fnJrEIVpxhsIoj6GZBW0JYEd/l9zxpJZW216X4fzqQY4vgpdGIumypvI4uQjd4tnYtw==}
@@ -303,17 +297,17 @@ packages:
   '@lezer/yaml@1.0.4':
     resolution: {integrity: sha512-2lrrHqxalACEbxIbsjhqGpSW8kWpUKuY6RHgnSAFZa6qK62wvnPxA8hGOwOoDbwHcOFs5M4o27mjGu+P7TvBmw==}
 
-  '@linxin666/dsh-client-ui-web-ui-settings@0.4.8':
-    resolution: {integrity: sha512-lH7dnrEa1eWV4VLskplxgJS0c5v1VGYo+lyPuhUtuwvv/KBoeWCU71MD/xA5HEulQ7wZk2VGcN5X/qUeGD2YRA==}
+  '@linxin666/dsh-client-ui-web-ui-settings@0.4.14':
+    resolution: {integrity: sha512-Bq/G85VDTQw+vk7aAUYg/AiePoxlhJDkZRQ4pDvs8CT2cKF/DtVCOv6SpQ6TePSYfrhzP7F6gO45MlMBKXgvcg==}
     peerDependencies:
-      '@deepseek-ai/dsh': '>=0.2.1-rc.2'
+      '@deepseek-ai/dsh': '>=0.2.1-rc.3'
       react: ^18.2.0
 
-  '@linxin666/dsh-remote-web-ui@0.4.8':
-    resolution: {integrity: sha512-MqmTb0IL1wGvUYdKFN4v5blj7F839hPMzl1BhUeYKp8xBFK3XT1s7YC4Ks1h/G0N6sIuRSeYq/UpAuDwtPVyKg==}
+  '@linxin666/dsh-remote-web-ui@0.4.14':
+    resolution: {integrity: sha512-e0HXK7pfPO6UztT/xROzLQf2aCVNkNipf/ATjIUpZWt0/nFNN+oqIqKbGiGIGHYILc65Q5AR7gFc5pZszi3pJQ==}
     engines: {node: ^22.19.0 || >=24.0.0}
     peerDependencies:
-      '@deepseek-ai/dsh': '>=0.2.1-rc.2'
+      '@deepseek-ai/dsh': '>=0.2.1-rc.3'
       react: ^18.2.0
       react-dom: ^18.2.0
 
@@ -458,8 +452,8 @@ packages:
     resolution: {integrity: sha512-NZKeq9AfyQvEeNlN0zSYAaWrmBffJh3IELMZfRpJVWgrpEbtEpnjvzqBPf+mxoI287JohRDoa+/nsfqqiZmF6g==}
     engines: {node: '>= 6.0.0'}
 
-  billion-context@0.1.204:
-    resolution: {integrity: sha512-LE53dy65Nmqi66Bonksiz9KhpPQTq2K4PeJ+Lg5BeJBVudCYy7AGL33srlhi8zKhQBqIBNBIl1tzpJuj+rfyJg==}
+  billion-context@0.1.212:
+    resolution: {integrity: sha512-Bwjl4StlMNcE3JWe15iKLATwk5q8rgiNgR/isk5fCnOYfhtE8vsrtJPCqA5WGvsT2yJ9p/j3k4NUAkQER5qjjg==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -504,8 +498,8 @@ packages:
     peerDependencies:
       cytoscape: ^3.2.0
 
-  cytoscape@3.34.3:
-    resolution: {integrity: sha512-yfYGhRcGAntq6YBD583j4n0Eg3jIxvWmZtz/5uz9UYkeIStSlMxuUja+ec5j3iBD8nv1rwaOAYMW09tBdkSeaQ==}
+  cytoscape@3.34.4:
+    resolution: {integrity: sha512-msY99tMY8iWTg+sIPGfSqDcPNOt4xcj+v/K/7qUFaCUxxlqnMkUYLBjRUzn9W5CU/R2hrmtJa5+UtovrEM2ctg==}
     engines: {node: '>=0.10'}
 
   d3-array@2.12.1:
@@ -668,8 +662,8 @@ packages:
   dompurify@3.4.17:
     resolution: {integrity: sha512-B/pSlYVHQ58kqISD/yDjuJ1yfzI34m1gF4lAod2bwSRhiN4K5Cl3H8Af7hqB2PmTL911tdEudnnXn5FnhRoz0w==}
 
-  dsh-better-sidebar@0.28.0:
-    resolution: {integrity: sha512-x7+/YmH/HrSlXWOBZkhL7qQqcDgZEnDcWrhR5GlizzUZjz+w84FbQ6jo8trJC9tyaQxMaNvXVnXwDxn4I330Ew==}
+  dsh-better-sidebar@0.28.2:
+    resolution: {integrity: sha512-JxtRoCoNA/02VexkInZ1K4+c/1Tvk+DVS01dRfjbGKxWfXGZ6NEyemsdERGOhQ3DsLxOWc4Mj0ol+5s+6V0Egg==}
     engines: {node: '>=20'}
     peerDependencies:
       '@deepseek-ai/cordis': ^4.0.5
@@ -695,13 +689,13 @@ packages:
       '@huanlin/dsh-plugin-better-locale':
         optional: true
 
-  dsh-context@0.74.0:
-    resolution: {integrity: sha512-BfqdeRBvZw+AgBMrTXp4SE8Iky6n5LRqVRUttwBZZ27sYW6jaJX2bjrFybO3QGddHioqA2rHZcc2Bb9q5vYPnw==}
-    engines: {dsh: '>=0.1.7-rc.2 || >=0.2.0-rc.2', node: ^22.19.0 || >=24.0.0}
+  dsh-context@0.80.2:
+    resolution: {integrity: sha512-4fNPw03p8ZcykqQYtMaDGwAV/fP3MRAv/blQQK2cKzExeCr1A6+dGrzLWkY7XOFBC/HcxV59May4Jq7f46gZwQ==}
+    engines: {dsh: '>=0.2.0-rc.2 || >=0.2.1-rc.2', node: ^22.19.0 || >=24.0.0}
     peerDependencies:
       '@deepseek-ai/cordis': ^4.0.4
-      '@deepseek-ai/dsh-client-ui-primitives': '>=0.1.7-rc.2'
-      '@deepseek-ai/dsh-session': '>=0.1.7-rc.2'
+      '@deepseek-ai/dsh-client-ui-primitives': '>=0.2.0-rc.2 || >=0.2.1-rc.2'
+      '@deepseek-ai/dsh-session': '>=0.2.0-rc.2 || >=0.2.1-rc.2'
       '@deepseek-ai/schemastery': ^3.18.2
       react: ^18.3.1
       react-dom: ^18.3.1
@@ -713,8 +707,8 @@ packages:
       react-dom:
         optional: true
 
-  dsh-skill-picker@0.5.28:
-    resolution: {integrity: sha512-p8OgxqKr2pcwg7/0uFGvI/dbx7S3L+V+q1aaHEaPajT0DutPx0UAwebwg3uVTLS5B2nkxEOW6WzF9BLFtlOIkQ==}
+  dsh-skill-picker@0.5.29:
+    resolution: {integrity: sha512-HZQ0bmHQC8NDZwGBayBgRABHj+SX8gVrJKgr2JeKS4/zDWXOeJxReB46QfUBFrc+CrZ+3eJhSkpz+mu76GdBBA==}
     engines: {node: '>=22'}
     peerDependencies:
       '@deepseek-ai/cordis': ^4.0.1
@@ -726,8 +720,8 @@ packages:
       '@deepseek-ai/dsh-system-prompt': ^0.1.0-rc.6 || >=0.2.0-rc.1 <1.0.0-0
       react: ^18.2.0
 
-  dsh-thoughtdag@0.5.22:
-    resolution: {integrity: sha512-R5sw7kF4bpzvIvp0v8prLLYyaYxlL8OuYz/p5u47yuuZnekuewxIcCNJDVbD7MqMJLMsEUIKiV3udt31J4SudQ==}
+  dsh-thoughtdag@0.5.27:
+    resolution: {integrity: sha512-senW4yG9IM409jkPsSlhC/cMXjoyIVAhPu0t/Fdtq5apfZ10IYzdRYCH17v/IKBpQIKc2PsYgC9EIWeoBDGVpQ==}
     engines: {node: ^22.19.0 || >=24.0.0}
     peerDependencies:
       '@deepseek-ai/cordis': ^4.0.2
@@ -762,8 +756,8 @@ packages:
       '@deepseek-ai/dsh-web':
         optional: true
 
-  dshmarket@1.66.47:
-    resolution: {integrity: sha512-ffQjjjrinYesc5x8LeUYv3zBDNMtNmrLoC5hGAWInsxtvNf1XhLFzByamW/dGy7pkvHs8Tm/BSLKJc9jslk3/A==}
+  dshmarket@1.73.9:
+    resolution: {integrity: sha512-uXjKoRSf6MIZGC5nDa9SzZzCg45kYMxWSD5jxQIWoO3Zw6DhCnbZEg8slrviVeXjToPSJvLQ6qo1CuuZmabfVQ==}
     peerDependencies:
       '@deepseek-ai/cordis': ^4.0.1
       '@deepseek-ai/dsh-settings': ^0.1.0-rc.7 || ^0.1.1-rc.2 || ^0.1.2-alpha.2 || ^0.2.0-rc.1 || ^0.2.1-alpha.3 || ^0.2.1-rc.1
@@ -774,8 +768,8 @@ packages:
       '@deepseek-ai/schemastery':
         optional: true
 
-  es-toolkit@1.52.0:
-    resolution: {integrity: sha512-XTNEJQh1tY1ZJVcf6ayP/2n4ZPyaHlW2FWs7xvw5ddPuhUVjLD3olQVQS7kf58JbAB48iL0uL/jerTrjtV3lDA==}
+  es-toolkit@1.53.1:
+    resolution: {integrity: sha512-VhMc6IXmexu8iYFfL2aaAww6IvJTdHlqBLruLoEUs33YD4IcP5DdZcLOybMsMmmLsiy1c8PsiLsrM0DdIuuRUA==}
 
   exif-parser@0.1.12:
     resolution: {integrity: sha512-c2bQfLNbMzLPmzQuOr8fy0csy84WmwnER81W88DzTp9CYNPJ6yzOj2EZAh9pywYpqHnshVLHQJ8WzldAyfY+Iw==}
@@ -883,16 +877,16 @@ packages:
     resolution: {integrity: sha512-Tz09sEL2EEuv5fFowm419c1+a/jSMiBjI9gHxVLrVdbUkkNUUfjsVYs9pVZu5oCon/kmRh9TfLEObFtkVxmY0w==}
     engines: {node: '>=8.0.0'}
 
-  nowledge-mem-deepseek-harness@https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/0adf1e587c10e2ee0203b9e4648f0ee15375d6b2:
-    resolution: {gitHosted: true, integrity: sha512-EBiF70EPmYrlVdEknBqromFDOH3WkilMgvjijWxpJuzRsCGzja2oBTqiV571IKhWY4ECyGu9ls/v11VYf3Vprg==, tarball: https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/0adf1e587c10e2ee0203b9e4648f0ee15375d6b2}
-    version: 0.1.5
+  nowledge-mem-deepseek-harness@https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/daecb54f6b41143dbf6a3c82836cdaf52aab7c02:
+    resolution: {gitHosted: true, integrity: sha512-L4iph/dsMFttudz+C+9g92Nz4cQk1zyD3KA82ZX/xaVFVECqLDQRABxzCFbXZa90R/FHl/HPFh7D85Q1tSOU2g==, tarball: https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/daecb54f6b41143dbf6a3c82836cdaf52aab7c02}
+    version: 0.1.7
     peerDependencies:
       '@deepseek-ai/cordis': '>=4.0.0 <5.0.0 || 4.0.5-alpha.1'
-      '@deepseek-ai/dsh-agent': '>=0.1.0-rc.5 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1'
-      '@deepseek-ai/dsh-llm': '>=0.0.1-rc.1 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1'
-      '@deepseek-ai/dsh-mcp-client': '>=0.0.1-rc.1 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1'
-      '@deepseek-ai/dsh-session': '>=0.0.1-rc.1 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1'
-      '@deepseek-ai/dsh-shell': '>=0.0.1-rc.5 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1'
+      '@deepseek-ai/dsh-agent': '>=0.1.0-rc.5 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1 || 0.2.1-rc.2'
+      '@deepseek-ai/dsh-llm': '>=0.0.1-rc.1 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1 || 0.2.1-rc.2'
+      '@deepseek-ai/dsh-mcp-client': '>=0.0.1-rc.1 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1 || 0.2.1-rc.2'
+      '@deepseek-ai/dsh-session': '>=0.0.1-rc.1 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1 || 0.2.1-rc.2'
+      '@deepseek-ai/dsh-shell': '>=0.0.1-rc.5 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1 || 0.2.1-rc.2'
     peerDependenciesMeta:
       '@deepseek-ai/cordis':
         optional: true
@@ -992,8 +986,8 @@ packages:
   strictdom@1.0.1:
     resolution: {integrity: sha512-cEmp9QeXXRmjj/rVp9oyiqcvyocWab/HaoN4+bwFeZ7QzykJD6L3yD4v12K1x0tHpqRqVpJevN3gW7kyM39Bqg==}
 
-  strtok3@10.6.2:
-    resolution: {integrity: sha512-BkdixFFUt7r7LsX6aGNPVyYMLjW+M1USLlKPNbZsrZEmLFh5tGqhdfckKo6xgsZIJqdDD0CZGkeCJJwNWQIKQA==}
+  strtok3@10.7.0:
+    resolution: {integrity: sha512-iAqrCpp7UXD2FZiHWhLXqdJ6CmNeVzRkkHAyyhhKMVtbVm2KtPX3D/bJNonvtcyLTHS4rwqP2pz9fsjK1K4z0Q==}
     engines: {node: '>=18'}
 
   style-mod@4.1.4:
@@ -1009,23 +1003,23 @@ packages:
     resolution: {integrity: sha512-GCvB3aoys96IuDFBMcTB46JOR6mdMtAToqwiW8JlWhsoh1mhHi/xn9ss/Dg7N555GiJyEt2qzoG/NHCwM6h1EA==}
     engines: {node: '>=18'}
 
-  token-types@6.1.2:
-    resolution: {integrity: sha512-dRXchy+C0IgK8WPC6xvCHFRIWYUbqqdEIKPaKo/AcTUNzwLTK6AH7RjdLWsEZcAN/TBdtfUw3PYEgPr5VPr6ww==}
+  token-types@6.2.0:
+    resolution: {integrity: sha512-s9euYHM//T3loJtbNUYdbAzsMlvKBeRS+XCLFy+UGosMQH19Hwjap5k19i4PPAEJJBsVIpMpVTxl4fIqCuNfUg==}
     engines: {node: '>=14.16'}
 
   ts-dedent@2.3.0:
     resolution: {integrity: sha512-JfJeIHke7y2egdGGgRAvpCwYFUsHlM2gPcrVOxFkznt/4uzQ7HFmvE63iFHVLBJNDuyDOQgijDK/tXH/f6Msjg==}
     engines: {node: '>=6.10'}
 
-  tslib@2.8.1:
-    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+  tslib@2.9.1:
+    resolution: {integrity: sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==}
 
   uint8array-extras@1.6.0:
     resolution: {integrity: sha512-8iAasVS4wUx0gPLjH8Xtz2PeDzTSiy8QiLGu2DT3X5GU+egFEQhpnbtkehbAwjvDcxIERmCYcysiODFmE3Ud0Q==}
     engines: {node: '>=18'}
 
-  undici@7.30.0:
-    resolution: {integrity: sha512-dkrQXeHSaoamnItlYbmzG0wFYrM0ZwDxCIg0A7aKjTyyhh9svRzCNFEzV+Vm05/yehjCzjDZ31KXfGEjYSztDQ==}
+  undici@7.30.1:
+    resolution: {integrity: sha512-03KrMbjIFDWQR5RNPrSw3bd1r12JpyFQl9/yxjUbJtqkjmllqC5lFjZh6ujeuJCKr8EOQvRW872Oy/az+nLYxg==}
     engines: {node: '>=20.18.1'}
 
   utif2@4.1.0:
@@ -1038,8 +1032,8 @@ packages:
   w3c-keyname@2.2.8:
     resolution: {integrity: sha512-dpojBhNsCNN7T82Tm7k26A6G9ML3NkhDsnw9n/eoxSRlVBB4CEtIQ/KTCLI2Fwf3ataSXRhYFkQi3SlnFwPvPQ==}
 
-  ws@8.22.0:
-    resolution: {integrity: sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg==}
+  ws@8.22.1:
+    resolution: {integrity: sha512-oyL6OPYme/CmiFvNuGzeoxCJ4nOrZE2O1FwM9MWM1AsGri6nLXB2pg+lNA8aLeXMSav0J6eIVS1j6vUPzUtK9g==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -1069,9 +1063,6 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.1.8:
-    resolution: {integrity: sha512-5R1P+WwQqmmMIEACyzSvo4JXHY5WiAFHRMg+zBZKgKS+Q1viRa0C1hmUKtHltoIFKtIdki3pRxkmpP74jnNYHQ==}
-
   zod@4.6.7:
     resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
@@ -1082,26 +1073,26 @@ snapshots:
       package-manager-detector: 1.9.0
       tinyexec: 1.3.1
 
-  '@borewit/text-codec@0.2.2':
+  '@borewit/text-codec@0.2.3':
     optional: true
 
   '@braintree/sanitize-url@7.1.2': {}
 
   '@chevrotain/types@11.1.2': {}
 
-  '@codemirror/autocomplete@6.20.3':
+  '@codemirror/autocomplete@6.20.4':
     dependencies:
       '@codemirror/language': 6.13.1
       '@codemirror/state': 6.7.6
-      '@codemirror/view': 6.43.14
-      '@lezer/common': 1.5.3
+      '@codemirror/view': 6.43.15
+      '@lezer/common': 1.5.5
 
   '@codemirror/commands@6.11.1':
     dependencies:
       '@codemirror/language': 6.13.1
       '@codemirror/state': 6.7.6
-      '@codemirror/view': 6.43.14
-      '@lezer/common': 1.5.3
+      '@codemirror/view': 6.43.15
+      '@lezer/common': 1.5.5
 
   '@codemirror/lang-cpp@6.0.3':
     dependencies:
@@ -1110,29 +1101,29 @@ snapshots:
 
   '@codemirror/lang-css@6.3.1':
     dependencies:
-      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/autocomplete': 6.20.4
       '@codemirror/language': 6.13.1
       '@codemirror/state': 6.7.6
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/css': 1.3.9
 
   '@codemirror/lang-go@6.0.1':
     dependencies:
-      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/autocomplete': 6.20.4
       '@codemirror/language': 6.13.1
       '@codemirror/state': 6.7.6
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/go': 1.0.1
 
   '@codemirror/lang-html@6.4.12':
     dependencies:
-      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/autocomplete': 6.20.4
       '@codemirror/lang-css': 6.3.1
       '@codemirror/lang-javascript': 6.2.5
       '@codemirror/language': 6.13.1
       '@codemirror/state': 6.7.6
-      '@codemirror/view': 6.43.14
-      '@lezer/common': 1.5.3
+      '@codemirror/view': 6.43.15
+      '@lezer/common': 1.5.5
       '@lezer/css': 1.3.9
       '@lezer/html': 1.3.13
 
@@ -1143,12 +1134,12 @@ snapshots:
 
   '@codemirror/lang-javascript@6.2.5':
     dependencies:
-      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/autocomplete': 6.20.4
       '@codemirror/language': 6.13.1
       '@codemirror/lint': 6.9.7
       '@codemirror/state': 6.7.6
-      '@codemirror/view': 6.43.14
-      '@lezer/common': 1.5.3
+      '@codemirror/view': 6.43.15
+      '@lezer/common': 1.5.5
       '@lezer/javascript': 1.5.6
 
   '@codemirror/lang-json@6.0.2':
@@ -1158,28 +1149,28 @@ snapshots:
 
   '@codemirror/lang-markdown@6.5.2':
     dependencies:
-      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/autocomplete': 6.20.4
       '@codemirror/lang-html': 6.4.12
       '@codemirror/language': 6.13.1
       '@codemirror/state': 6.7.6
-      '@codemirror/view': 6.43.14
-      '@lezer/common': 1.5.3
-      '@lezer/markdown': 1.8.0
+      '@codemirror/view': 6.43.15
+      '@lezer/common': 1.5.5
+      '@lezer/markdown': 1.8.1
 
   '@codemirror/lang-php@6.0.2':
     dependencies:
       '@codemirror/lang-html': 6.4.12
       '@codemirror/language': 6.13.1
       '@codemirror/state': 6.7.6
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/php': 1.0.6
 
   '@codemirror/lang-python@6.2.1':
     dependencies:
-      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/autocomplete': 6.20.4
       '@codemirror/language': 6.13.1
       '@codemirror/state': 6.7.6
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/python': 1.1.19
 
   '@codemirror/lang-rust@6.0.2':
@@ -1189,49 +1180,49 @@ snapshots:
 
   '@codemirror/lang-sql@6.10.0':
     dependencies:
-      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/autocomplete': 6.20.4
       '@codemirror/language': 6.13.1
       '@codemirror/state': 6.7.6
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@codemirror/lang-vue@0.1.3':
     dependencies:
       '@codemirror/lang-html': 6.4.12
       '@codemirror/lang-javascript': 6.2.5
       '@codemirror/language': 6.13.1
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@codemirror/lang-xml@6.1.0':
     dependencies:
-      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/autocomplete': 6.20.4
       '@codemirror/language': 6.13.1
       '@codemirror/state': 6.7.6
-      '@codemirror/view': 6.43.14
-      '@lezer/common': 1.5.3
+      '@codemirror/view': 6.43.15
+      '@lezer/common': 1.5.5
       '@lezer/xml': 1.0.6
 
   '@codemirror/lang-yaml@6.1.3':
     dependencies:
-      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/autocomplete': 6.20.4
       '@codemirror/language': 6.13.1
       '@codemirror/state': 6.7.6
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
       '@lezer/yaml': 1.0.4
 
   '@codemirror/language@6.13.1':
     dependencies:
       '@codemirror/state': 6.7.6
       '@codemirror/streamparser': 6.0.0
-      '@codemirror/view': 6.43.14
-      '@lezer/common': 1.5.3
+      '@codemirror/view': 6.43.15
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
       style-mod: 4.1.4
 
   '@codemirror/legacy-modes@6.5.5':
@@ -1241,13 +1232,13 @@ snapshots:
   '@codemirror/lint@6.9.7':
     dependencies:
       '@codemirror/state': 6.7.6
-      '@codemirror/view': 6.43.14
+      '@codemirror/view': 6.43.15
       crelt: 1.0.7
 
   '@codemirror/search@6.7.2':
     dependencies:
       '@codemirror/state': 6.7.6
-      '@codemirror/view': 6.43.14
+      '@codemirror/view': 6.43.15
       crelt: 1.0.7
 
   '@codemirror/state@6.7.6':
@@ -1256,21 +1247,14 @@ snapshots:
 
   '@codemirror/streamparser@6.0.0': {}
 
-  '@codemirror/view@6.43.14':
+  '@codemirror/view@6.43.15':
     dependencies:
       '@codemirror/state': 6.7.6
       crelt: 1.0.7
       style-mod: 4.1.4
       w3c-keyname: 2.2.8
 
-  '@deepseek-ai/cosmokit@1.8.5': {}
-
   '@deepseek-ai/cosmokit@1.8.6': {}
-
-  '@deepseek-ai/schemastery@3.18.4':
-    dependencies:
-      '@deepseek-ai/cosmokit': 1.8.5
-      '@standard-schema/spec': 1.1.0
 
   '@deepseek-ai/schemastery@3.18.5':
     dependencies:
@@ -1538,99 +1522,99 @@ snapshots:
       tinycolor2: 1.6.0
     optional: true
 
-  '@lezer/common@1.5.3': {}
+  '@lezer/common@1.5.5': {}
 
   '@lezer/cpp@1.1.6':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@lezer/css@1.3.9':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@lezer/go@1.0.1':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@lezer/highlight@1.2.5':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
 
   '@lezer/html@1.3.13':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@lezer/java@1.1.5':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@lezer/javascript@1.5.6':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@lezer/json@1.0.3':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
-  '@lezer/lr@1.4.11':
+  '@lezer/lr@1.4.12':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
 
-  '@lezer/markdown@1.8.0':
+  '@lezer/markdown@1.8.1':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
 
   '@lezer/php@1.0.6':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@lezer/python@1.1.19':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@lezer/rust@1.0.3':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@lezer/xml@1.0.6':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
   '@lezer/yaml@1.0.4':
     dependencies:
-      '@lezer/common': 1.5.3
+      '@lezer/common': 1.5.5
       '@lezer/highlight': 1.2.5
-      '@lezer/lr': 1.4.11
+      '@lezer/lr': 1.4.12
 
-  '@linxin666/dsh-client-ui-web-ui-settings@0.4.8':
+  '@linxin666/dsh-client-ui-web-ui-settings@0.4.14':
     dependencies:
       schemastery: 3.18.0
       yaml: 2.9.1
 
-  '@linxin666/dsh-remote-web-ui@0.4.8':
+  '@linxin666/dsh-remote-web-ui@0.4.14':
     dependencies:
       '@deepseek-ai/schemastery': 3.18.5
       cloudflared: 0.7.3
@@ -1650,7 +1634,7 @@ snapshots:
   '@tokenizer/inflate@0.4.1':
     dependencies:
       debug: 4.4.3
-      token-types: 6.1.2
+      token-types: 6.2.0
     transitivePeerDependencies:
       - supports-color
     optional: true
@@ -1801,10 +1785,10 @@ snapshots:
 
   aws-ssl-profiles@1.1.2: {}
 
-  billion-context@0.1.204(@types/node@16.9.1):
+  billion-context@0.1.212(@types/node@16.9.1):
     dependencies:
       mysql2: 3.24.6(@types/node@16.9.1)
-      zod: 4.1.8
+      zod: 4.6.7
     optionalDependencies:
       jimp: 1.6.1
     transitivePeerDependencies:
@@ -1834,17 +1818,17 @@ snapshots:
 
   crelt@1.0.7: {}
 
-  cytoscape-cose-bilkent@4.1.0(cytoscape@3.34.3):
+  cytoscape-cose-bilkent@4.1.0(cytoscape@3.34.4):
     dependencies:
       cose-base: 1.0.3
-      cytoscape: 3.34.3
+      cytoscape: 3.34.4
 
-  cytoscape-fcose@2.2.0(cytoscape@3.34.3):
+  cytoscape-fcose@2.2.0(cytoscape@3.34.4):
     dependencies:
       cose-base: 2.2.0
-      cytoscape: 3.34.3
+      cytoscape: 3.34.4
 
-  cytoscape@3.34.3: {}
+  cytoscape@3.34.4: {}
 
   d3-array@2.12.1:
     dependencies:
@@ -2033,7 +2017,7 @@ snapshots:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
-  dsh-better-sidebar@0.28.0:
+  dsh-better-sidebar@0.28.2:
     dependencies:
       '@codemirror/commands': 6.11.1
       '@codemirror/lang-cpp': 6.0.3
@@ -2055,7 +2039,7 @@ snapshots:
       '@codemirror/legacy-modes': 6.5.5
       '@codemirror/search': 6.7.2
       '@codemirror/state': 6.7.6
-      '@codemirror/view': 6.43.14
+      '@codemirror/view': 6.43.15
       '@deepseek-ai/schemastery': 3.18.5
       '@formkit/auto-animate': 0.10.0
       '@lezer/highlight': 1.2.5
@@ -2066,31 +2050,31 @@ snapshots:
       mermaid: 11.17.2
       react-icons: 5.7.0
       rxjs: 7.8.2
-      ws: 8.22.0
+      ws: 8.22.1
       yaml: 2.9.1
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  dsh-context@0.74.0(@deepseek-ai/schemastery@3.18.5):
+  dsh-context@0.80.2(@deepseek-ai/schemastery@3.18.5):
     dependencies:
       '@deepseek-ai/schemastery': 3.18.5
       zod: 4.6.7
 
-  dsh-skill-picker@0.5.28:
+  dsh-skill-picker@0.5.29:
     dependencies:
       pinyin-pro: 3.29.5
 
-  dsh-thoughtdag@0.5.22: {}
+  dsh-thoughtdag@0.5.27: {}
 
-  dshmarket@1.66.47(@deepseek-ai/schemastery@3.18.5):
+  dshmarket@1.73.9(@deepseek-ai/schemastery@3.18.5):
     dependencies:
       js-yaml: 4.3.2
-      undici: 7.30.0
+      undici: 7.30.1
     optionalDependencies:
       '@deepseek-ai/schemastery': 3.18.5
 
-  es-toolkit@1.52.0: {}
+  es-toolkit@1.53.1: {}
 
   exif-parser@0.1.12:
     optional: true
@@ -2102,8 +2086,8 @@ snapshots:
   file-type@21.3.4:
     dependencies:
       '@tokenizer/inflate': 0.4.1
-      strtok3: 10.6.2
-      token-types: 6.1.2
+      strtok3: 10.7.0
+      token-types: 6.2.0
       uint8array-extras: 1.6.0
     transitivePeerDependencies:
       - supports-color
@@ -2210,15 +2194,15 @@ snapshots:
       '@mermaid-js/parser': 1.2.1
       '@types/d3': 7.4.3
       '@upsetjs/venn.js': 2.0.0
-      cytoscape: 3.34.3
-      cytoscape-cose-bilkent: 4.1.0(cytoscape@3.34.3)
-      cytoscape-fcose: 2.2.0(cytoscape@3.34.3)
+      cytoscape: 3.34.4
+      cytoscape-cose-bilkent: 4.1.0(cytoscape@3.34.4)
+      cytoscape-fcose: 2.2.0(cytoscape@3.34.4)
       d3: 7.9.0
       d3-sankey: 0.12.3
       dagre-d3-es: 7.0.14
       dayjs: 1.11.23
       dompurify: 3.4.17
-      es-toolkit: 1.52.0
+      es-toolkit: 1.53.1
       fastdom: 1.0.12
       katex: 0.16.47
       khroma: 2.1.0
@@ -2249,9 +2233,9 @@ snapshots:
     dependencies:
       lru.min: 1.1.5
 
-  nowledge-mem-deepseek-harness@https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/0adf1e587c10e2ee0203b9e4648f0ee15375d6b2:
+  nowledge-mem-deepseek-harness@https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/daecb54f6b41143dbf6a3c82836cdaf52aab7c02:
     dependencies:
-      '@deepseek-ai/schemastery': 3.18.4
+      '@deepseek-ai/schemastery': 3.18.5
 
   omggif@1.0.10:
     optional: true
@@ -2312,7 +2296,7 @@ snapshots:
 
   rxjs@7.8.2:
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   safer-buffer@2.1.2: {}
 
@@ -2331,7 +2315,7 @@ snapshots:
 
   strictdom@1.0.1: {}
 
-  strtok3@10.6.2:
+  strtok3@10.7.0:
     dependencies:
       '@tokenizer/token': 0.3.0
     optional: true
@@ -2345,21 +2329,21 @@ snapshots:
 
   tinyexec@1.3.1: {}
 
-  token-types@6.1.2:
+  token-types@6.2.0:
     dependencies:
-      '@borewit/text-codec': 0.2.2
+      '@borewit/text-codec': 0.2.3
       '@tokenizer/token': 0.3.0
       ieee754: 1.2.1
     optional: true
 
   ts-dedent@2.3.0: {}
 
-  tslib@2.8.1: {}
+  tslib@2.9.1: {}
 
   uint8array-extras@1.6.0:
     optional: true
 
-  undici@7.30.0: {}
+  undici@7.30.1: {}
 
   utif2@4.1.0:
     dependencies:
@@ -2370,7 +2354,7 @@ snapshots:
 
   w3c-keyname@2.2.8: {}
 
-  ws@8.22.0: {}
+  ws@8.22.1: {}
 
   xml-parse-from-string@1.0.1:
     optional: true
@@ -2388,7 +2372,5 @@ snapshots:
 
   zod@3.25.76:
     optional: true
-
-  zod@4.1.8: {}
 
   zod@4.6.7: {}

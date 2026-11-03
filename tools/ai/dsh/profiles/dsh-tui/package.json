@@ -2,14 +2,16 @@
   "name": "dsh-profile-dsh-tui",
   "private": true,
   "dependencies": {
-    "@deepseek-harness-tui/dsh-tui": "^0.16.1",
-    "billion-context": "0.1.204"
+    "@deepseek-harness-tui/dsh-tui": "latest",
+    "billion-context": "latest",
+    "nowledge-mem-deepseek-harness": "github:nowledge-co/nowledge-mem-deepseek-harness"
   },
   "dsh": {
     "profile": {
       "bundles": [
         "@deepseek-ai/dsh-base",
         "@deepseek-harness-tui/dsh-tui",
+        "nowledge-mem-deepseek-harness",
         "billion-context"
       ]
     }

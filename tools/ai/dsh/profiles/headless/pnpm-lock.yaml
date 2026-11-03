@@ -9,13 +9,22 @@ importers:
   .:
     dependencies:
       billion-context:
-        specifier: 0.1.204
-        version: 0.1.204(@types/node@16.9.1)
+        specifier: latest
+        version: 0.1.212(@types/node@16.9.1)
+      nowledge-mem-deepseek-harness:
+        specifier: github:nowledge-co/nowledge-mem-deepseek-harness
+        version: https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/daecb54f6b41143dbf6a3c82836cdaf52aab7c02
 
 packages:
 
-  '@borewit/text-codec@0.2.2':
-    resolution: {integrity: sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ==}
+  '@borewit/text-codec@0.2.3':
+    resolution: {integrity: sha512-49CycTz1aAZmvFcwkeFyhud1HUmRIB5Tabf7ALV+VA4Iu85MTfz2cUwzPagMFAdVBvrWdkCxG67I30tUwwpKsw==}
+
+  '@deepseek-ai/cosmokit@1.8.6':
+    resolution: {integrity: sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ==}
+
+  '@deepseek-ai/schemastery@3.18.5':
+    resolution: {integrity: sha512-Mnobvqf9rHsZYv4g5edj5ddxS1oF1kIdSlz0DunUgnY3LWG5F26MqvH3YOOsSaodCgyzJ16OMN9O99/s5Crtdw==}
 
   '@jimp/core@1.6.1':
     resolution: {integrity: sha512-+BoKC5G6hkrSy501zcJ2EpfnllP+avPevcBfRcZe/CW+EwEfY6X1EZ8QWyT7NpDIvEEJb1fdJnMMfUnFkxmw9A==}
@@ -129,6 +138,9 @@ packages:
     resolution: {integrity: sha512-veFPRd93FCnS7AgmCkPgARVGoDRrJ9cm1ujuNyA+UfQ5VKbED2002sm5XfFLFwTsKC8j04heTrwe+tU1dluXOw==}
     engines: {node: '>=18'}
 
+  '@standard-schema/spec@1.1.0':
+    resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
   '@tokenizer/inflate@0.4.1':
     resolution: {integrity: sha512-2mAv+8pkG6GIZiF1kNg1jAjh27IDxEPKwdGul3snfztFerfPGI1LjDezZp3i7BElXompqEtPmoPx6c2wgtWsOA==}
     engines: {node: '>=18'}
@@ -150,8 +162,8 @@ packages:
     resolution: {integrity: sha512-NZKeq9AfyQvEeNlN0zSYAaWrmBffJh3IELMZfRpJVWgrpEbtEpnjvzqBPf+mxoI287JohRDoa+/nsfqqiZmF6g==}
     engines: {node: '>= 6.0.0'}
 
-  billion-context@0.1.204:
-    resolution: {integrity: sha512-LE53dy65Nmqi66Bonksiz9KhpPQTq2K4PeJ+Lg5BeJBVudCYy7AGL33srlhi8zKhQBqIBNBIl1tzpJuj+rfyJg==}
+  billion-context@0.1.212:
+    resolution: {integrity: sha512-Bwjl4StlMNcE3JWe15iKLATwk5q8rgiNgR/isk5fCnOYfhtE8vsrtJPCqA5WGvsT2yJ9p/j3k4NUAkQER5qjjg==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -225,6 +237,30 @@ packages:
     resolution: {integrity: sha512-Tz09sEL2EEuv5fFowm419c1+a/jSMiBjI9gHxVLrVdbUkkNUUfjsVYs9pVZu5oCon/kmRh9TfLEObFtkVxmY0w==}
     engines: {node: '>=8.0.0'}
 
+  nowledge-mem-deepseek-harness@https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/daecb54f6b41143dbf6a3c82836cdaf52aab7c02:
+    resolution: {gitHosted: true, integrity: sha512-L4iph/dsMFttudz+C+9g92Nz4cQk1zyD3KA82ZX/xaVFVECqLDQRABxzCFbXZa90R/FHl/HPFh7D85Q1tSOU2g==, tarball: https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/daecb54f6b41143dbf6a3c82836cdaf52aab7c02}
+    version: 0.1.7
+    peerDependencies:
+      '@deepseek-ai/cordis': '>=4.0.0 <5.0.0 || 4.0.5-alpha.1'
+      '@deepseek-ai/dsh-agent': '>=0.1.0-rc.5 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1 || 0.2.1-rc.2'
+      '@deepseek-ai/dsh-llm': '>=0.0.1-rc.1 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1 || 0.2.1-rc.2'
+      '@deepseek-ai/dsh-mcp-client': '>=0.0.1-rc.1 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1 || 0.2.1-rc.2'
+      '@deepseek-ai/dsh-session': '>=0.0.1-rc.1 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1 || 0.2.1-rc.2'
+      '@deepseek-ai/dsh-shell': '>=0.0.1-rc.5 <0.2.0 || 0.1.5-rc.2 || 0.1.7-rc.1 || 0.2.1-alpha.1 || 0.2.1-rc.2'
+    peerDependenciesMeta:
+      '@deepseek-ai/cordis':
+        optional: true
+      '@deepseek-ai/dsh-agent':
+        optional: true
+      '@deepseek-ai/dsh-llm':
+        optional: true
+      '@deepseek-ai/dsh-mcp-client':
+        optional: true
+      '@deepseek-ai/dsh-session':
+        optional: true
+      '@deepseek-ai/dsh-shell':
+        optional: true
+
   omggif@1.0.10:
     resolution: {integrity: sha512-LMJTtvgc/nugXj0Vcrrs68Mn2D1r0zf630VNtqtpI1FEO7e+O9FP4gqs9AcnBaSEeoHIPm28u6qgPR0oyEpGSw==}
 
@@ -267,15 +303,15 @@ packages:
     resolution: {integrity: sha512-6CKD38c31SENivxOADeMNLdukOnUxUcflKtzVWzace7Riv1v7cAEym5Cx9Q7gYZ3ezIJI7ZpqecQq8cqNeSSFg==}
     engines: {bun: '>=1.0.0', deno: '>=2.0.0', node: '>=12.0.0'}
 
-  strtok3@10.6.2:
-    resolution: {integrity: sha512-BkdixFFUt7r7LsX6aGNPVyYMLjW+M1USLlKPNbZsrZEmLFh5tGqhdfckKo6xgsZIJqdDD0CZGkeCJJwNWQIKQA==}
+  strtok3@10.7.0:
+    resolution: {integrity: sha512-iAqrCpp7UXD2FZiHWhLXqdJ6CmNeVzRkkHAyyhhKMVtbVm2KtPX3D/bJNonvtcyLTHS4rwqP2pz9fsjK1K4z0Q==}
     engines: {node: '>=18'}
 
   tinycolor2@1.6.0:
     resolution: {integrity: sha512-XPaBkWQJdsf3pLKJV9p4qN/S+fm2Oj8AIPo1BTUhg5oxkvm9+SVEGFdhyOz7tTdUTfvxMiAs4sp6/eZO2Ew+pw==}
 
-  token-types@6.1.2:
-    resolution: {integrity: sha512-dRXchy+C0IgK8WPC6xvCHFRIWYUbqqdEIKPaKo/AcTUNzwLTK6AH7RjdLWsEZcAN/TBdtfUw3PYEgPr5VPr6ww==}
+  token-types@6.2.0:
+    resolution: {integrity: sha512-s9euYHM//T3loJtbNUYdbAzsMlvKBeRS+XCLFy+UGosMQH19Hwjap5k19i4PPAEJJBsVIpMpVTxl4fIqCuNfUg==}
     engines: {node: '>=14.16'}
 
   uint8array-extras@1.6.0:
@@ -299,13 +335,20 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.1.8:
-    resolution: {integrity: sha512-5R1P+WwQqmmMIEACyzSvo4JXHY5WiAFHRMg+zBZKgKS+Q1viRa0C1hmUKtHltoIFKtIdki3pRxkmpP74jnNYHQ==}
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
 snapshots:
 
-  '@borewit/text-codec@0.2.2':
+  '@borewit/text-codec@0.2.3':
     optional: true
+
+  '@deepseek-ai/cosmokit@1.8.6': {}
+
+  '@deepseek-ai/schemastery@3.18.5':
+    dependencies:
+      '@deepseek-ai/cosmokit': 1.8.6
+      '@standard-schema/spec': 1.1.0
 
   '@jimp/core@1.6.1':
     dependencies:
@@ -558,10 +601,12 @@ snapshots:
       tinycolor2: 1.6.0
     optional: true
 
+  '@standard-schema/spec@1.1.0': {}
+
   '@tokenizer/inflate@0.4.1':
     dependencies:
       debug: 4.4.3
-      token-types: 6.1.2
+      token-types: 6.2.0
     transitivePeerDependencies:
       - supports-color
     optional: true
@@ -579,10 +624,10 @@ snapshots:
 
   aws-ssl-profiles@1.1.2: {}
 
-  billion-context@0.1.204(@types/node@16.9.1):
+  billion-context@0.1.212(@types/node@16.9.1):
     dependencies:
       mysql2: 3.24.6(@types/node@16.9.1)
-      zod: 4.1.8
+      zod: 4.6.7
     optionalDependencies:
       jimp: 1.6.1
     transitivePeerDependencies:
@@ -603,8 +648,8 @@ snapshots:
   file-type@21.3.4:
     dependencies:
       '@tokenizer/inflate': 0.4.1
-      strtok3: 10.6.2
-      token-types: 6.1.2
+      strtok3: 10.7.0
+      token-types: 6.2.0
       uint8array-extras: 1.6.0
     transitivePeerDependencies:
       - supports-color
@@ -695,6 +740,10 @@ snapshots:
     dependencies:
       lru.min: 1.1.5
 
+  nowledge-mem-deepseek-harness@https://codeload.github.com/nowledge-co/nowledge-mem-deepseek-harness/tar.gz/daecb54f6b41143dbf6a3c82836cdaf52aab7c02:
+    dependencies:
+      '@deepseek-ai/schemastery': 3.18.5
+
   omggif@1.0.10:
     optional: true
 
@@ -734,7 +783,7 @@ snapshots:
 
   sql-escaper@1.5.2: {}
 
-  strtok3@10.6.2:
+  strtok3@10.7.0:
     dependencies:
       '@tokenizer/token': 0.3.0
     optional: true
@@ -742,9 +791,9 @@ snapshots:
   tinycolor2@1.6.0:
     optional: true
 
-  token-types@6.1.2:
+  token-types@6.2.0:
     dependencies:
-      '@borewit/text-codec': 0.2.2
+      '@borewit/text-codec': 0.2.3
       '@tokenizer/token': 0.3.0
       ieee754: 1.2.1
     optional: true
@@ -772,4 +821,4 @@ snapshots:
   zod@3.25.76:
     optional: true
 
-  zod@4.1.8: {}
+  zod@4.6.7: {}

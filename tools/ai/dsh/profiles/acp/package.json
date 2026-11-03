@@ -2,13 +2,15 @@
   "name": "dsh-profile-acp",
   "private": true,
   "dependencies": {
-    "billion-context": "0.1.204"
+    "billion-context": "latest",
+    "nowledge-mem-deepseek-harness": "github:nowledge-co/nowledge-mem-deepseek-harness"
   },
   "dsh": {
     "profile": {
       "bundles": [
         "@deepseek-ai/dsh-base",
         "@deepseek-ai/dsh-acp-app",
+        "nowledge-mem-deepseek-harness",
         "billion-context"
       ]
     }

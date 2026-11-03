@@ -4,7 +4,7 @@
   "dependencies": {
     "@linxin666/dsh-client-ui-web-ui-settings": "latest",
     "@linxin666/dsh-remote-web-ui": "latest",
-    "billion-context": "^0.1.204",
+    "billion-context": "latest",
     "dsh-better-sidebar": "latest",
     "dsh-context": "latest",
     "dsh-skill-picker": "latest",
