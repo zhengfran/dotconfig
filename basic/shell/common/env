@@ -45,3 +45,8 @@ if [ -f /etc/ssl/certs/ca-certificates.crt ]; then
   export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
   export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 fi
+
+# Strata server API key lives in the untracked unit env file
+if [ -f "$HOME/.config/strata/strata.env" ]; then
+  set -a; . "$HOME/.config/strata/strata.env"; set +a
+fi
