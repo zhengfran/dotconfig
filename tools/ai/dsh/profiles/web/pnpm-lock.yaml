@@ -29,6 +29,9 @@ importers:
       dsh-thoughtdag:
         specifier: latest
         version: 0.5.27
+      dsh-whale-widget:
+        specifier: 0.4.2
+        version: 0.4.2
       dshmarket:
         specifier: latest
         version: 1.73.9(@deepseek-ai/schemastery@3.18.5)
@@ -755,6 +758,9 @@ packages:
         optional: true
       '@deepseek-ai/dsh-web':
         optional: true
+
+  dsh-whale-widget@0.4.2:
+    resolution: {integrity: sha512-aGDUfd3b2Abv4PoUn1KtnlasOIkoqgvIOR2+rAIEPDOt1qlHB7emlTq+4zdyoV5ZiicS+tkugPk86GyVUoDggQ==}
 
   dshmarket@1.73.9:
     resolution: {integrity: sha512-uXjKoRSf6MIZGC5nDa9SzZzCg45kYMxWSD5jxQIWoO3Zw6DhCnbZEg8slrviVeXjToPSJvLQ6qo1CuuZmabfVQ==}
@@ -2066,6 +2072,8 @@ snapshots:
       pinyin-pro: 3.29.5
 
   dsh-thoughtdag@0.5.27: {}
+
+  dsh-whale-widget@0.4.2: {}
 
   dshmarket@1.73.9(@deepseek-ai/schemastery@3.18.5):
     dependencies:

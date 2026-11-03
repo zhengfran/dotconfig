@@ -9,6 +9,7 @@
     "dsh-context": "latest",
     "dsh-skill-picker": "latest",
     "dsh-thoughtdag": "latest",
+    "dsh-whale-widget": "0.4.2",
     "dshmarket": "latest",
     "nowledge-mem-deepseek-harness": "github:nowledge-co/nowledge-mem-deepseek-harness"
   },
@@ -25,7 +26,10 @@
         "@linxin666/dsh-remote-web-ui",
         "dsh-skill-picker",
         "nowledge-mem-deepseek-harness",
-        "billion-context"
+        "billion-context",
+        "dsh-whale-widget",
+        "@deepseek-ai/dsh-experimental-voice-input-bundle",
+        "@deepseek-ai/dsh-experimental-agent-team-profile"
       ]
     }
   }
