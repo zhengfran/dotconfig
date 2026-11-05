@@ -3,14 +3,16 @@
   "private": true,
   "dependencies": {
     "@linxin666/dsh-client-ui-web-ui-settings": "latest",
-    "@linxin666/dsh-remote-web-ui": "latest",
     "billion-context": "latest",
     "dsh-better-sidebar": "latest",
-    "dsh-context": "latest",
+    "dsh-context": "0.81.2",
+    "dsh-ego-browser": "github:Fisfzy/ego-browser",
+    "dsh-notify-me": "1.17.0",
+    "dsh-plugin-tether": "^0.1.25",
     "dsh-skill-picker": "latest",
     "dsh-thoughtdag": "latest",
     "dsh-whale-widget": "0.4.2",
-    "dshmarket": "latest",
+    "dshmarket": "1.73.11",
     "nowledge-mem-deepseek-harness": "github:nowledge-co/nowledge-mem-deepseek-harness"
   },
   "dsh": {
@@ -23,13 +25,14 @@
         "dsh-thoughtdag",
         "dshmarket",
         "@linxin666/dsh-client-ui-web-ui-settings",
-        "@linxin666/dsh-remote-web-ui",
         "dsh-skill-picker",
         "nowledge-mem-deepseek-harness",
         "billion-context",
         "dsh-whale-widget",
         "@deepseek-ai/dsh-experimental-voice-input-bundle",
-        "@deepseek-ai/dsh-experimental-agent-team-profile"
+        "@deepseek-ai/dsh-experimental-agent-team-profile",
+        "dsh-plugin-tether",
+        "dsh-notify-me"
       ]
     }
   }
